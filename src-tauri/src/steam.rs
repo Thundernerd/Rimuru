@@ -60,6 +60,19 @@ pub struct SteamApp {
     pub price: Option<String>,
     pub metacritic: Option<u32>,
     pub website: Option<String>,
+    /// Trailers, the store's highlighted one first.
+    #[serde(default)]
+    pub movies: Vec<Movie>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Movie {
+    pub name: String,
+    pub thumbnail: Option<String>,
+    /// HLS stream (H.264): plays natively in WebKit, via hls.js elsewhere.
+    pub hls: Option<String>,
+    /// A plain MP4 file; only older store entries still have one.
+    pub mp4: Option<String>,
 }
 
 /// Image URLs for an app. Any can be missing, e.g. older apps without a
@@ -286,6 +299,7 @@ pub fn parse_app_details(json: &Value, app_id: u64) -> Option<SteamApp> {
         price: string(&d["price_overview"], "final_formatted"),
         metacritic: d["metacritic"]["score"].as_u64().map(|s| s as u32),
         website: string(d, "website"),
+        movies: parse_movies(&d["movies"]),
     })
 }
 
@@ -319,6 +333,28 @@ pub fn parse_artwork(json: &Value) -> HashMap<u64, Artwork> {
             ))
         })
         .collect()
+}
+
+fn parse_movies(movies: &Value) -> Vec<Movie> {
+    let Some(list) = movies.as_array() else {
+        return Vec::new();
+    };
+    let mut movies: Vec<(bool, Movie)> = list
+        .iter()
+        .map(|m| {
+            let movie = Movie {
+                name: string(m, "name").unwrap_or_else(|| "Trailer".into()),
+                thumbnail: string(m, "thumbnail"),
+                hls: string(m, "hls_h264"),
+                mp4: string(&m["mp4"], "max").or_else(|| string(&m["mp4"], "480")),
+            };
+            (m["highlight"].as_bool().unwrap_or(false), movie)
+        })
+        .filter(|(_, m)| m.hls.is_some() || m.mp4.is_some())
+        .collect();
+    // Highlighted first, otherwise in the store's order.
+    movies.sort_by_key(|(highlight, _)| !highlight);
+    movies.into_iter().map(|(_, m)| m).collect()
 }
 
 /// Lowercase letters and digits only, with `&` as "and" and trademark
@@ -390,7 +426,13 @@ mod tests {
             "screenshots": [{ "id": 0, "path_thumbnail": "t.jpg", "path_full": "f.jpg" }],
             "is_free": false,
             "price_overview": { "final_formatted": "$8.99" },
-            "metacritic": null
+            "metacritic": null,
+            "movies": [
+                { "id": 1, "name": "Teaser", "thumbnail": "t1.jpg", "mp4": { "480": "a.mp4", "max": "b.mp4" } },
+                { "id": 2, "name": "Official Trailer", "thumbnail": "t2.jpg",
+                  "hls_h264": "https://video.example/hls_264_master.m3u8", "dash_h264": "x.mpd", "highlight": true },
+                { "id": 3, "name": "Broken" }
+            ]
         }}});
         let app = parse_app_details(&body, 4459590).unwrap();
         assert_eq!(app.name, "Slotbound");
@@ -403,6 +445,13 @@ mod tests {
         assert_eq!(app.screenshots[0].full, "f.jpg");
         assert_eq!(app.price.as_deref(), Some("$8.99"));
         assert_eq!(app.metacritic, None);
+        let names: Vec<_> = app.movies.iter().map(|m| m.name.as_str()).collect();
+        assert_eq!(names, ["Official Trailer", "Teaser"]);
+        assert_eq!(
+            app.movies[0].hls.as_deref(),
+            Some("https://video.example/hls_264_master.m3u8")
+        );
+        assert_eq!(app.movies[1].mp4.as_deref(), Some("b.mp4"));
 
         let missing = json!({ "1": { "success": false } });
         assert_eq!(parse_app_details(&missing, 1), None);

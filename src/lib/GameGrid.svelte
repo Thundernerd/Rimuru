@@ -4,6 +4,7 @@
   import { api, errorMessage, MAIN_FORUM_ID } from "./api";
   import GameCard from "./GameCard.svelte";
   import { setStatus } from "./status.svelte";
+  import { loadVisits } from "./visits.svelte";
   import type { TopicSummary } from "./types";
 
   let { onselect }: { onselect: (topic: TopicSummary) => void } = $props();
@@ -36,6 +37,7 @@
       // New posts move topics between pages, so a later page can repeat some.
       const seen = new Set(topics.map((t) => t.id));
       topics.push(...page.topics.filter((t) => !seen.has(t.id)));
+      loadVisits(page.topics.map((t) => t.id));
       nextStart = page.pagination.next_start;
       lastStart = start;
       pagesLoaded += 1;

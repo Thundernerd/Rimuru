@@ -114,6 +114,13 @@ export type SteamApp = {
   price: string | null;
   metacritic: number | null;
   website: string | null;
+  /** Trailers, the store's highlighted one first. */
+  movies: Movie[];
 };
+
+export type Movie = { name: string; thumbnail: string | null; hls: string | null; mp4: string | null };
+
+/** What was there when a game topic was last opened. */
+export type Visit = { replies: number | null; release_ids: number[]; visited_at: number };
 
 export type CommandError = { kind: string; message: string };

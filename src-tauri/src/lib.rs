@@ -43,6 +43,8 @@ pub fn run() {
             commands::steam_match,
             commands::remember_steam_match,
             commands::steam_artwork,
+            commands::topic_visits,
+            commands::record_visit,
             commands::save_snapshot,
         ])
         .run(tauri::generate_context!())

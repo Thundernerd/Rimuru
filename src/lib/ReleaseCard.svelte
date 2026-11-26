@@ -2,7 +2,7 @@
   import LinkButton from "./LinkButton.svelte";
   import type { Release } from "./types";
 
-  let { release }: { release: Release } = $props();
+  let { release, isNew = false }: { release: Release; isNew?: boolean } = $props();
 
   const facts = $derived(
     [
@@ -14,9 +14,12 @@
   );
 </script>
 
-<article>
+<article class:new={isNew}>
   <header>
-    <h4>{release.title ?? "Release"}</h4>
+    <h4>
+      {#if isNew}<span class="new-badge">New</span>{/if}
+      {release.title ?? "Release"}
+    </h4>
     <p class="byline">
       {[release.author && `by ${release.author}`, release.posted].filter(Boolean).join(" · ")}
     </p>
@@ -53,6 +56,22 @@
     padding: 12px 14px;
     border-radius: 10px;
     background: var(--surface);
+    border-left: 3px solid transparent;
+  }
+  article.new {
+    border-left-color: var(--accent);
+  }
+  .new-badge {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    vertical-align: 2px;
+    color: var(--accent-text);
+    background: var(--accent);
   }
   h4 {
     margin: 0;

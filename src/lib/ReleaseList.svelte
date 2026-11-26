@@ -4,6 +4,7 @@
 
   let {
     releases,
+    newIds,
     pagesRead,
     pagesPlanned,
     totalPages,
@@ -12,6 +13,8 @@
     onretry,
   }: {
     releases: Release[];
+    /** Post ids of releases not seen on the previous visit. */
+    newIds: Set<number>;
     pagesRead: number;
     pagesPlanned: number;
     totalPages: number | null;
@@ -22,7 +25,10 @@
 </script>
 
 <section>
-  <h3>All releases <span class="muted">({releases.length})</span></h3>
+  <h3>
+    All releases <span class="muted">({releases.length})</span>
+    {#if newIds.size}<span class="new-count">{newIds.size} new since your last visit</span>{/if}
+  </h3>
   {#if totalPages && totalPages > 1}
     <p class="muted small">
       {#if loading}
@@ -34,7 +40,7 @@
   {/if}
 
   {#each releases as release (release.post_id)}
-    <ReleaseCard {release} />
+    <ReleaseCard {release} isNew={newIds.has(release.post_id)} />
   {:else}
     {#if !loading && !error}
       <p class="muted">No posts with download links on the pages read.</p>
@@ -60,6 +66,12 @@
   h3 {
     margin: 0;
     font-size: 16px;
+  }
+  .new-count {
+    margin-left: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
   }
   .muted {
     color: var(--muted);

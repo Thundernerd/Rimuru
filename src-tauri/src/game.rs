@@ -261,7 +261,17 @@ const NOT_DOWNLOAD_HOSTS: &[&str] = &[
     "youtube.com",
     "youtu.be",
     "twitch.tv",
+    // images
     "imgur.com",
+    "ibb.co",
+    "imgbb.com",
+    "postimg.cc",
+    "postimages.org",
+    "prnt.sc",
+    "prntscr.com",
+    "gyazo.com",
+    "imagebam.com",
+    "tinypic.com",
 ];
 
 static STEAM_APP_ID: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"/app/(\d+)").unwrap());
@@ -350,7 +360,7 @@ pub fn parse_release(post: &Post) -> Option<Release> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::phpbb::{TopicPage, parse_topic};
+    use crate::phpbb::{PostLink, TopicPage, parse_topic};
     use url::Url;
 
     fn topic() -> TopicPage {
@@ -501,6 +511,33 @@ mod tests {
         // Store pages and other sites' forums are not releases.
         assert!(releases(91823).is_empty());
         assert!(releases(80048).is_empty());
+    }
+
+    #[test]
+    fn image_hosts_are_not_downloads() {
+        let link = |host: &str| PostLink {
+            url: format!("https://{host}/x"),
+            host: host.into(),
+            kind: LinkKind::External,
+            text: String::new(),
+            context: String::new(),
+            line: 0,
+            in_quote: false,
+            flagged_unsafe: false,
+        };
+        for host in [
+            "ibb.co",
+            "i.ibb.co",
+            "imgur.com",
+            "i.imgur.com",
+            "postimg.cc",
+            "prnt.sc",
+        ] {
+            assert!(!is_download(&link(host)), "{host}");
+        }
+        for host in ["gofile.io", "pixeldrain.com", "1fichier.com"] {
+            assert!(is_download(&link(host)), "{host}");
+        }
     }
 
     #[test]

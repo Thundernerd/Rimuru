@@ -7,6 +7,9 @@ const host = process.env.TAURI_DEV_HOST;
 // https://vite.dev/config/
 export default defineConfig(() => ({
   plugins: [svelte()],
+  // hls.js (~580 kB) is its own chunk, loaded only to play a trailer on
+  // webviews without native HLS; no need to warn about it.
+  build: { chunkSizeWarningLimit: 700 },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

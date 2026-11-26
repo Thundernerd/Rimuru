@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { untrack } from "svelte";
+
   import { api, errorMessage } from "./api";
   import { rememberArt } from "./cardArt.svelte";
   import GameDetails from "./GameDetails.svelte";
@@ -6,7 +8,8 @@
   import ReleaseList from "./ReleaseList.svelte";
   import Screenshots from "./Screenshots.svelte";
   import { setStatus } from "./status.svelte";
-  import type { Artwork, GameFirstPage, Release, SteamApp, TopicSummary } from "./types";
+  import type { Artwork, GameFirstPage, Release, SteamApp, TopicSummary, Visit } from "./types";
+  import { previousVisit, recordVisit } from "./visits.svelte";
 
   let { topic, onback }: { topic: TopicSummary; onback: () => void } = $props();
 
@@ -24,21 +27,37 @@
   let error = $state<string | null>(null);
   let attempt = $state(0);
   let releasesSection = $state<HTMLElement>();
+  /** The visit before this one; null on a first visit (nothing is "new" then). */
+  let previous = $state<Visit | null>(null);
 
   const releases = $derived([...recent, ...(first?.releases ?? [])]);
+  const newIds = $derived(
+    previous
+      ? new Set(releases.filter((r) => !previous!.release_ids.includes(r.post_id)).map((r) => r.post_id))
+      : new Set<number>(),
+  );
 
   // Load whenever the topic changes (or on retry); responses for a topic
-  // that's no longer shown are dropped.
+  // that's no longer shown are dropped. Only the topic and the retry
+  // counter are dependencies: loading runs untracked, since it reads
+  // stores it later writes (recording the visit would otherwise re-run
+  // this effect and reload the topic in a loop).
   $effect(() => {
-    const id = topic.id;
-    const replies = topic.replies;
-    const name = topic.name;
+    const shown = topic;
     void attempt;
     let current = true;
+    untrack(() => load(shown, () => current));
+    return () => {
+      current = false;
+    };
+  });
 
+  function load(shown: TopicSummary, isCurrent: () => boolean) {
+    const { id, replies, name } = shown;
     first = null;
     steam = null;
     art = null;
+    previous = null;
     recent = [];
     pagesRead = 0;
     pagesPlanned = 1;
@@ -46,12 +65,13 @@
     loading = true;
 
     (async () => {
-      const page = await api.gameFirstPage(id, replies);
-      if (!current) return;
+      const [page, visit] = await Promise.all([api.gameFirstPage(id, replies), previousVisit(id)]);
+      if (!isCurrent()) return;
+      previous = visit;
       first = page;
       pagesRead = 1;
 
-      loadSteam(page, name, () => current);
+      loadSteam(page, name, isCurrent);
 
       // Then the most recent pages, newest first, one at a time.
       const starts: number[] = [];
@@ -61,18 +81,19 @@
       pagesPlanned = 1 + starts.length;
       for (const start of starts) {
         const found = await api.gameReleases(id, start, replies);
-        if (!current) return;
+        if (!isCurrent()) return;
         recent.push(...found);
         pagesRead += 1;
       }
     })()
-      .catch((e) => current && (error = errorMessage(e)))
-      .finally(() => current && (loading = false));
-
-    return () => {
-      current = false;
-    };
-  });
+      .catch((e) => isCurrent() && (error = errorMessage(e)))
+      .finally(() => {
+        if (!isCurrent()) return;
+        loading = false;
+        // Remember what was seen, so the next visit can tell what's new.
+        if (first) recordVisit(shown, releases.map((r) => r.post_id));
+      });
+  }
 
   async function loadSteam(page: GameFirstPage, name: string, isCurrent: () => boolean) {
     try {
@@ -111,6 +132,7 @@
   {steam}
   {art}
   latest={releases[0] ?? null}
+  latestIsNew={!!releases[0] && newIds.has(releases[0].post_id)}
   releaseCount={releases.length}
   loadingReleases={loading}
   {onback}
@@ -128,6 +150,7 @@
       {#if first}
         <ReleaseList
           {releases}
+          {newIds}
           {pagesRead}
           {pagesPlanned}
           totalPages={first.total_pages}

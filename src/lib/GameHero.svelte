@@ -1,5 +1,6 @@
 <script lang="ts">
   import LinkButton from "./LinkButton.svelte";
+  import TrailerPlayer from "./TrailerPlayer.svelte";
   import type { Artwork, GameInfo, Release, SteamApp, TopicSummary } from "./types";
 
   /**
@@ -12,6 +13,7 @@
     steam,
     art,
     latest,
+    latestIsNew,
     releaseCount,
     loadingReleases,
     onback,
@@ -23,6 +25,8 @@
     steam: SteamApp | null;
     art: Artwork | null;
     latest: Release | null;
+    /** The latest release wasn't there on the previous visit. */
+    latestIsNew: boolean;
     releaseCount: number;
     loadingReleases: boolean;
     onback: () => void;
@@ -74,6 +78,8 @@
   );
 
   let backdropLoaded = $state(false);
+  let showTrailer = $state(false);
+  const movies = $derived(steam?.movies ?? []);
 </script>
 
 <section class="hero">
@@ -97,12 +103,19 @@
     </div>
 
     <div class="body">
-      <div class="cover">
-        {#if cover}
-          <img src={cover} alt="" />
-        {:else if header}
-          <img class="cover-blur" src={header} alt="" />
-          <img class="cover-header" src={header} alt="" />
+      <div class="side">
+        <div class="cover">
+          {#if cover}
+            <img src={cover} alt="" />
+          {:else if header}
+            <img class="cover-blur" src={header} alt="" />
+            <img class="cover-header" src={header} alt="" />
+          {/if}
+        </div>
+        {#if movies.length}
+          <button type="button" class="glass trailer" onclick={() => (showTrailer = true)}>
+            ▶ Watch trailer
+          </button>
         {/if}
       </div>
 
@@ -134,7 +147,9 @@
         <div class="latest">
           {#if latest}
             <div class="latest-head">
-              <span class="kicker">Latest release</span>
+              <span class="kicker">
+                Latest release{#if latestIsNew}<span class="new">New</span>{/if}
+              </span>
               <span class="when">{[latest.author && `by ${latest.author}`, latest.posted].filter(Boolean).join(" · ")}</span>
             </div>
             <p class="latest-title">{latest.title ?? title}</p>
@@ -180,6 +195,10 @@
     </div>
   </div>
 </section>
+
+{#if showTrailer}
+  <TrailerPlayer {movies} onclose={() => (showTrailer = false)} />
+{/if}
 
 <style>
   /* Always dark over the key art, whatever the app theme. */
@@ -259,11 +278,19 @@
     .body {
       grid-template-columns: 1fr;
     }
-    .cover {
+    .side {
       width: 160px;
     }
   }
 
+  .side {
+    display: grid;
+    gap: 10px;
+  }
+  .trailer {
+    padding: 8px 12px;
+    font-weight: 600;
+  }
   .cover {
     position: relative;
     aspect-ratio: 2 / 3;
@@ -367,6 +394,15 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #7ee2a8;
+  }
+  .new {
+    margin-left: 8px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: #0d1018;
+    background: #7ee2a8;
   }
   .when {
     font-size: 12px;

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { artFor, matches, requestArt } from "./cardArt.svelte";
   import type { TopicSummary } from "./types";
+  import { newReplies } from "./visits.svelte";
 
   let { topic, onselect }: { topic: TopicSummary; onselect: (topic: TopicSummary) => void } = $props();
 
@@ -10,6 +11,7 @@
   const tags = $derived([...topic.prefixes.filter((p) => p.toLowerCase() !== "info"), ...topic.labels]);
 
   const art = $derived(artFor(topic.name));
+  const fresh = $derived(newReplies(topic));
   /** Portrait art fills the card; otherwise the header sits on a blurred copy of itself. */
   const portrait = $derived(art?.portrait ?? null);
   const fallback = $derived(portrait ? null : (art?.header ?? art?.capsule ?? null));
@@ -79,6 +81,12 @@
     {/key}
   {/if}
 
+  {#if fresh}
+    <span class="fresh" title="Replies since you last opened this game">
+      {fresh} new {fresh === 1 ? "reply" : "replies"}
+    </span>
+  {/if}
+
   <div class="overlay">
     <h3>{topic.name}</h3>
     {#if tags.length}
@@ -145,6 +153,19 @@
   }
   .landscape {
     object-fit: contain;
+  }
+
+  .fresh {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-text);
+    background: var(--accent);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
   }
 
   /* Title and details: always shown on placeholders, on hover/focus over art. */

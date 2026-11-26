@@ -80,6 +80,8 @@ async fn topic_page(
 /// How long cached data stays usable. Forum entries are also keyed by the
 /// topic's reply count, so new replies invalidate them sooner.
 const TOPIC_MAX_AGE: Duration = Duration::from_secs(24 * 3600);
+/// Bumped when `SteamApp` gains fields (v2: trailers).
+const STEAM_APP_CACHE: &str = "steam_app_v2";
 const STEAM_APP_MAX_AGE: Duration = Duration::from_secs(3 * 24 * 3600);
 const STEAM_MATCH_MAX_AGE: Duration = Duration::from_secs(30 * 24 * 3600);
 /// Bumped when `Artwork` gains fields, so older entries are fetched again.
@@ -172,11 +174,12 @@ pub async fn steam_app(
     app_id: u64,
 ) -> Result<Option<SteamApp>> {
     let key = app_id.to_string();
-    if let Some(hit) = cache.get::<Option<SteamApp>>("steam_app", &key, None, STEAM_APP_MAX_AGE) {
+    if let Some(hit) = cache.get::<Option<SteamApp>>(STEAM_APP_CACHE, &key, None, STEAM_APP_MAX_AGE)
+    {
         return Ok(hit);
     }
     let details = steam.app_details(app_id).await?;
-    cache.put("steam_app", &key, None, &details);
+    cache.put(STEAM_APP_CACHE, &key, None, &details);
     Ok(details)
 }
 
@@ -247,6 +250,66 @@ pub async fn remember_steam_match(
 ) -> Result<()> {
     cache.put("steam_match", &steam::normalize_name(&name), None, &found);
     Ok(())
+}
+
+/// Kept for good: visits are the user's own history, not cached data.
+const VISIT_MAX_AGE: Duration = Duration::from_secs(100 * 365 * 24 * 3600);
+
+/// What was there when a game topic was last opened.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Visit {
+    /// The topic's reply count at the time.
+    pub replies: Option<u32>,
+    /// Post ids of the releases seen.
+    pub release_ids: Vec<u64>,
+    /// Unix seconds.
+    pub visited_at: u64,
+}
+
+/// Last visits for the given topics; unvisited topics are left out.
+#[tauri::command]
+pub async fn topic_visits(
+    cache: State<'_, Cache>,
+    topic_ids: Vec<u64>,
+) -> Result<HashMap<u64, Visit>> {
+    Ok(topic_ids
+        .into_iter()
+        .filter_map(|id| {
+            Some((
+                id,
+                cache.get("visit", &id.to_string(), None, VISIT_MAX_AGE)?,
+            ))
+        })
+        .collect())
+}
+
+/// Records a visit to a topic, keeping release ids seen on earlier visits
+/// (a visit may not have read every page). Returns the new visit.
+#[tauri::command]
+pub async fn record_visit(
+    cache: State<'_, Cache>,
+    topic_id: u64,
+    replies: Option<u32>,
+    release_ids: Vec<u64>,
+) -> Result<Visit> {
+    let key = topic_id.to_string();
+    let mut ids: Vec<u64> = cache
+        .get::<Visit>("visit", &key, None, VISIT_MAX_AGE)
+        .map(|v| v.release_ids)
+        .unwrap_or_default();
+    ids.extend(release_ids);
+    ids.sort_unstable();
+    ids.dedup();
+    let visit = Visit {
+        replies,
+        release_ids: ids,
+        visited_at: std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0),
+    };
+    cache.put("visit", &key, None, &visit);
+    Ok(visit)
 }
 
 /// Saves the raw HTML of a forum page (e.g. `viewforum.php?f=10`) to the

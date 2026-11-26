@@ -11,6 +11,7 @@ import type {
   Session,
   SteamApp,
   SteamMatch,
+  Visit,
 } from "./types";
 
 /** The forum's main game listing ("Main Forum"). */
@@ -62,6 +63,9 @@ export const api = {
   steamApp: (appId: number) => invoke<SteamApp | null>("steam_app", { appId }),
   steamMatch: (name: string) => invoke<SteamMatch | null>("steam_match", { name }),
   steamArtwork: (appIds: number[]) => invoke<Record<string, Artwork>>("steam_artwork", { appIds }),
+  topicVisits: (topicIds: number[]) => invoke<Record<string, Visit>>("topic_visits", { topicIds }),
+  recordVisit: (topicId: number, replies: number | null, releaseIds: number[]) =>
+    invoke<Visit>("record_visit", { topicId, replies, releaseIds }),
   rememberSteamMatch: (name: string, found: SteamMatch) => invoke<void>("remember_steam_match", { name, found }),
   saveSnapshot: (path: string) => forum<string>("save_snapshot", { path }),
   showForumWindow: (path?: string) => invoke<void>("show_forum_window", { path }),
