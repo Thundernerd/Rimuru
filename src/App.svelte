@@ -5,6 +5,7 @@
   import BrowseView from "./lib/BrowseView.svelte";
   import { loadFollows } from "./lib/follows.svelte";
   import { loadOwned } from "./lib/owned.svelte";
+  import { startRefresh, stopRefresh } from "./lib/refresh.svelte";
   import FollowingView from "./lib/FollowingView.svelte";
   import { clearForumPages } from "./lib/forum";
   import GameGrid from "./lib/GameGrid.svelte";
@@ -96,8 +97,10 @@
     loadRecent();
     loadFollows();
     loadOwned();
+    startRefresh();
     const unlisten = api.onForumPageLoaded(() => refreshSession());
     return () => {
+      stopRefresh();
       unlisten.then((u) => u());
     };
   });

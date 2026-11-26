@@ -5,6 +5,7 @@
   import { forumPage, labelCounts } from "./forum";
   import LabelChips from "./LabelChips.svelte";
   import type { View } from "./nav.svelte";
+  import { refresh } from "./refresh.svelte";
   import Shelf from "./Shelf.svelte";
   import type { TopicSummary } from "./types";
   import { latest, loadVisits, newReplies, recent, rememberListed } from "./visits.svelte";
@@ -22,6 +23,7 @@
 
   $effect(() => {
     void attempt;
+    void refresh.generation;
     error = null;
     forumPage(0)
       .then((page) => {
