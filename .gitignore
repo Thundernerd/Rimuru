@@ -1,0 +1,32 @@
+# Rust / Tauri build output
+/src-tauri/target/
+**/*.rs.bk
+
+# Tauri generated schemas (v2 regenerates these on build)
+/src-tauri/gen/schemas/
+
+# Node (in case frontend tooling is added later)
+node_modules/
+dist/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Vite
+dist-ssr/
+*.local

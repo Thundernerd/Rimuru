@@ -1,0 +1,1744 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-gb" xml:lang="en-gb">
+<head>
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta http-equiv="content-language" content="en-gb" />
+<meta http-equiv="content-style-type" content="text/css" />
+<meta http-equiv="imagetoolbar" content="no" />
+<meta name="resource-type" content="document" />
+<meta name="distribution" content="global" />
+<meta name="keywords" content="" />
+<meta name="description" content="Cracking Steam and coding Steam related tools and emulators since 2003. Get all Steam games you want and play them the way you want to - for free!" />
+<meta name="robots" content="noindex,nofollow" />
+
+<title>CS RIN - Steam Underground &bull; View topic - Workers &amp; Resources: Soviet Republic</title>
+
+<link rel="alternate" type="application/atom+xml" title="Feed - CS RIN - Steam Underground" href="https://cs.rin.ru/forum/feed.php" /><link rel="alternate" type="application/atom+xml" title="Feed - All forums" href="https://cs.rin.ru/forum/feed.php?mode=forums" /><link rel="alternate" type="application/atom+xml" title="Feed - New Topics" href="https://cs.rin.ru/forum/feed.php?mode=topics" /><link rel="alternate" type="application/atom+xml" title="Feed - Active Topics" href="https://cs.rin.ru/forum/feed.php?mode=topics_active" /><link rel="alternate" type="application/atom+xml" title="Feed - Forum - Main Forum" href="https://cs.rin.ru/forum/feed.php?f=10" /><link rel="alternate" type="application/atom+xml" title="Feed - Topic - Workers &amp; Resources: Soviet Republic" href="https://cs.rin.ru/forum/feed.php?f=10&amp;t=91289" />
+
+<link rel="stylesheet" href="./styles/rinDark/theme/stylesheet.css" type="text/css" />
+<!-- <script type="text/javascript" src="./mobiquo/tapatalkdetect.js"></script> -->
+<script type="text/javascript" src="./styles/subsilver2/template/forum_fn.js"></script>
+<!-- <script type="text/javascript" src="//yandex.st/share/share.js" charset="utf-8"></script>-->
+<script type="text/javascript">
+// <![CDATA[
+
+
+function popup(url, width, height, name)
+{
+	if (!name)
+	{
+		name = '_popup';
+	}
+
+	window.open(url.replace(/&amp;/g, '&'), name, 'height=' + height + ',resizable=yes,scrollbars=yes,width=' + width);
+	return false;
+}
+
+function jumpto()
+{
+	var page = prompt('Enter the page number you wish to go to:', '1');
+	var per_page = '15';
+	var base_url = './viewtopic.php?f=10&amp;t=91289';
+
+	if (page !== null && !isNaN(page) && page == Math.floor(page) && page > 0)
+	{
+		if (base_url.indexOf('?') == -1)
+		{
+			document.location.href = base_url + '?start=' + ((page - 1) * per_page);
+		}
+		else
+		{
+			document.location.href = base_url.replace(/&amp;/g, '&') + '&start=' + ((page - 1) * per_page);
+		}
+	}
+}
+
+/**
+* Find a member
+*/
+function find_username(url)
+{
+	popup(url, 760, 570, '_usersearch');
+	return false;
+}
+
+/**
+* Mark/unmark checklist
+* id = ID of parent container, name = name prefix, state = state [true/false]
+*/
+function marklist(id, name, state)
+{
+	var parent = document.getElementById(id);
+	if (!parent)
+	{
+		eval('parent = document.' + id);
+	}
+
+	if (!parent)
+	{
+		return;
+	}
+
+	var rb = parent.getElementsByTagName('input');
+	
+	for (var r = 0; r < rb.length; r++)
+	{
+		if (rb[r].name.substr(0, name.length) == name)
+		{
+			rb[r].checked = state;
+		}
+	}
+}
+
+
+
+// ]]>
+
+// RIN donation overlay
+//subsilver2
+window.onload = onloadFunction;
+//proSilver
+if (!(typeof onload_functions === 'undefined')) {
+	onload_functions.push('onloadFunction();');
+} 
+
+function overlayconfirm() {
+  document.getElementById("overlay").style.display = "none";
+  document.cookie = "csrin_overlay=0; path=/forum; max-age=31536000";
+}
+
+function onloadFunction()
+{
+    // RIN donation overlay
+    // if cookie NOT set, display
+    var decodedCookie = decodeURIComponent(document.cookie);
+    if (decodedCookie.search("csrin_overlay=0") === -1)
+    {
+        //document.getElementById("overlay").style.display = "block";
+    }
+}
+
+// RIN: load page in the background
+function loadAsync(page, returnTarget, returnText, returnClass) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onload = () => {
+        if (xhttp.readyState === XMLHttpRequest.DONE) {
+            if (xhttp.status === 200) {
+                console.log("yay");
+                var successText = document.createElement("span");
+                successText.innerHTML = returnText;
+                successText.className = returnClass;
+                returnTarget.replaceWith(successText);
+            } else {
+                console.error(xhttp.statusText);
+            }
+        }
+    };
+    xhttp.open("GET", page, true);
+    xhttp.send();
+}
+
+// RIN image resizer
+function resizeimg(img)
+{
+    if (img.style.maxHeight == 'none')
+        img.style.maxHeight = '250px';
+    else
+        img.style.maxHeight = 'none';
+}
+</script>
+
+<!-- Malicious filehosts -->
+<script type="text/javascript">
+function reveal_unsafe(e) {
+  e.style.display = "none";
+  e.parentElement.getElementsByClassName('link_unsafe')[0].style.display = "inline";
+}
+</script>
+<style></style>
+<style>
+.link_unsafe_overlay {
+  --warning-color: red;
+  border-style:dashed;
+  border-color: var(--warning-color);
+  border-width: thin;
+  width: fit-content;
+  display: inline-block;
+  color: var(--warning-color);
+}
+
+.link_unsafe_overlay2 {
+  --warning-color: orange;
+  border-style:dashed;
+  border-color: var(--warning-color);
+  border-width: thin;
+  width: fit-content;
+  display: inline-block;
+  color: var(--warning-color);
+}
+
+.link_unsafe_reveal {
+  cursor: pointer;
+  color: #AAAAAA;
+}
+
+.link_unsafe {
+  display: none;
+}
+
+.link_unsafe_note {
+  font-size: 0.8em;
+  vertical-align: super;
+  position: relative;
+}
+
+.tooltip {
+  border-bottom: 1px dotted green;
+  color: green;
+  cursor: pointer;
+}
+
+.tooltiptext {
+  visibility: hidden;
+  font-size: 1.3em;
+  width: 22em;
+  color: var(--warning-color);
+  background-color: black;
+  text-align: center;
+  padding: 0.5em 0.5em;
+  border-radius: 6px;
+  position: absolute;
+  cursor: default;
+  z-index: 1;
+  top: 100%;
+  left: -13em;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+</style>
+
+<!-- Donation overlay --><!-- duplicated here because of caching issues -->
+<style>
+#overlay {
+  position: fixed;
+  width: 40%;
+  height: 40%;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%; 
+  right: 0;
+  bottom: 0;
+  min-width: 300px;
+  min-height: 300px;
+  background-color: rgba(0,0,0,0.9);
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  border: 1px solid #777777;
+  display: none;
+}
+
+#overlaytext {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  font-size: 1.2em;
+  color: white;
+  transform: translate(-5%,-5%);
+  -ms-transform: translate(-5%,-5%);
+}
+
+#overlayconfirmbtn {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  bottom: 0px;
+  font-size: 1.2em;
+  padding: 1px 5px;
+}
+</style>
+<!-- RIN: image resize and page stretch fix -->
+<style>
+.postbody img,
+.postbody ~ table img {
+  max-width: 95%;
+  max-height: 250px;
+}
+</style>
+
+</head>
+<body class="ltr">
+
+<!-- Donation overlay -->
+<div id="overlay">
+  <div id="overlaytext">
+  <p align="center">We need your help!</p>
+  <br /><br />
+  <p>For 17 years, this forum has served us as a platform for sharing games with each other, graciously hosted by the owner of RIN for all this time. Sadly, he can no longer afford our server.</p>
+  <br /><br />
+  <p>To keep this forum alive, we need your help with covering the hosting expenses.</p>
+  <br /><br />
+  <p>For more information, click <a href="../donate" target="_blank" onclick="overlayconfirm()">here</a>.</p>
+  
+  </div>
+  <a id="overlayconfirmbtn" onclick="overlayconfirm()" href="javascript:overlayconfirm();">Close</a>
+</div>
+
+<table align="center" width="100%" class="bodyline">
+	<tr>
+		<td>
+<a name="top"></a>		
+<div id="wrapheader">
+
+	<div id="logodesc">
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td><a href="./index.php"><img src="./styles/rinDark/imageset/site_logo-1.png" alt="Logo" title="Logo" /></a></td>
+			<td width="100%" align="center"><h1>CS RIN - Steam Underground</h1><span class="gen">cs.rin.ru | csrin.org | The password is usually one of these.</span></td>
+		</tr>
+		</table>
+	</div>
+
+	<div id="menubar">
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				<a href="./viewtopic.php?f=10&amp;t=44034"><img src="./styles/rinDark/theme/images/icon_mini_rules.gif" width="14" height="14" alt="*" /> Forum rules</a>
+                &nbsp;:: &nbsp;<a href="../donate"><img src="./styles/rinDark/theme/images/icon_donate.gif" width="14" height="14" alt="*" /> Donate</a>
+			</td>
+			<td class="genmed" align="right">
+                <a href="chat.php"><img src="./styles/rinDark/theme/images/icon_mini_irc.gif" width="14" height="14" alt="*" /> Chat</a>
+				&nbsp;:: &nbsp;<a href="./viewtopic.php?f=10&amp;t=98158"><img src="./styles/rinDark/theme/images/icon_mini_faq.gif" width="12" height="13" alt="*" /> FAQ</a><!--<sup style="color:#FF0000;"> new!</sup>-->
+				&nbsp;:: &nbsp;<a href="./memberlist.php"><img src="./styles/rinDark/theme/images/icon_mini_members.gif" width="12" height="13" alt="*" /> Members</a>
+			</td>
+		</tr>
+		</table>
+		<br>
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				 <a href="./ucp.php"><img src="./styles/rinDark/theme/images/icon_mini_profile.gif" width="12" height="13" alt="*" /> User Control Panel</a> &nbsp;:: &nbsp;<a href="./ucp.php?i=pm&amp;folder=inbox"><img src="./styles/rinDark/theme/images/icon_mini_message.gif" width="12" height="13" alt="*" /> <strong>0</strong> new messages</a>
+			</td>
+			<td class="genmed" align="right">
+				<a href="./search.php"><img src="./styles/rinDark/theme/images/icon_mini_search.gif" width="12" height="13" alt="*" /> Search</a>
+                        &nbsp;:: &nbsp;<a href="./ucp.php?mode=logout&amp;sid=00000000000000000000000000000000"><img src="./styles/rinDark/theme/images/icon_mini_login.gif" width="12" height="13" alt="*" /> Logout [ TestUser ]</a>
+				
+			</td>
+		</tr>
+		</table>
+		
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				
+			</td>
+		</tr>
+		</table>
+	</div>
+
+	<div id="datebar">
+		<table width="100%" cellspacing="0">
+			<td class="gensmall">Last visit was: Yesterday, 12:26</td>
+            
+			<td class="gensmall" align="right">It is currently Thursday, 26 Nov 2026, 14:32<br /></td>
+		</tr>
+		</table>
+	</div>
+
+	<div>
+		<table width="100%" cellspacing="0">
+		<br>
+		<tr>
+			<td class="genmed" align="right"></td>
+		</tr>
+		</table>
+</div>
+</div>
+
+<div id="wrapcentre">
+
+	
+	<p class="searchbar">
+		<span style="float: left;"><a href="./search.php?search_id=unanswered">View unanswered posts</a> | <a href="./search.php?search_id=active_topics">View active topics</a></span>
+		
+		<span style="float: right;"><a href="./search.php?search_id=unreadposts">View unread posts</a> | <a href="./search.php?search_id=newposts">View new posts</a> | <a href="./search.php?search_id=egosearch">View your posts</a></span>
+		
+	</p>
+	
+
+	<br style="clear: both;" />
+
+	<table class="tablebg" width="100%" cellspacing="1" cellpadding="0" style="margin-top: 5px;">
+	<tr>
+		<td class="row5">
+			<p class="breadcrumbs"><a class="breadcrumbs" href="./index.php">Board index</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=27">English Forums</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=10">Main Forum</a></p>
+			
+		<div id="search-box">
+			<form method="post" id="topic-search" action="./search.php">
+				<input class="inputbox search tiny"  type="text" name="keywords" id="search_keywords" size="22" value="Search this topic…" onclick="if(this.value=='Search this topic…')this.value='';" onblur="if(this.value=='')this.value='Search this topic…';" />
+				<input class="button1" type="submit" value="Search" />
+				<input type="hidden" value="91289" name="t" />
+				<input type="hidden" value="msgonly" name="sf" />
+				<input type="hidden" name="terms" value="any" />
+			</form>
+		</div>
+
+
+		</td>
+	</tr>
+	</table>
+
+	<br />
+
+<div id="pageheader">
+	<h2><a class="titles" href="./viewtopic.php?f=10&amp;t=91289"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Workers &amp; Resources: Soviet Republic</a></h2>
+	<br>
+
+	<p class="gensmall"><b><a href="#" onclick="jumpto(); return false;" title="Click to jump to page…">Go to page</a> <strong>1</strong><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=91289&amp;start=15">2</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=91289&amp;start=30">3</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=91289&amp;start=45">4</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=91289&amp;start=60">5</a><span class="page-dots"> ... </span><a href="./viewtopic.php?f=10&amp;t=91289&amp;start=1200">81</a> &nbsp;<a href="./viewtopic.php?f=10&amp;t=91289&amp;start=15">Next</a></b></p>
+
+</div>
+
+<br clear="all" /><br />
+
+<div id="pagecontent">
+
+	<table width="100%" cellspacing="1">
+	<tr>
+		<td align="left" valign="middle" nowrap="nowrap">
+		<!--<a href="./posting.php?mode=post&amp;f=10"><img src="./styles/rinDark/imageset/en/button_topic_new.gif" alt="Post new topic" title="Post new topic" /></a>&nbsp;--><a href="./posting.php?mode=reply&amp;f=10&amp;t=91289"><img src="./styles/rinDark/imageset/en/button_topic_reply.gif" alt="Reply to topic" title="Reply to topic" /></a>
+		</td>
+		
+			<td class="nav" valign="middle" nowrap="nowrap">&nbsp;Page <strong>1</strong> of <strong>81</strong><br /></td>
+			<td class="gensmall" nowrap="nowrap">&nbsp;[ 1210 posts ]&nbsp;</td>
+			<td class="gensmall" width="100%" align="right" nowrap="nowrap"></td>
+		
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr>
+		<td class="cat">
+			<table width="100%" cellspacing="0">
+			<tr>
+				<td class="nav" nowrap="nowrap">&nbsp;
+				<a href="./viewtopic.php?uid=2733823&amp;f=10&amp;t=91289&amp;watch=topic&amp;start=0&amp;hash=00000000" title="Subscribe topic">Subscribe topic</a> | <a href="./viewtopic.php?f=10&amp;t=91289&amp;bookmark=1&amp;hash=00000000" title="Bookmark topic">Bookmark topic</a> | <a href="./viewtopic.php?f=10&amp;t=91289&amp;view=print" title="Print view">Print view</a> | <a href="./memberlist.php?mode=email&amp;t=91289" title="E-mail friend">E-mail friend</a>
+				</td>
+				<td class="nav" align="right" nowrap="nowrap"><a href="./viewtopic.php?f=10&amp;t=91289&amp;view=previous">Previous topic</a> | <a href="./viewtopic.php?f=10&amp;t=91289&amp;view=next">Next topic</a>&nbsp;</td>
+			</tr>
+			</table>
+		</td>
+	</tr>
+
+	</table>
+
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	
+		<tr>
+			<th>Author</th>
+			<th>Message</th>
+		</tr>
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p1739384"></a>
+				<b class="postauthor">Viperel</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1739384#p1739384"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Sunday, 29 Jul 2018, 09:18&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1739384"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">I live here Три раза сломал клаву :)</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=516065_1591522524.png" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Saturday, 23 Nov 2013, 06:34<br /><b>Posts:</b> 1829<br /><b>Location:</b> Dyson sphere
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/784150/header.jpg?t=1779785928" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br /><span style="color: #FF0000"><span style="font-size: 150%; line-height: normal"><span style="font-weight: bold">Workers &amp; Resources: Soviet Republic</span></span></span><br /><br /><span style="color: #FF0000"><span style="font-weight: bold">Details</span></span><br /><span style="font-weight: bold">Store Page:</span> <a href="https://store.steampowered.com/app/784150" class="postlink" rel="nofollow">https://store.steampowered.com/app/784150</a><br /><span style="font-weight: bold">SteamDB Page:</span> <a href="https://steamdb.info/app/784150" class="postlink" rel="nofollow">https://steamdb.info/app/784150</a><br /><span style="font-weight: bold">Genre(s):</span> Simulation, Strategy<br /><span style="font-weight: bold">Developer:</span> 3Division<br /><span style="font-weight: bold">Publisher:</span> Hooded Horse<br /><span style="font-weight: bold">Release Date:</span> 20 Jun, 2024<br /><span style="font-weight: bold">Language(s):</span> English, French, German, Polish, Russian, Simplified Chinese, Spanish - Spain, Italian, Japanese, Portuguese - Brazil, Hungarian, Korean, Ukrainian, Bulgarian, Traditional Chinese, Turkish, Slovak, Czech<br /><span style="font-weight: bold">Operating system(s):</span> <img width=26px height=16px src="https://cdn.akamai.steamstatic.com/store/icons/icon_platform_win.svg" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> <br /><br /><span style="color: #FF0000"><span style="font-weight: bold">About The Game</span></span><br /><video src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/784150/extras/4bbc1b394e3938afba286fd040536211.webm?t=1779785928" style="max-width:500px;height:auto;" autoplay="" muted="" loop="" playsinline="" crossorigin="anonymous">
+Your browser does not support the video tag.
+</video><br /><br /><br />Manage all aspects of your republic in this soviet-themed city builder game. A planned economy puts you in control of everything from mining resources to manufacturing goods and providing services – use this power to make decisions that impact your citizens’ day-to-day lives and their ultimate loyalty to the nation. Whether it’s construction, transportation, trade, healthcare, education, entertainment, tourism, or any of the countless other facets of a full-fledged city, it’s up to you to determine availability, accessibility, and quality. Contend with a deep simulation of global supply chains as you seek fertile soils, ore veins, and viable lands upon which to build your nation – let the radio stations sing your praises and the citizens rejoice in their glorious soviet republic.<br /><br /><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/784150/extras/0c4bb13fa5522de20a8b9879f0c1f316.webp?t=1779785928" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br /><video src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/784150/extras/a6fee5783bcf6df22dd4e9dc007bf599.webm?t=1779785928" style="max-width:500px;height:auto;" autoplay="" muted="" loop="" playsinline="" crossorigin="anonymous">
+Your browser does not support the video tag.
+</video><br /><br /><br />Multiple complex simulations work together to bring your cities to life in Workers &amp; Resources: Soviet Republic – whether it’s the price of goods in the global market, the proper distribution of electricity and water, or the increased supply of heat during the winter months, everything can be manipulated with the right actions. Adjust your game settings based on your appetite for complexity in particular areas – civil engineers, urban planners, economists, and simulation enthusiasts will all be able to experience the mechanics they love.<br /><br /><br /><ul><li> Run your nation with both rubles and dollars as you strike a balance between eastern and western markets, trading with nations from either side of the Iron Curtain to gain access to valuable currency, resources, and technology. Despite following a soviet-styled planned economy, you are a fledgling non-aligned nation – this sets you free to engage in trade with both the Western Bloc and the Soviet Bloc to your benefit. Loyalty to one side is always an option, but flooding one market with your goods might result in diminishing returns, and shunning the other side might see you cut off from useful technological advances.<br /></li><li> Familiarize yourself with the intricacies of realistic supply-chain management with over 30 commodities to acquire, manufacture, and transport. Raw materials, processed goods, and waste material all have specific places where they can be stored, with specific vehicles needed for their transportation, and specific structures needed for loading and unloading. Liquids are stored in tanks and moved with the help of pipes and pumps, or loaded onto vehicles with tanks. Mined ores are stored in aggregate storage facilities, and moved with conveyor belts and flatbed trucks and train cars. Processed goods, meanwhile, are shipped around in covered trucks and train cars, and stored in warehouses. Organize forklifts for short distance hauling, build intricate conveyor belt networks to minimize your reliance on vehicles, or use trains to haul goods from one city to another – supply-chain management is an integral part of operating a nation, and you’ll use everything from cargo planes to freight trains to cargo helicopters to make sure everything is operating smoothly.<br /></li><li> Every road, bridge, residential building, and factory is built from the ground up with resource costs reflecting the size of the project. Pay market rates for raw materials to execute quick builds with the help of foreign labor, or establish construction offices and provide employment to your population as they head to construction sites to build everything using locally acquired resources. Buildings can require anything from prefab panels, to steel beams, gravel, concrete, and more – produce and supply them locally, or import them to simplify the process. Will you be a self-reliant republic, or will you exploit the international market for rapid expansion?<br /></li></ul><br /><br /><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/784150/extras/55f1baaa2745c773b27f01c6dd91bdca.webp?t=1779785928" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br /><video src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/784150/extras/887d7adb17b8266a0aa40c65e939de97.webm?t=1779785928" style="max-width:500px;height:auto;" autoplay="" muted="" loop="" playsinline="" crossorigin="anonymous">
+Your browser does not support the video tag.
+</video><br /><br /><br />A nation is nothing without its people – they work the fields, bake the bread, and operate the heavy machinery that keeps the wheels of industry turning. Ensuring the people remain happy and loyal is essential to your success.<br /><br /><br /><ul><li>Follow your citizens from childhood to the end of their lives, providing them with essential goods such as food and clothes (and alcohol) while simultaneously ensuring they have access to opportunities in the form of education and employment. Be wary of those that lack loyalty to the republic – they are prone to a life of crime, and their reduced efficiency can hurt throughput. Oftentimes, they are best left without access to opportunities where they can do more harm than good. Monitor your nation’s overall happiness and loyalty to ensure few are choosing to leave – provide them with better lives, or rely on propaganda to get the most out of your citizens.<br /></li><li>Your peoples’ needs can be imported from neighboring countries, or they can be manufactured locally through complex production chains. Massive fields will harvest grains that can be turned into bread and booze at food factories and distilleries. Clothes factories will produce clothes as long as they have fabric, which in turn is produced at fabric factories with the help of crops, chemicals, and water. Manufacture or otherwise acquire all manner of goods, from the aforementioned necessities to the luxuries of radios and TVs, and transport them from factories to warehouses to local stores where your citizens can obtain them to fulfill their needs. <br /></li><li>There are many essential services your citizens will want access to as well – electricity, water, and heat are necessary for survival, each with their own supply chains to maintain. Watch for demand to ebb and flow with the seasons, and prepare for harsh winters lest your population suffers a sudden tragic drop. Education is provided through schools and universities, with higher levels of education opening up additional employment opportunities for your people, unlocking access to new technologies and production capabilities in your nation. Entertainment comes from local parks and theaters as well as radio and TV stations, while physical fitness is provided by local pools and sports fields. Ensuring these services are available and within reach through an efficient transit system is essential for a healthy, prosperous populace.<br /></li></ul><br /><br /><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/784150/extras/90e14fd8b78d184f8eba0af37fd0d1bc.webp?t=1779785928" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br /><video src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/784150/extras/33b031544841bcc2fef33a97e78f29de.webm?t=1779785928" style="max-width:500px;height:auto;" autoplay="" muted="" loop="" playsinline="" crossorigin="anonymous">
+Your browser does not support the video tag.
+</video><br /><br /><br />From roads to railways, and from sea to sky, managing the transportation of goods and people is vital to the health of your republic. As your nation spreads and cities develop around resource hubs littered across massive maps, you’ll find yourself constantly expanding your transportation network to meet ever-growing needs.<br /><br /><br /><ul><li>Buses, trams, trains, subways, ships, and planes provide public transportation for people to move greater and greater distances, fulfilling needs at distant shops, or providing their expertise at far-flung factories and mines. Operate interconnected systems to facilitate the movement of people across these massive expanses, even using cable cars and winding dirt roads to provide access to the more remote parts of your republic.<br /></li><li>Trucks, trains, cargo planes, and cargo ships are essential for moving resources long distances, with different subcategories of each vehicle determining exactly what type of goods it can move. Limited access to certain vehicles might force you to explore transit methods you would otherwise have left behind – or perhaps you’ll build connections at customs offices along your border to enable trade with foreign powers instead?<br /></li><li>Build custom airports, plan the placement of train signals, and design intricate interchanges to truly customize your transit networks. Road signs will influence speed limits and vehicle access, runway length will determine accessibility for various kinds of airplanes, and train stations can be built for passengers or cargo, with access points for pumps, conveyor belts, and forklifts to integrate smoothly into your existing supply chains. <br /></li><li>Allow your people to purchase cars for private transit, but consider limiting access to such vehicles based on education levels or party loyalty to prevent the plague of freedom of movement and congestion – with well planned infrastructure and transit networks, you can fully control the flow of workers and resources alike.<br /></li></ul><br /><br /><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/784150/extras/c43b39da35833e5ce495054bcd729bf5.webp?t=1779785928" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br />Workers &amp; Resources: Soviet Republic has dedicated modding tools and a plethora of extensive player-created mods available in the Steam Workshop. Customize your experience with new buildings and vehicles to build the soviet republic of your dreams.</div>
+
+					
+						<div class="postbody"><br />_________________<br /><span style="font-size: 85%; line-height: normal"><span style="color: #4080FF">&quot;There is no such thing as innocence, only degrees of guilt.&quot;<br />&quot;Foolish are those who fear nothing, yet claim to know everything.</span></span></div>
+					
+							<br /><br />
+							<span class="gensmall">Last edited by <a href="./memberlist.php?mode=viewprofile&amp;u=516065">Viperel</a> on Thursday, 18 Jun 2026, 17:05, edited 20 times in total.</span>
+						<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=516065"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1739384"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1739384"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p1739396"></a>
+				<b class="postauthor">CAllMenemo495</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1739396#p1739396"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Sunday, 29 Jul 2018, 10:27&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1739396"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">I live here Три раза сломал клаву :)</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=658260_1603197818.jpg" width="100" height="100" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Saturday, 31 Dec 2016, 12:39<br /><b>Posts:</b> 2449
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><div class="youtube_NkXqJ6SLV4o"><noscript><a class="postlink" href="https://www.youtube.com/watch?v=NkXqJ6SLV4o" rel="nofollow"></a></noscript></div>
+<script type="text/javascript">
+for (var i = 0; i < document.getElementsByClassName('youtube_NkXqJ6SLV4o').length; i++)
+{
+if (true == true)
+{ 
+document.getElementsByClassName('youtube_NkXqJ6SLV4o')[i].innerHTML = "<iframe width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/NkXqJ6SLV4o\" title=\"YouTube video player\" frameborder=\"0\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>";
+}
+else
+{
+document.getElementsByClassName('youtube_NkXqJ6SLV4o')[i].innerHTML = "<a class=\"postlink\" href=\"https://www.youtube.com/watch?v=NkXqJ6SLV4o\" rel=\"nofollow\">https://www.youtube.com/watch?v=NkXqJ6SLV4o</a>";
+}
+}
+</script></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=658260"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1739396"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1739396"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p1760552"></a>
+				<b class="postauthor">fatalerror1</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1760552#p1760552"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Wednesday, 05 Sep 2018, 13:20&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1760552"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">I live here Три раза сломал клаву :)</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=510042_1542058871.png" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Wednesday, 07 Aug 2013, 05:36<br /><b>Posts:</b> 3299
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><div class="youtube_kBUszCi5Dhc"><noscript><a class="postlink" href="https://www.youtube.com/watch?v=kBUszCi5Dhc" rel="nofollow"></a></noscript></div>
+<script type="text/javascript">
+for (var i = 0; i < document.getElementsByClassName('youtube_kBUszCi5Dhc').length; i++)
+{
+if (true == true)
+{ 
+document.getElementsByClassName('youtube_kBUszCi5Dhc')[i].innerHTML = "<iframe width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/kBUszCi5Dhc\" title=\"YouTube video player\" frameborder=\"0\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>";
+}
+else
+{
+document.getElementsByClassName('youtube_kBUszCi5Dhc')[i].innerHTML = "<a class=\"postlink\" href=\"https://www.youtube.com/watch?v=kBUszCi5Dhc\" rel=\"nofollow\">https://www.youtube.com/watch?v=kBUszCi5Dhc</a>";
+}
+}
+</script></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=510042"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1760552"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1760552"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p1760570"></a>
+				<b class="postauthor">keminsky</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1760570#p1760570"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Wednesday, 05 Sep 2018, 13:49&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1760570"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Tuesday, 22 Jun 2010, 20:26<br /><b>Posts:</b> 249
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">well this one seems promissing, a smell of tropico, train fever and skylines?<br />hoe someone shares when possible <img src="./images/smilies/icon_e_smile.gif" alt=":)" title="Smile" /></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=445496"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1760570"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1760570"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p1760598"></a>
+				<b class="postauthor">m18</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1760598#p1760598"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Wednesday, 05 Sep 2018, 14:17&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1760598"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Forum ghost Местное привидение</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=517594_1521206185.png" width="120" height="108" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Thursday, 19 Dec 2013, 16:21<br /><b>Posts:</b> 287
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Yes, I would like to try</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=517594"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1760598"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1760598"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p1760619"></a>
+				<b class="postauthor">Millesaway</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1760619#p1760619"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Wednesday, 05 Sep 2018, 15:04&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1760619"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Super flooder Почетный графоман</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Wednesday, 12 Nov 2014, 00:25<br /><b>Posts:</b> 1329
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">I dont know. <br /><br />Seems promising, but the last tycoons... Well... Kinda disappointed.<br /><br />Cheers.</div>
+
+					
+						<div class="postbody"><br />_________________<br />Always use search before asking, will save you time!</div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=542723"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1760619"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1760619"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p1826231"></a>
+				<b class="postauthor">burbonn</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1826231#p1826231"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Tuesday, 22 Jan 2019, 21:02&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1826231"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">User Редкий гость</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=555264_1429572804.jpg" width="100" height="100" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 17 Apr 2015, 20:29<br /><b>Posts:</b> 47
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Great process detail level !<br /><br /><span style="font-weight: bold">[EN]</span><br /><div class="youtube_skO2811VXRQ"><noscript><a class="postlink" href="https://www.youtube.com/watch?v=skO2811VXRQ" rel="nofollow"></a></noscript></div>
+<script type="text/javascript">
+for (var i = 0; i < document.getElementsByClassName('youtube_skO2811VXRQ').length; i++)
+{
+if (true == true)
+{ 
+document.getElementsByClassName('youtube_skO2811VXRQ')[i].innerHTML = "<iframe width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/skO2811VXRQ\" title=\"YouTube video player\" frameborder=\"0\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>";
+}
+else
+{
+document.getElementsByClassName('youtube_skO2811VXRQ')[i].innerHTML = "<a class=\"postlink\" href=\"https://www.youtube.com/watch?v=skO2811VXRQ\" rel=\"nofollow\">https://www.youtube.com/watch?v=skO2811VXRQ</a>";
+}
+}
+</script><br /><br /><span style="font-weight: bold">[RU]</span><br /><div class="youtube_KDnvNjhAEFg"><noscript><a class="postlink" href="https://www.youtube.com/watch?v=KDnvNjhAEFg" rel="nofollow"></a></noscript></div>
+<script type="text/javascript">
+for (var i = 0; i < document.getElementsByClassName('youtube_KDnvNjhAEFg').length; i++)
+{
+if (true == true)
+{ 
+document.getElementsByClassName('youtube_KDnvNjhAEFg')[i].innerHTML = "<iframe width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/KDnvNjhAEFg\" title=\"YouTube video player\" frameborder=\"0\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>";
+}
+else
+{
+document.getElementsByClassName('youtube_KDnvNjhAEFg')[i].innerHTML = "<a class=\"postlink\" href=\"https://www.youtube.com/watch?v=KDnvNjhAEFg\" rel=\"nofollow\">https://www.youtube.com/watch?v=KDnvNjhAEFg</a>";
+}
+}
+</script></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=555264"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1826231"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1826231"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p1829598"></a>
+				<b class="postauthor">burbonn</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1829598#p1829598"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Monday, 28 Jan 2019, 19:02&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1829598"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">User Редкий гость</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=555264_1429572804.jpg" width="100" height="100" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 17 Apr 2015, 20:29<br /><b>Posts:</b> 47
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Even a good thing that there is no &quot;torrent edition&quot; version for this game, because it deserves to be bought immediately.</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=555264"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1829598"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1829598"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p1833141"></a>
+				<b class="postauthor">antitrust38</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1833141#p1833141"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Sunday, 03 Feb 2019, 15:50&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1833141"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">I live here Три раза сломал клаву :)</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					
+						<strong style="color:#FF0000;">Banned</strong><br />
+					<b>Joined:</b> Tuesday, 17 May 2016, 21:32<br /><b>Posts:</b> 10048
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Workers &amp; Resources Soviet Republic торрент</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=603776"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1833141"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1833141"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p1833180"></a>
+				<b class="postauthor">pakrat</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1833180#p1833180"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Sunday, 03 Feb 2019, 16:59&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1833180"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">I live here Три раза сломал клаву :)</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=145196_1329466774.jpg" width="71" height="100" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Wednesday, 24 Nov 2004, 10:13<br /><b>Posts:</b> 11664
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">something to watch for.</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=145196"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1833180"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1833180"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p1833536"></a>
+				<b class="postauthor">okolesin</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1833536#p1833536"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Monday, 04 Feb 2019, 05:30&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1833536"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Beginner   Без звания</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Thursday, 26 Apr 2018, 16:44<br /><b>Posts:</b> 5
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">The game has not yet come out in alpha-status, but everyone already wants it ))<br /><br />Does anyone have a link to a torrent?</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=847039"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1833536"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1833536"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p1833577"></a>
+				<b class="postauthor">Asero</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1833577#p1833577"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Monday, 04 Feb 2019, 07:38&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1833577"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Forum ghost Местное привидение</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Monday, 04 Jul 2016, 00:43<br /><b>Posts:</b> 385
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Looks very charming, but I don't know if I'm willing to wait 5-10 years for the full 1.0 release.</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=614506"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1833577"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1833577"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p1837475"></a>
+				<b class="postauthor">keminsky</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1837475#p1837475"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Monday, 11 Feb 2019, 17:13&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1837475"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Tuesday, 22 Jun 2010, 20:26<br /><b>Posts:</b> 249
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">a lot of potential..since i always wanted a Topico &quot;on land&quot;.. hope someone shares to give a try <img src="./images/smilies/icon_e_smile.gif" alt=":)" title="Smile" /></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=445496"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1837475"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1837475"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p1837479"></a>
+				<b class="postauthor">pakrat</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1837479#p1837479"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Monday, 11 Feb 2019, 17:16&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1837479"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">I live here Три раза сломал клаву :)</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=145196_1329466774.jpg" width="71" height="100" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Wednesday, 24 Nov 2004, 10:13<br /><b>Posts:</b> 11664
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">buy it &amp; share for everyone else.</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=145196"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1837479"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1837479"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p1839748"></a>
+				<b class="postauthor">three7</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=1839748#p1839748"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Workers &amp; Resources: Soviet Republic&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Friday, 15 Feb 2019, 11:14&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=1839748"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">User Редкий гость</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=629807_1497516112.jpg" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 07 Oct 2016, 22:01<br /><b>Posts:</b> 40
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Oh, still nothing? Can't wait...</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=629807"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=1839748"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=1839748"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table width="100%" cellspacing="1" class="tablebg">
+	<tr align="center">
+		<td class="cat">
+		
+		<div id="search-box_thread">
+			<form method="post" id="topic-search" action="./search.php">
+				<input class="inputbox search tiny"  type="text" name="keywords" id="search_keywords" size="22" value="Search this topic…" onclick="if(this.value=='Search this topic…')this.value='';" onblur="if(this.value=='')this.value='Search this topic…';" />
+				<input class="button1" type="submit" value="Search" />
+				<input type="hidden" value="91289" name="t" />
+				<input type="hidden" value="msgonly" name="sf" />
+			</form>
+		</div>
+		
+		<form name="viewtopic" method="post" action="./viewtopic.php?f=10&amp;t=91289"><span class="gensmall">Display posts from previous:</span> <select name="st" id="st"><option value="0" selected="selected">All posts</option><option value="1">1 day</option><option value="7">7 days</option><option value="14">2 weeks</option><option value="30">1 month</option><option value="90">3 months</option><option value="180">6 months</option><option value="365">1 year</option></select>&nbsp;<span class="gensmall">Sort by</span> <select name="sk" id="sk"><option value="a">Author</option><option value="t" selected="selected">Post time</option><option value="s">Subject</option></select> <select name="sd" id="sd"><option value="a" selected="selected">Ascending</option><option value="d">Descending</option></select>&nbsp;<input class="btnlite" type="submit" value="Go" name="sort" /></form></td>
+	</tr>
+	</table>
+	
+
+	<table width="100%" cellspacing="1">
+	<tr>
+		<td align="left" valign="middle" nowrap="nowrap">
+		<!--<a href="./posting.php?mode=post&amp;f=10"><img src="./styles/rinDark/imageset/en/button_topic_new.gif" alt="Post new topic" title="Post new topic" /></a>&nbsp;--><a href="./posting.php?mode=reply&amp;f=10&amp;t=91289"><img src="./styles/rinDark/imageset/en/button_topic_reply.gif" alt="Reply to topic" title="Reply to topic" /></a>
+		</td>
+		
+			<td class="nav" valign="middle" nowrap="nowrap">&nbsp;Page <strong>1</strong> of <strong>81</strong><br /></td>
+			<td class="gensmall" nowrap="nowrap">&nbsp;[ 1210 posts ]&nbsp;</td>
+			<td class="gensmall" width="100%" align="right" nowrap="nowrap"><b><a href="#" onclick="jumpto(); return false;" title="Click to jump to page…">Go to page</a> <strong>1</strong><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=91289&amp;start=15">2</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=91289&amp;start=30">3</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=91289&amp;start=45">4</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=91289&amp;start=60">5</a><span class="page-dots"> ... </span><a href="./viewtopic.php?f=10&amp;t=91289&amp;start=1200">81</a> &nbsp;<a href="./viewtopic.php?f=10&amp;t=91289&amp;start=15">Next</a></b></td>
+		
+	</tr>
+	</table>
+
+</div>
+
+<div id="pagefooter"></div>
+
+<br clear="all" />
+<table class="tablebg" width="100%" cellspacing="1" cellpadding="0" style="margin-top: 5px;">
+	<tr>
+		<td class="row5">
+			<p class="breadcrumbs"><a class="breadcrumbs" href="./index.php">Board index</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=27">English Forums</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=10">Main Forum</a></p>
+			
+		<div id="search-box">
+			<form method="post" id="topic-search" action="./search.php">
+				<input class="inputbox search tiny"  type="text" name="keywords" id="search_keywords" size="22" value="Search this topic…" onclick="if(this.value=='Search this topic…')this.value='';" onblur="if(this.value=='')this.value='Search this topic…';" />
+				<input class="button1" type="submit" value="Search" />
+				<input type="hidden" value="91289" name="t" />
+				<input type="hidden" value="msgonly" name="sf" />
+				<input type="hidden" name="terms" value="any" />
+			</form>
+		</div>
+
+
+		</td>
+	</tr>
+	</table>
+	<br clear="all" />
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr>
+		<td class="cat"><h4>Who is online</h4></td>
+	</tr>
+	<tr>
+		<td class="row1"><p class="gensmall">Users browsing this forum: <a href="./memberlist.php?mode=viewprofile&amp;u=1707853">1lethn1</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3368361">ader987</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1017316">Aehein</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=215868">ahab</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1643279">Alctern</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=943768">Appnetica</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=510740">aria</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1412878">AshWilliams</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2406068">asmodeus01</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=825415">auauau97</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1847303">avim1337</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3869719">Azuuru</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1169727">bauchiku123</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3279916">Benutzerman</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1140969">blackholesky</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=879635">bluetowel</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1998155">Boom Boom</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1688847">CFHrobi</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1060059">Charlie68</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2594826">ColossalHavoc</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=613232">cowcow69</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3061704">CuretheToony</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2121056">cynder_66</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2280461">DaniMocanu3</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2055237">dark_ronu</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=492472">darkzonez</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3621137">DeadReaper</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=562664">dennisberg</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2804355">Deri2k</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=979841">Det0naMarkBR</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=958751">dexecafe</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3239799">dogontogo</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=540213">Domestic</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=540614">Dondelladadski</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1261001">dontknowdontcare</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1384783">eds00</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2601910">ellenia</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3277028">EndME0011</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2297728">Ente 23</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2787494">Esterfourth</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=627711">eyebiz</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3114472">Fahad Hussain</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3723816">Finder Tracker</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=606790">framas</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=680947">GabrieleMor</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1225587">ghostkkahmed</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=771632">GIM47N</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3413237">gobabe7343</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1348400">Gurkannn</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3245749">hertzcs</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3626776">heyyyspacecadet</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2386612">hhwtest9@</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3823672">hpxekky</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3520287">hss-mateus</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2561193">iamkrispyy</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3627612">IcyJayy</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=627721">Idaero Ace</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3817729">iLight18</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2386462">infiniteflow24</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2424832">itsmoritz</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1986928">iut0</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2825224">IYMYAG</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1030616">Jessieisasnitch</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2318672">JohnGames2005</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1474625">kabalkin</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3561749">KawLL</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2851834">KeepMeLooped</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3948216">KingRedbeard83</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2720748">KJdragon</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1136653">koipendeu</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3763613">KurDonXX</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2068821">LagZy1</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3948198">LapisPhos</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1902750">Layerplayer</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=747508">LeeKuper</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3314337">lianaflores</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3434303">lilwgray</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1070355">luckyisadogsname</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=464129">lycanwrath</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1994196">Madabruh</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2225918">Mammonza</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=537812">Maou</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3827676">Maridolce006</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2961708">mbkqhmblxjgn</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3948215">Merueth</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1057842">MicrowaveSoup</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=754141">MioBambino</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=591189">miraculix33</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=605397">Murat_Pasaoglu</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2178713">MythicPhoenixx</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3238720">nechrist</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=732664">nikitaluger</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2645255">NoPann</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1450292">notsowright320</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3946721">nyfuli</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2989899">okokokok555</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=757030">Opeer</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1686602">otakunoodles</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1048834">ozgal</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1872398">Pips013</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3223892">PoolPirate</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=995581">PudimSedutor</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2392513">Pumpel</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=552620">railway</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3688124">Randomdude911</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2858327">rarumafeng</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=543194">razorice</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1143012">Renmaaru</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2072780">richterblack</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1419006">rigoletto12</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2351624">roj8667</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1218055">Rumbarozpór</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3943874">RyokaiOkai</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1891529">Saturnus</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2638327">Sehnsucht</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3444961">seppukuu</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3290835">Shildeo</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3486742">Shirou25</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=831358">SineRequie</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=587891">sotir</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2301992">SrFaper</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1677744">StalkerGER</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3311805">stielgranate12345</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1326450">swardoff</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3537396">SwordfishTyrant</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=660857">szejtan</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1308574">TctStrawberry</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3948209">TheGroocher</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3079801">thrownawayhero</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1188514">TimmaX</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2908207">toe31535</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2557164">tofu1</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1549385">togietogs</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1677031">UnKnownLG00</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1316727">unsolder@orescom.tk</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3779168">veutr542</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3667580">vevrk</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=348435">Waats</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1448676">williant112</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3043924">wodgey</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3557703">Wraiax</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2224850">WrathfulKnight</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3723063">xinkaizhong</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3073759">xXBelengheruXx</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3517734">XxCoolMan121</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3108933">xybeck</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1995403">Youpimatin</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2927261" style="color: #BF9F00;" class="username-coloured">Zoroxpai</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1058037">zxe21</a> and 318 guests</p></td>
+	</tr>
+	</table>
+
+
+<br clear="all" />
+	
+
+<table width="100%" cellspacing="1">
+<tr>
+	<td width="40%" valign="top" nowrap="nowrap" align="left"></td>
+	<td align="right">
+	<form method="post" name="jumpbox" action="./viewforum.php" onsubmit="if(document.jumpbox.f.value == -1){return false;}">
+
+	<table cellspacing="0" cellpadding="0" border="0">
+	<tr>
+		<td nowrap="nowrap"><span class="gensmall">Jump to:</span>&nbsp;<select name="f" onchange="if(this.options[this.selectedIndex].value != -1){ document.forms['jumpbox'].submit() }">
+
+		
+			<option value="-1">Select a forum</option>
+		<option value="-1">------------------</option>
+			<option value="26">Russian Forums (Форумы)</option>
+		
+			<option value="5">&nbsp; &nbsp;Новости</option>
+		
+			<option value="1">&nbsp; &nbsp;Общий форум</option>
+		
+			<option value="2">&nbsp; &nbsp;Counter Strike</option>
+		
+			<option value="3">&nbsp; &nbsp;Сервер cs.rin.ru</option>
+		
+			<option value="4">&nbsp; &nbsp;Книга жалоб</option>
+		
+			<option value="9">&nbsp; &nbsp;Читы и Читеры</option>
+		
+			<option value="6">&nbsp; &nbsp;Оффтопик</option>
+		
+			<option value="8">&nbsp; &nbsp;Чемпионат</option>
+		
+			<option value="11">&nbsp; &nbsp;Опросы</option>
+		
+			<option value="27">English Forums</option>
+		
+			<option value="10" selected="selected">&nbsp; &nbsp;Main Forum</option>
+		
+			<option value="29">&nbsp; &nbsp;&nbsp; &nbsp;Releases</option>
+		
+			<option value="32">&nbsp; &nbsp;&nbsp; &nbsp;Standalones</option>
+		
+			<option value="38">&nbsp; &nbsp;&nbsp; &nbsp;Other Gaming Platforms</option>
+		
+			<option value="41">&nbsp; &nbsp;&nbsp; &nbsp;Temporarily Restricted Topics</option>
+		
+			<option value="14">&nbsp; &nbsp;Off Topic</option>
+		
+			<option value="20">&nbsp; &nbsp;Developer Forum</option>
+		
+			<option value="22">&nbsp; &nbsp;Steam Content Sharing</option>
+		
+			<option value="19">&nbsp; &nbsp;Foreign Languages Forum</option>
+		
+			<option value="15">&nbsp; &nbsp;Archive</option>
+		
+			<option value="31">&nbsp; &nbsp;&nbsp; &nbsp;Ancient Threads</option>
+		
+			<option value="24">&nbsp; &nbsp;Junk</option>
+		
+
+		</select>&nbsp;<input class="btnlite" type="submit" value="Go" /></td>
+	</tr>
+	</table>
+
+	</form>
+</td>
+</tr>
+</table>
+<table width="100%" cellspacing="1">
+<tr>
+	<td align="right" valign="top" nowrap="nowrap"><span class="gensmall">You <strong>can</strong> post new topics in this forum<br />You <strong>can</strong> reply to topics in this forum<br />You <strong>can</strong> edit your posts in this forum<br />You <strong>cannot</strong> delete your posts in this forum<br />You <strong>cannot</strong> post attachments in this forum<br /></span></td>
+</tr>
+</table>
+<br clear="all" />
+
+
+</div>
+
+<div id="wrapfooter">
+    <br><br><br>
+	
+	<span class="copyright">Powered by <a href="https://www.phpbb.com/">phpBB</a>&reg; Forum Software &copy; phpBB Group
+	</span>
+	<br><br>
+</div>
+	
+		</td>
+	</tr>
+	<br>
+</table>
+	<br>
+</body>
+</html>

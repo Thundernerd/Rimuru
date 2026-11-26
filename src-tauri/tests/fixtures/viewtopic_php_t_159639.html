@@ -1,0 +1,1770 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-gb" xml:lang="en-gb">
+<head>
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta http-equiv="content-language" content="en-gb" />
+<meta http-equiv="content-style-type" content="text/css" />
+<meta http-equiv="imagetoolbar" content="no" />
+<meta name="resource-type" content="document" />
+<meta name="distribution" content="global" />
+<meta name="keywords" content="" />
+<meta name="description" content="Cracking Steam and coding Steam related tools and emulators since 2003. Get all Steam games you want and play them the way you want to - for free!" />
+<meta name="robots" content="noindex,nofollow" />
+
+<title>CS RIN - Steam Underground &bull; View topic - Slotbound</title>
+
+<link rel="alternate" type="application/atom+xml" title="Feed - CS RIN - Steam Underground" href="https://cs.rin.ru/forum/feed.php" /><link rel="alternate" type="application/atom+xml" title="Feed - All forums" href="https://cs.rin.ru/forum/feed.php?mode=forums" /><link rel="alternate" type="application/atom+xml" title="Feed - New Topics" href="https://cs.rin.ru/forum/feed.php?mode=topics" /><link rel="alternate" type="application/atom+xml" title="Feed - Active Topics" href="https://cs.rin.ru/forum/feed.php?mode=topics_active" /><link rel="alternate" type="application/atom+xml" title="Feed - Forum - Main Forum" href="https://cs.rin.ru/forum/feed.php?f=10" /><link rel="alternate" type="application/atom+xml" title="Feed - Topic - Slotbound" href="https://cs.rin.ru/forum/feed.php?f=10&amp;t=159639" />
+
+<link rel="stylesheet" href="./styles/rinDark/theme/stylesheet.css" type="text/css" />
+<!-- <script type="text/javascript" src="./mobiquo/tapatalkdetect.js"></script> -->
+<script type="text/javascript" src="./styles/subsilver2/template/forum_fn.js"></script>
+<!-- <script type="text/javascript" src="//yandex.st/share/share.js" charset="utf-8"></script>-->
+<script type="text/javascript">
+// <![CDATA[
+
+
+function popup(url, width, height, name)
+{
+	if (!name)
+	{
+		name = '_popup';
+	}
+
+	window.open(url.replace(/&amp;/g, '&'), name, 'height=' + height + ',resizable=yes,scrollbars=yes,width=' + width);
+	return false;
+}
+
+function jumpto()
+{
+	var page = prompt('Enter the page number you wish to go to:', '1');
+	var per_page = '15';
+	var base_url = './viewtopic.php?f=10&amp;t=159639';
+
+	if (page !== null && !isNaN(page) && page == Math.floor(page) && page > 0)
+	{
+		if (base_url.indexOf('?') == -1)
+		{
+			document.location.href = base_url + '?start=' + ((page - 1) * per_page);
+		}
+		else
+		{
+			document.location.href = base_url.replace(/&amp;/g, '&') + '&start=' + ((page - 1) * per_page);
+		}
+	}
+}
+
+/**
+* Find a member
+*/
+function find_username(url)
+{
+	popup(url, 760, 570, '_usersearch');
+	return false;
+}
+
+/**
+* Mark/unmark checklist
+* id = ID of parent container, name = name prefix, state = state [true/false]
+*/
+function marklist(id, name, state)
+{
+	var parent = document.getElementById(id);
+	if (!parent)
+	{
+		eval('parent = document.' + id);
+	}
+
+	if (!parent)
+	{
+		return;
+	}
+
+	var rb = parent.getElementsByTagName('input');
+	
+	for (var r = 0; r < rb.length; r++)
+	{
+		if (rb[r].name.substr(0, name.length) == name)
+		{
+			rb[r].checked = state;
+		}
+	}
+}
+
+
+
+	/**
+	* Play quicktime file by determining it's width/height
+	* from the displayed rectangle area
+	*
+	* Only defined if there is a file block present.
+	*/
+	function play_qt_file(obj)
+	{
+		var rectangle = obj.GetRectangle();
+
+		if (rectangle)
+		{
+			rectangle = rectangle.split(',')
+			var x1 = parseInt(rectangle[0]);
+			var x2 = parseInt(rectangle[2]);
+			var y1 = parseInt(rectangle[1]);
+			var y2 = parseInt(rectangle[3]);
+
+			var width = (x1 < 0) ? (x1 * -1) + x2 : x2 - x1;
+			var height = (y1 < 0) ? (y1 * -1) + y2 : y2 - y1;
+		}
+		else
+		{
+			var width = 200;
+			var height = 0;
+		}
+
+		obj.width = width;
+		obj.height = height + 16;
+
+		obj.SetControllerVisible(true);
+
+		obj.Play();
+	}
+
+
+// ]]>
+
+// RIN donation overlay
+//subsilver2
+window.onload = onloadFunction;
+//proSilver
+if (!(typeof onload_functions === 'undefined')) {
+	onload_functions.push('onloadFunction();');
+} 
+
+function overlayconfirm() {
+  document.getElementById("overlay").style.display = "none";
+  document.cookie = "csrin_overlay=0; path=/forum; max-age=31536000";
+}
+
+function onloadFunction()
+{
+    // RIN donation overlay
+    // if cookie NOT set, display
+    var decodedCookie = decodeURIComponent(document.cookie);
+    if (decodedCookie.search("csrin_overlay=0") === -1)
+    {
+        //document.getElementById("overlay").style.display = "block";
+    }
+}
+
+// RIN: load page in the background
+function loadAsync(page, returnTarget, returnText, returnClass) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onload = () => {
+        if (xhttp.readyState === XMLHttpRequest.DONE) {
+            if (xhttp.status === 200) {
+                console.log("yay");
+                var successText = document.createElement("span");
+                successText.innerHTML = returnText;
+                successText.className = returnClass;
+                returnTarget.replaceWith(successText);
+            } else {
+                console.error(xhttp.statusText);
+            }
+        }
+    };
+    xhttp.open("GET", page, true);
+    xhttp.send();
+}
+
+// RIN image resizer
+function resizeimg(img)
+{
+    if (img.style.maxHeight == 'none')
+        img.style.maxHeight = '250px';
+    else
+        img.style.maxHeight = 'none';
+}
+</script>
+
+<!-- Malicious filehosts -->
+<script type="text/javascript">
+function reveal_unsafe(e) {
+  e.style.display = "none";
+  e.parentElement.getElementsByClassName('link_unsafe')[0].style.display = "inline";
+}
+</script>
+<style></style>
+<style>
+.link_unsafe_overlay {
+  --warning-color: red;
+  border-style:dashed;
+  border-color: var(--warning-color);
+  border-width: thin;
+  width: fit-content;
+  display: inline-block;
+  color: var(--warning-color);
+}
+
+.link_unsafe_overlay2 {
+  --warning-color: orange;
+  border-style:dashed;
+  border-color: var(--warning-color);
+  border-width: thin;
+  width: fit-content;
+  display: inline-block;
+  color: var(--warning-color);
+}
+
+.link_unsafe_reveal {
+  cursor: pointer;
+  color: #AAAAAA;
+}
+
+.link_unsafe {
+  display: none;
+}
+
+.link_unsafe_note {
+  font-size: 0.8em;
+  vertical-align: super;
+  position: relative;
+}
+
+.tooltip {
+  border-bottom: 1px dotted green;
+  color: green;
+  cursor: pointer;
+}
+
+.tooltiptext {
+  visibility: hidden;
+  font-size: 1.3em;
+  width: 22em;
+  color: var(--warning-color);
+  background-color: black;
+  text-align: center;
+  padding: 0.5em 0.5em;
+  border-radius: 6px;
+  position: absolute;
+  cursor: default;
+  z-index: 1;
+  top: 100%;
+  left: -13em;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+</style>
+
+<!-- Donation overlay --><!-- duplicated here because of caching issues -->
+<style>
+#overlay {
+  position: fixed;
+  width: 40%;
+  height: 40%;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%; 
+  right: 0;
+  bottom: 0;
+  min-width: 300px;
+  min-height: 300px;
+  background-color: rgba(0,0,0,0.9);
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  border: 1px solid #777777;
+  display: none;
+}
+
+#overlaytext {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  font-size: 1.2em;
+  color: white;
+  transform: translate(-5%,-5%);
+  -ms-transform: translate(-5%,-5%);
+}
+
+#overlayconfirmbtn {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  bottom: 0px;
+  font-size: 1.2em;
+  padding: 1px 5px;
+}
+</style>
+<!-- RIN: image resize and page stretch fix -->
+<style>
+.postbody img,
+.postbody ~ table img {
+  max-width: 95%;
+  max-height: 250px;
+}
+</style>
+
+</head>
+<body class="ltr">
+
+<!-- Donation overlay -->
+<div id="overlay">
+  <div id="overlaytext">
+  <p align="center">We need your help!</p>
+  <br /><br />
+  <p>For 17 years, this forum has served us as a platform for sharing games with each other, graciously hosted by the owner of RIN for all this time. Sadly, he can no longer afford our server.</p>
+  <br /><br />
+  <p>To keep this forum alive, we need your help with covering the hosting expenses.</p>
+  <br /><br />
+  <p>For more information, click <a href="../donate" target="_blank" onclick="overlayconfirm()">here</a>.</p>
+  
+  </div>
+  <a id="overlayconfirmbtn" onclick="overlayconfirm()" href="javascript:overlayconfirm();">Close</a>
+</div>
+
+<table align="center" width="100%" class="bodyline">
+	<tr>
+		<td>
+<a name="top"></a>		
+<div id="wrapheader">
+
+	<div id="logodesc">
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td><a href="./index.php"><img src="./styles/rinDark/imageset/site_logo-1.png" alt="Logo" title="Logo" /></a></td>
+			<td width="100%" align="center"><h1>CS RIN - Steam Underground</h1><span class="gen">cs.rin.ru | csrin.org | The password is usually one of these.</span></td>
+		</tr>
+		</table>
+	</div>
+
+	<div id="menubar">
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				<a href="./viewtopic.php?f=10&amp;t=44034"><img src="./styles/rinDark/theme/images/icon_mini_rules.gif" width="14" height="14" alt="*" /> Forum rules</a>
+                &nbsp;:: &nbsp;<a href="../donate"><img src="./styles/rinDark/theme/images/icon_donate.gif" width="14" height="14" alt="*" /> Donate</a>
+			</td>
+			<td class="genmed" align="right">
+                <a href="chat.php"><img src="./styles/rinDark/theme/images/icon_mini_irc.gif" width="14" height="14" alt="*" /> Chat</a>
+				&nbsp;:: &nbsp;<a href="./viewtopic.php?f=10&amp;t=98158"><img src="./styles/rinDark/theme/images/icon_mini_faq.gif" width="12" height="13" alt="*" /> FAQ</a><!--<sup style="color:#FF0000;"> new!</sup>-->
+				&nbsp;:: &nbsp;<a href="./memberlist.php"><img src="./styles/rinDark/theme/images/icon_mini_members.gif" width="12" height="13" alt="*" /> Members</a>
+			</td>
+		</tr>
+		</table>
+		<br>
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				 <a href="./ucp.php"><img src="./styles/rinDark/theme/images/icon_mini_profile.gif" width="12" height="13" alt="*" /> User Control Panel</a> &nbsp;:: &nbsp;<a href="./ucp.php?i=pm&amp;folder=inbox"><img src="./styles/rinDark/theme/images/icon_mini_message.gif" width="12" height="13" alt="*" /> <strong>0</strong> new messages</a>
+			</td>
+			<td class="genmed" align="right">
+				<a href="./search.php"><img src="./styles/rinDark/theme/images/icon_mini_search.gif" width="12" height="13" alt="*" /> Search</a>
+                        &nbsp;:: &nbsp;<a href="./ucp.php?mode=logout&amp;sid=00000000000000000000000000000000"><img src="./styles/rinDark/theme/images/icon_mini_login.gif" width="12" height="13" alt="*" /> Logout [ TestUser ]</a>
+				
+			</td>
+		</tr>
+		</table>
+		
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				
+			</td>
+		</tr>
+		</table>
+	</div>
+
+	<div id="datebar">
+		<table width="100%" cellspacing="0">
+			<td class="gensmall">Last visit was: Yesterday, 12:26</td>
+            
+			<td class="gensmall" align="right">It is currently Thursday, 26 Nov 2026, 14:06<br /></td>
+		</tr>
+		</table>
+	</div>
+
+	<div>
+		<table width="100%" cellspacing="0">
+		<br>
+		<tr>
+			<td class="genmed" align="right"></td>
+		</tr>
+		</table>
+</div>
+</div>
+
+<div id="wrapcentre">
+
+	
+	<p class="searchbar">
+		<span style="float: left;"><a href="./search.php?search_id=unanswered">View unanswered posts</a> | <a href="./search.php?search_id=active_topics">View active topics</a></span>
+		
+		<span style="float: right;"><a href="./search.php?search_id=unreadposts">View unread posts</a> | <a href="./search.php?search_id=newposts">View new posts</a> | <a href="./search.php?search_id=egosearch">View your posts</a></span>
+		
+	</p>
+	
+
+	<br style="clear: both;" />
+
+	<table class="tablebg" width="100%" cellspacing="1" cellpadding="0" style="margin-top: 5px;">
+	<tr>
+		<td class="row5">
+			<p class="breadcrumbs"><a class="breadcrumbs" href="./index.php">Board index</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=27">English Forums</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=10">Main Forum</a></p>
+			
+		<div id="search-box">
+			<form method="post" id="topic-search" action="./search.php">
+				<input class="inputbox search tiny"  type="text" name="keywords" id="search_keywords" size="22" value="Search this topic…" onclick="if(this.value=='Search this topic…')this.value='';" onblur="if(this.value=='')this.value='Search this topic…';" />
+				<input class="button1" type="submit" value="Search" />
+				<input type="hidden" value="159639" name="t" />
+				<input type="hidden" value="msgonly" name="sf" />
+				<input type="hidden" name="terms" value="any" />
+			</form>
+		</div>
+
+
+		</td>
+	</tr>
+	</table>
+
+	<br />
+
+<div id="pageheader">
+	<h2><a class="titles" href="./viewtopic.php?f=10&amp;t=159639"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Slotbound</a></h2>
+	<br>
+
+	<p class="gensmall"><b><a href="#" onclick="jumpto(); return false;" title="Click to jump to page…">Go to page</a> <strong>1</strong><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=159639&amp;start=15">2</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=159639&amp;start=30">3</a> &nbsp;<a href="./viewtopic.php?f=10&amp;t=159639&amp;start=15">Next</a></b></p>
+
+</div>
+
+<br clear="all" /><br />
+
+<div id="pagecontent">
+
+	<table width="100%" cellspacing="1">
+	<tr>
+		<td align="left" valign="middle" nowrap="nowrap">
+		<!--<a href="./posting.php?mode=post&amp;f=10"><img src="./styles/rinDark/imageset/en/button_topic_new.gif" alt="Post new topic" title="Post new topic" /></a>&nbsp;--><a href="./posting.php?mode=reply&amp;f=10&amp;t=159639"><img src="./styles/rinDark/imageset/en/button_topic_reply.gif" alt="Reply to topic" title="Reply to topic" /></a>
+		</td>
+		
+			<td class="nav" valign="middle" nowrap="nowrap">&nbsp;Page <strong>1</strong> of <strong>3</strong><br /></td>
+			<td class="gensmall" nowrap="nowrap">&nbsp;[ 35 posts ]&nbsp;</td>
+			<td class="gensmall" width="100%" align="right" nowrap="nowrap"></td>
+		
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr>
+		<td class="cat">
+			<table width="100%" cellspacing="0">
+			<tr>
+				<td class="nav" nowrap="nowrap">&nbsp;
+				<a href="./viewtopic.php?uid=2733823&amp;f=10&amp;t=159639&amp;watch=topic&amp;start=0&amp;hash=00000000" title="Subscribe topic">Subscribe topic</a> | <a href="./viewtopic.php?f=10&amp;t=159639&amp;bookmark=1&amp;hash=00000000" title="Bookmark topic">Bookmark topic</a> | <a href="./viewtopic.php?f=10&amp;t=159639&amp;view=print" title="Print view">Print view</a> | <a href="./memberlist.php?mode=email&amp;t=159639" title="E-mail friend">E-mail friend</a>
+				</td>
+				<td class="nav" align="right" nowrap="nowrap"><a href="./viewtopic.php?f=10&amp;t=159639&amp;view=previous">Previous topic</a> | <a href="./viewtopic.php?f=10&amp;t=159639&amp;view=unread#unread">First unread post</a> | <a href="./viewtopic.php?f=10&amp;t=159639&amp;view=next">Next topic</a>&nbsp;</td>
+			</tr>
+			</table>
+		</td>
+	</tr>
+
+	</table>
+
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	
+		<tr>
+			<th>Author</th>
+			<th>Message</th>
+		</tr>
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3540229"></a>
+				<b class="postauthor">pixieflitter</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3540229#p3540229"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Monday, 29 Jun 2026, 01:18&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3540229"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Monday, 16 Sep 2024, 00:38<br /><b>Posts:</b> 53
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4459590/560f439f789caa08634fbf9ff462c73bf06fbf41/header.jpg?t=1782633245" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br /><span style="color: #FF0000"><span style="font-size: 150%; line-height: normal"><span style="font-weight: bold">Slotbound</span></span></span><br /><br /><span style="color: #FF0000"><span style="font-weight: bold">Details</span></span><br /><span style="font-weight: bold">Store Page:</span> <a href="https://store.steampowered.com/app/4459590" class="postlink" rel="nofollow">https://store.steampowered.com/app/4459590</a><br /><span style="font-weight: bold">SteamDB Page:</span> <a href="https://steamdb.info/app/4459590" class="postlink" rel="nofollow">https://steamdb.info/app/4459590</a><br /><span style="font-weight: bold">Genre(s):</span> Indie, Strategy<br /><span style="font-weight: bold">Developer:</span> Optima Arch<br /><span style="font-weight: bold">Publisher:</span> Optima Arch<br /><span style="font-weight: bold">Release Date:</span> Coming soon<br /><span style="font-weight: bold">Language(s):</span> English, Korean, French, Italian, German, Spanish - Spain, Japanese, Russian, Simplified Chinese<br /><span style="font-weight: bold">Operating system(s):</span> <img width=26px height=16px src="https://cdn.akamai.steamstatic.com/store/icons/icon_platform_win.svg" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> <br /><br /><span style="color: #FF0000"><span style="font-weight: bold">Features</span></span><br /><ul><li><img width=26px height=16px src="https://store.akamai.steamstatic.com/public/images/v6/ico/ico_singlePlayer.png" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Single-player</li><li><img width=26px height=16px src="https://cs.rin.ru/forum/images/spacer.gif" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Custom Volume Controls</li><li><img width=26px height=16px src="https://cs.rin.ru/forum/images/spacer.gif" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Adjustable Difficulty</li><li><img width=26px height=16px src="https://cs.rin.ru/forum/images/spacer.gif" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Playable without Timed Input</li><li><img width=26px height=16px src="https://cs.rin.ru/forum/images/spacer.gif" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Save Anytime</li><li><img width=26px height=16px src="https://store.akamai.steamstatic.com/public/images/v6/ico/ico_familysharing.png" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Family Sharing</li></ul><br /><span style="color: #FF0000"><span style="font-weight: bold">About The Game</span></span><br />Master your luck or be consumed by it! Experience the ultimate fusion of explosive 3x3 slot machine jackpots and deep autobattler strategy. Pull the lever to summon units, trigger massive synergies, and crush endless waves of enemies. It's time to put your luck and intellect to the ultimate test!<br /><br /><br /><br /><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4459590/extras/25d3872b00e34ad729e39869ddf757e9.avif?t=1782633245" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br /><br /><br /><br /><span style="font-weight: bold">Pull the Lever! Say Goodbye to Ordinary Defense Games!</span><br /><br /><br /><br />Tired of the same old tower defense? We've injected pure dopamine into the very core of combat preparation. Spin the 3x3 slot machine, match the lines, and summon your units. Feeling unlucky? Don't panic. There's nothing quite like the thrill of a single, desperate spin triggering a massive jackpot, filling the screen and summoning a legendary Prism unit to save the day.<br /><br /><br /><br /><video src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4459590/extras/50559981a3edddd131ef91442bc577a1.webm?t=1782633245" style="max-width:500px;height:auto;" autoplay="" muted="" loop="" playsinline="" crossorigin="anonymous">
+Your browser does not support the video tag.
+</video><br /><br /><br /><br /><span style="font-weight: bold">Absorb, Evolve, and Reign Supreme</span><br /><br /><br /><br />There's no such thing as a useless unit on this battlefield. Weaker units are sacrificed to feed the strong, becoming their flesh and blood. Watch an ordinary 1-star Warrior ascend into a Paladin and finally awaken as the invincible 'Veil', or witness a basic Mage evolve into the dark-magic-wielding 'Necro Lord'. Your branching class choices will completely shift the tide of battle.<br /><br /><br /><br /><video src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4459590/extras/e0c8df06998e73a4eb06a409e4777e67.webm?t=1782633245" style="max-width:500px;height:auto;" autoplay="" muted="" loop="" playsinline="" crossorigin="anonymous">
+Your browser does not support the video tag.
+</video><br /><br /><br /><br /><span style="font-weight: bold">Infinite Synergies That Overpower Pure Luck</span><br /><br /><br /><br />This isn't just a mindless slot machine where you leave everything to chance. Every time a unit spawns, it rolls from dozens of 'Random Stats'. Combine these with unique unit 'Imprints', powerful Items, and game-changing Cores.<br /><br /><span style="font-style: italic">&quot;Massively increases jackpot odds after a failed spin.&quot;</span><br /><br /><span style="font-style: italic">&quot;Summons an additional unit upon 3 consecutive wins.&quot;</span><br /><br />Trigger explosive Core synergies through meticulous planning. Exploit system loopholes, bend RNG to your will, and become the master architect of your own victory.<br /><br /><br /><br /><video src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4459590/extras/dad5f2937e3429084c32dfd12bb3ebd4.webm?t=1782633245" style="max-width:500px;height:auto;" autoplay="" muted="" loop="" playsinline="" crossorigin="anonymous">
+Your browser does not support the video tag.
+</video><br /><br /><br /><br /><span style="font-weight: bold">Forge Your Own Destiny</span><br /><br /><br /><br />Will you play it safe, or risk your life for maximum profit? Are you ready? The gold is stacked. Now, it's time to pull the lever!<br /><br /><span style="color: #FF0000"><span style="font-weight: bold">System Requirements</span></span><br /><span style="font-weight: bold">Minimum:</span><br /><ul><li><span style="font-weight: bold">OS:</span> Windows 10 (64-bit)<br /></li><li><span style="font-weight: bold">Processor:</span> Intel Core i3-6100 / AMD Ryzen 3 1200<br /></li><li><span style="font-weight: bold">Memory:</span> 4 GB RAM<br /></li><li><span style="font-weight: bold">Graphics:</span> NVIDIA GTX 750 Ti / AMD Radeon HD 7850<br /></li><li><span style="font-weight: bold">DirectX:</span> Version 11<br /></li><li><span style="font-weight: bold">Network:</span> Broadband Internet connection<br /></li><li><span style="font-weight: bold">Storage:</span> 2 GB available space<br /></li><li><span style="font-weight: bold">Sound Card:</span> DirectX compatible<br /></li><li><span style="font-weight: bold">VR Support:</span> Not supported</li></ul><br /><span style="font-weight: bold">Recommended:</span><br /><ul><li><span style="font-weight: bold">OS:</span> Windows 10/11 (64-bit)<br /></li><li><span style="font-weight: bold">Processor:</span> Intel Core i5-8400 / AMD Ryzen 5 2600<br /></li><li><span style="font-weight: bold">Memory:</span> 8 GB RAM<br /></li><li><span style="font-weight: bold">Graphics:</span> NVIDIA GTX 1060 / AMD RX 580<br /></li><li><span style="font-weight: bold">DirectX:</span> Version 12<br /></li><li><span style="font-weight: bold">Network:</span> Broadband Internet connection<br /></li><li><span style="font-weight: bold">Storage:</span> 2 GB available space<br /></li><li><span style="font-weight: bold">Sound Card:</span> DirectX compatible<br /></li><li><span style="font-weight: bold">VR Support:</span> Not supported</li></ul></div>
+
+					
+						<div class="postbody"><br />_________________<br />D̸̗̮̣̩͛̔̍̅̾ͅȑ̸̤i̵͙̇̉̔̈́̊̚v̸̡͈͕̼̞͛̿͋̐̈́̕e̴͚̞̪̋͂͆ͅ ̴̡͖͙̍ẗ̷͉́͆͐̋͒͝ȟ̶̩̫̖̋̊̒ě̸̡̺̟̟͔̖ṃ̴̨̺̲̩̈́̑̈́͝ ̸̢̼͎̳̩̉b̸̲͈̳̈́̍̒̃̐ą̵̛͖̤̼̦͒́͛̿͐c̶̟̯͒k̴̨̛̠̘̭̦͍̐̎͌͝ ̸̢̧̙̥̲̩͛̾͝t̶̺̖͐ȏ̶̞ ̴̢̢̤̠̬̹̇d̷̝͜͝͠a̶̛̹͛̂̚r̶̮͙̣͔̕͜ķ̴̙̭̤̹̉ņ̵̟͈̎e̸̘͙͂͗̓̓͂͝s̷̨̛̺̠̟̮ş̶̯̺͖͍̲̍͛͆͐͑</div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=2910910"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3540229"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3540229"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p3624482"></a>
+				<b class="postauthor">pixieflitter</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3624482#p3624482"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Tuesday, 10 Nov 2026, 18:02&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3624482"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Monday, 16 Sep 2024, 00:38<br /><b>Posts:</b> 53
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Game is out</div>
+
+					
+						<div class="postbody"><br />_________________<br />D̸̗̮̣̩͛̔̍̅̾ͅȑ̸̤i̵͙̇̉̔̈́̊̚v̸̡͈͕̼̞͛̿͋̐̈́̕e̴͚̞̪̋͂͆ͅ ̴̡͖͙̍ẗ̷͉́͆͐̋͒͝ȟ̶̩̫̖̋̊̒ě̸̡̺̟̟͔̖ṃ̴̨̺̲̩̈́̑̈́͝ ̸̢̼͎̳̩̉b̸̲͈̳̈́̍̒̃̐ą̵̛͖̤̼̦͒́͛̿͐c̶̟̯͒k̴̨̛̠̘̭̦͍̐̎͌͝ ̸̢̧̙̥̲̩͛̾͝t̶̺̖͐ȏ̶̞ ̴̢̢̤̠̬̹̇d̷̝͜͝͠a̶̛̹͛̂̚r̶̮͙̣͔̕͜ķ̴̙̭̤̹̉ņ̵̟͈̎e̸̘͙͂͗̓̓͂͝s̷̨̛̺̠̟̮ş̶̯̺͖͍̲̍͛͆͐͑</div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=2910910"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3624482"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3624482"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3624865"></a>
+				<b class="postauthor">pretendme</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3624865#p3624865"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Wednesday, 11 Nov 2026, 07:40&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3624865"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Beginner   Без звания</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 23 Oct 2026, 15:09<br /><b>Posts:</b> 9
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><div class="quotetitle">pixieflitter wrote:</div><div class="quotecontent">Game is out</div><br />It hasn't been released yet, the delay is because it hasn't passed thru steam verification</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=3912644"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3624865"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3624865"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p3625232"></a>
+				<b class="postauthor">pixieflitter</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3625232#p3625232"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Wednesday, 11 Nov 2026, 19:22&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3625232"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Monday, 16 Sep 2024, 00:38<br /><b>Posts:</b> 53
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">I was going by the release date which was the same as dreadmoor, sorry for any confusion</div>
+
+					
+						<div class="postbody"><br />_________________<br />D̸̗̮̣̩͛̔̍̅̾ͅȑ̸̤i̵͙̇̉̔̈́̊̚v̸̡͈͕̼̞͛̿͋̐̈́̕e̴͚̞̪̋͂͆ͅ ̴̡͖͙̍ẗ̷͉́͆͐̋͒͝ȟ̶̩̫̖̋̊̒ě̸̡̺̟̟͔̖ṃ̴̨̺̲̩̈́̑̈́͝ ̸̢̼͎̳̩̉b̸̲͈̳̈́̍̒̃̐ą̵̛͖̤̼̦͒́͛̿͐c̶̟̯͒k̴̨̛̠̘̭̦͍̐̎͌͝ ̸̢̧̙̥̲̩͛̾͝t̶̺̖͐ȏ̶̞ ̴̢̢̤̠̬̹̇d̷̝͜͝͠a̶̛̹͛̂̚r̶̮͙̣͔̕͜ķ̴̙̭̤̹̉ņ̵̟͈̎e̸̘͙͂͗̓̓͂͝s̷̨̛̺̠̟̮ş̶̯̺͖͍̲̍͛͆͐͑</div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=2910910"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3625232"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3625232"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3626390"></a>
+				<b class="postauthor">kektin.com</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3626390#p3626390"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Friday, 13 Nov 2026, 13:57&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3626390"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Monday, 09 Nov 2026, 21:58<br /><b>Posts:</b> 134
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><span style="font-weight: bold"><span style="color: #35D6B2">Slotbound</span></span><br /><span style="font-weight: bold">Build 26643956 | 179.99 MB</span><br /><br /><span style="color: #00FF00"><span style="font-weight: bold">Pre-installed Windows PC release</span></span><br /><span style="font-weight: bold">Release:</span> Mr.Goldberg<br /><span style="font-weight: bold">Steam AppID:</span> 4459590<br />Ready to run after unpacking; no installer is required.<br /><br /><span style="font-weight: bold">Download links</span><br /><a href="https://kektin.com/slotbound-download/" class="postlink" rel="nofollow"><span style="font-weight: bold">Official Kektin.com Download</span></a> <span style="color: #00FF00">(No Ads)</span><br /><a href="https://fileditchhot.st/balpha47/6e755e0e42f2e5093da3/Slotbound%20Build%2026643956%20-%20kektin.com.zip" class="postlink zip-link" rel="nofollow"><span style="font-weight: bold">FileDitch Mirror</span></a></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=3932434"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3626390"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3626390"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p3626409"></a>
+				<b class="postauthor">Darty17</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3626409#p3626409"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Friday, 13 Nov 2026, 14:20&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3626409"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Beginner   Без звания</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Tuesday, 12 Feb 2019, 22:26<br /><b>Posts:</b> 8
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Edit: Sniped.</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=958128"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3626409"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3626409"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3626416"></a>
+				<b class="postauthor">noquer</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3626416#p3626416"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Friday, 13 Nov 2026, 14:23&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3626416"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Beginner   Без звания</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=650431_1764255040.png" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Wednesday, 14 Dec 2016, 10:54<br /><b>Posts:</b> 8<br /><b>Location:</b> Darkside of the moon
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><div class="quotetitle">kektin.com wrote:</div><div class="quotecontent"><span style="font-weight: bold"><span style="color: #35D6B2">Slotbound</span></span><br /></div><br /><br />Thank you. I'm getting this error when I start the .exe.</div>
+
+					
+						<br clear="all" /><br />
+
+						<table class="tablebg" width="100%" cellspacing="1">
+						<tr>
+							<td class="row3"><b class="genmed">Attachments: </b></td>
+						</tr>
+						
+							<tr>
+								<td class="row2">
+			<img src="./download/file.php?id=197996" alt="Screenshot 2026-11-13 142044.png" onclick="resizeimg(this)" title="Click to resize" /><br />
+			<span class="gensmall">Screenshot 2026-11-13 142044.png [ 19.75 KiB | Viewed 3171 times ]</span>
+		
+
+		<br />
+	</td>
+							</tr>
+						
+						</table>
+					
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=650431"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3626416"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3626416"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p3626541"></a>
+				<b class="postauthor">Bongbonger</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3626541#p3626541"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Friday, 13 Nov 2026, 17:37&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3626541"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=3442363_1785350587.png" width="110" height="87" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 17 Oct 2025, 19:39<br /><b>Posts:</b> 148
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><div class="quotetitle">noquer wrote:</div><div class="quotecontent">... getting this error...</div><br /><br />Same here</div>
+
+					
+						<div class="postbody"><br />_________________<br /><span style="font-size: 85%; line-height: normal">I don't have any accounts with file-hosting services, <span style="font-weight: bold"><span style="color: #00BFFF">so my files probably won't be available for long</span></span>!</span><br /><br /><span style="font-size: 85%; line-height: normal">Thanks to <span style="color: #00BF40">Valentine</span> for SSP, <span style="color: #FFBF00">ARMGDDNGames</span> for the autocracker and rejet25984 for Steam Game Automatic Cracker.</span></div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=3442363"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3626541"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3626541"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3626548"></a>
+				<b class="postauthor" style="color: #BF9F00">userunicode</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3626548#p3626548"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Friday, 13 Nov 2026, 17:50&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3626548"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Donor &lt;3</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=2851151_1793672168.png" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Wednesday, 31 Jul 2024, 11:57<br /><b>Posts:</b> 525<br /><b>Location:</b> backrooms
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4459590/d64e41eb0453bee4446e8b7613054f88fe7afa77/capsule_231x87.jpg" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><span style="font-weight: bold">Slotbound <span style="color: #00FF00">(Clean Steam Files)</span></span><br /><span style="font-size: 90%; line-height: normal"><span style="font-weight: bold">Version:</span> <span style="font-style: italic">16 November 2026 - 15:09:17</span> UTC <span style="font-weight: bold">[ Build <span style="color: #FFFFFF">26735285</span> ]</span></span><br /><br /><a href="https://gofile.io/d/GROz2x3u" class="postlink" rel="nofollow"><span style="color: #00FF00">Gofile</span></a> | <a href="https://vikingfile.com/f/cezIuTASrD" class="postlink" rel="nofollow"><span style="color: #00FF00">VikingFile</span></a></div>
+
+					
+						<br clear="all" /><br />
+
+						<table class="tablebg" width="100%" cellspacing="1">
+						<tr>
+							<td class="row3"><b class="genmed">Attachments: </b></td>
+						</tr>
+						
+							<tr>
+								<td class="row2">
+			<img src="./download/file.php?id=198005" alt="image.png" onclick="resizeimg(this)" title="Click to resize" /><br />
+			<span class="gensmall">image.png [ 1.74 MiB | Viewed 3023 times ]</span>
+		
+
+		<br />
+	</td>
+							</tr>
+						
+						</table>
+					
+						<div class="postbody"><br />_________________<br />Only <span style="color: #00FF00">CSF</span><br /><br />Make your own cracks with latest <a href="https://github.com/Detanup01/gbe_fork" class="postlink" rel="nofollow"><span style="font-weight: bold">gbe fork</span></a><br />or use automated tools such as <a href="https://cs.rin.ru/forum/viewtopic.php?f=20&amp;t=159883" class="postlink" rel="nofollow"><span style="font-weight: bold"><span style="color: #FF0040">R</span><span style="color: #00FF00">A</span><span style="color: #0040FF">C</span></span></a> <span style="font-weight: bold">|</span> <a href="https://cs.rin.ru/forum/viewtopic.php?f=29&amp;t=120610" class="postlink" rel="nofollow"><span style="font-weight: bold"><span style="color: #FF0040">S</span><span style="color: #00FF00">A</span><span style="color: #0040FF">C</span></span></a> <span style="font-weight: bold">|</span> <a href="https://cs.rin.ru/forum/viewtopic.php?p=3563726#p3563726" class="postlink" rel="nofollow"><span style="font-weight: bold"><span style="color: #FF0040">C</span><span style="color: #00FF00">A</span><span style="color: #0040FF">C</span></span></a><br />The password is always <span style="color: #FFFFFF">cs.rin.ru</span><br />If any links stop working or a CSF needs to be updated, send me a <span style="color: #FF0000"><span style="font-weight: bold">PM</span></span>.<br /><br /><span style="color: #FFFF00">Veni, vidi, vici</span><br /><br /><span style="color: #00FFFF">If Buying Isn't Owning, Then Pirating Isn't Stealing</span></div>
+					
+							<br /><br />
+							<span class="gensmall">Last edited by <a href="./memberlist.php?mode=viewprofile&amp;u=2851151" style="color: #BF9F00;" class="username-coloured">userunicode</a> on Tuesday, 17 Nov 2026, 17:34, edited 5 times in total.</span>
+						
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=2851151"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3626548"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3626548"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p3626590"></a>
+				<b class="postauthor">Bongbonger</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3626590#p3626590"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Friday, 13 Nov 2026, 18:43&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3626590"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=3442363_1785350587.png" width="110" height="87" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 17 Oct 2025, 19:39<br /><b>Posts:</b> 148
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><div class="quotetitle">userunicode wrote:</div><div class="quotecontent"><span style="font-weight: bold">Slotbound <span style="color: #00FF00">(Clean Steam Files)</span></span><br /></div><br /><br />Thank you very much.<br /><span style="font-weight: bold">The same error occurs with GBE but it works fine with CCL.</span></div>
+
+					
+						<div class="postbody"><br />_________________<br /><span style="font-size: 85%; line-height: normal">I don't have any accounts with file-hosting services, <span style="font-weight: bold"><span style="color: #00BFFF">so my files probably won't be available for long</span></span>!</span><br /><br /><span style="font-size: 85%; line-height: normal">Thanks to <span style="color: #00BF40">Valentine</span> for SSP, <span style="color: #FFBF00">ARMGDDNGames</span> for the autocracker and rejet25984 for Steam Game Automatic Cracker.</span></div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=3442363"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3626590"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3626590"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3626905"></a>
+				<b class="postauthor">nighterzs</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3626905#p3626905"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Saturday, 14 Nov 2026, 03:07&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3626905"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">User Редкий гость</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Monday, 04 Feb 2019, 11:18<br /><b>Posts:</b> 48
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><div class="quotetitle">Bongbonger wrote:</div><div class="quotecontent"><div class="quotetitle">userunicode wrote:</div><div class="quotecontent"><span style="font-weight: bold">Slotbound <span style="color: #00FF00">(Clean Steam Files)</span></span><br /></div><br /><br />Thank you very much.<br /><span style="font-weight: bold">The same error occurs with GBE but it works fine with CCL.</span></div><br /><br />are you able to share your file? i can't seem to get it work still.</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=954357"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3626905"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3626905"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p3626992"></a>
+				<b class="postauthor">pretendme</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3626992#p3626992"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Saturday, 14 Nov 2026, 08:51&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3626992"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Beginner   Без звания</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 23 Oct 2026, 15:09<br /><b>Posts:</b> 9
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Slotbound (Clean Steam Files)<br />Version: 1.0.0.4<br />SteamDB Build: <a href="https://steamdb.info/patchnotes/26651617" class="postlink" rel="nofollow">26651617</a><br /><br /><!-- m --><a class="postlink" href="https://gofile.io/d/N4i4jTa5" rel="nofollow">https://gofile.io/d/N4i4jTa5</a><!-- m --><br /><!-- m --><a class="postlink" href="https://vikingfile.com/f/uWUndTJ8qk" rel="nofollow">https://vikingfile.com/f/uWUndTJ8qk</a><!-- m --></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=3912644"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3626992"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3626992"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3627087"></a>
+				<b class="postauthor">DicDale</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3627087#p3627087"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Saturday, 14 Nov 2026, 13:08&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3627087"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">I live here Три раза сломал клаву :)</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=2862009_1723401164.jpg" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					
+						<b>Warnings:</b> 
+						<strong style="color:#FFBF00;">1/3</strong><br /><b>Joined:</b> Thursday, 08 Aug 2024, 14:28<br /><b>Posts:</b> 9195
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><span style="font-size: 100%; line-height: normal"><span style="color: #4080FF"><span style="font-weight: bold">Slotbound (v1.0.0.6 | Build 26665715) (149 MB)</span></span></span><br />~Pre-Installed, Download, extract, Play  <img src="./images/smilies/wink.gif" alt=";;)" title="wink" /><br />Based on CSF &amp; Goldberg.<br />-Run: Find Launcher.exe inside the folder and run it.<br /><br /><span style="color: #00CED1"><span style="font-size: 150%; line-height: normal"><span style="font-weight: bold">​​⏬Game Download Links</span></span></span><br /><span style="color: #FFFFFF"><span style="font-weight: bold">Download: </span></span><span class="link_unsafe_overlay2"><a class="postlink link_unsafe_reveal" onclick="return reveal_unsafe(this);">zeigames.com link</a><span class="link_unsafe"><a href="https://zeigames.com/topic/12532-slotbound-free-download-v1006/" class="postlink"><span style="font-weight: bold"><span style="color: #00FF00">ALL Links - ZeiGames</span></span></a></span> ⚠   <span class="link_unsafe_note">Unsafe filehosts - <span class="tooltip">[READ ME] <span class="tooltiptext">This site may link to filehosts that show fake download pages with malware.<br />Learn how to stay safe <a class="postlink" href="/forum/viewtopic.php?f=14&t=159345">here</a>.</span></span></span></span><br /><a href="https://filesyard.com/f/8AF5yWHZjU" class="postlink" rel="nofollow"><span style="font-weight: bold"><span style="color: #00FF00">Filesyard</span></span></a><br /><span style="font-style: italic">-If the direct link doesn't work or is too slow, click on the All Links and download from other download servers.</span></div>
+
+					
+						<div class="postbody"><br />_________________<br />Site:<span style="font-weight: bold">★ZeiGames.com★</span><br />Discord: <a href="https://discord.gg/6KWStFYSTj" class="postlink" rel="nofollow"><span style="color: #8080FF"><span style="font-weight: bold">ZeiGames Discord</a></span></span><br />if you want a game update or add you can send me a request on Zei.<br /><br />Trusted by <span style="font-weight: bold"><a href="https://fmhy.net/gamingpiracyguide#download-games" class="postlink" rel="nofollow"><span style="color: #FF0040"><span style="font-size: 110%; line-height: normal">FMHY</span></span></a></span>, <span style="font-weight: bold"><a href="https://www.reddit.com/r/Piracy/wiki/megathread/games/#wiki_.1F517_rexa_games" class="postlink" rel="nofollow"><span style="font-size: 110%; line-height: normal"><span style="color: #FF80BF">r/Piracy</span></span></span></a>.</div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=2862009"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3627087"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3627087"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p3627411"></a>
+				<b class="postauthor">Not_Exist</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3627411#p3627411"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Saturday, 14 Nov 2026, 22:12&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3627411"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Beginner   Без звания</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=3705667_1794399553.gif" width="100" height="100" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 15 May 2026, 15:17<br /><b>Posts:</b> 16<br /><b>Location:</b> Russia
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><div class="quotetitle">noquer wrote:</div><div class="quotecontent"><div class="quotetitle">kektin.com wrote:</div><div class="quotecontent"><span style="font-weight: bold"><span style="color: #35D6B2">Slotbound</span></span><br /></div><br /><br />Thank you. I'm getting this error when I start the .exe.</div><br />Slotbound uses a custom native loader that verifies runtime DLLs by file size and SHA-256. It also derives the DAT master key from the EXE’s own SHA-256, embedded constants, and DAT header data. Simply replacing steam_api64.dll with an emulator won’t work: the DLL integrity check rejects it. <br />U need to patch exe or use custom loader</div>
+
+					
+						<div class="postbody"><br />_________________<br /><span style="font-weight: bold"><span style="font-style: italic">The internet was built to share, not to ask permission.</span></span><br />Also active as a game releaser on <a href="https://rutracker.net/forum/profile.php?mode=viewprofile&amp;u=47747168" class="postlink" rel="nofollow">RuTracker</a> under the same nickname.</div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=3705667"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3627411"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3627411"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3627424"></a>
+				<b class="postauthor" style="color: #BF9F00">userunicode</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3627424#p3627424"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Slotbound&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Saturday, 14 Nov 2026, 22:35&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3627424"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Donor &lt;3</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=2851151_1793672168.png" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Wednesday, 31 Jul 2024, 11:57<br /><b>Posts:</b> 525<br /><b>Location:</b> backrooms
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">updated to build 26666405 <!-- l --><a class="postlink-local postlink" href="https://cs.rin.ru/forum/viewtopic.php?p=3626548#p3626548" rel="nofollow">viewtopic.php?p=3626548#p3626548</a><!-- l --></div>
+
+					
+						<div class="postbody"><br />_________________<br />Only <span style="color: #00FF00">CSF</span><br /><br />Make your own cracks with latest <a href="https://github.com/Detanup01/gbe_fork" class="postlink" rel="nofollow"><span style="font-weight: bold">gbe fork</span></a><br />or use automated tools such as <a href="https://cs.rin.ru/forum/viewtopic.php?f=20&amp;t=159883" class="postlink" rel="nofollow"><span style="font-weight: bold"><span style="color: #FF0040">R</span><span style="color: #00FF00">A</span><span style="color: #0040FF">C</span></span></a> <span style="font-weight: bold">|</span> <a href="https://cs.rin.ru/forum/viewtopic.php?f=29&amp;t=120610" class="postlink" rel="nofollow"><span style="font-weight: bold"><span style="color: #FF0040">S</span><span style="color: #00FF00">A</span><span style="color: #0040FF">C</span></span></a> <span style="font-weight: bold">|</span> <a href="https://cs.rin.ru/forum/viewtopic.php?p=3563726#p3563726" class="postlink" rel="nofollow"><span style="font-weight: bold"><span style="color: #FF0040">C</span><span style="color: #00FF00">A</span><span style="color: #0040FF">C</span></span></a><br />The password is always <span style="color: #FFFFFF">cs.rin.ru</span><br />If any links stop working or a CSF needs to be updated, send me a <span style="color: #FF0000"><span style="font-weight: bold">PM</span></span>.<br /><br /><span style="color: #FFFF00">Veni, vidi, vici</span><br /><br /><span style="color: #00FFFF">If Buying Isn't Owning, Then Pirating Isn't Stealing</span></div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=2851151"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3627424"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3627424"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table width="100%" cellspacing="1" class="tablebg">
+	<tr align="center">
+		<td class="cat">
+		
+		<div id="search-box_thread">
+			<form method="post" id="topic-search" action="./search.php">
+				<input class="inputbox search tiny"  type="text" name="keywords" id="search_keywords" size="22" value="Search this topic…" onclick="if(this.value=='Search this topic…')this.value='';" onblur="if(this.value=='')this.value='Search this topic…';" />
+				<input class="button1" type="submit" value="Search" />
+				<input type="hidden" value="159639" name="t" />
+				<input type="hidden" value="msgonly" name="sf" />
+			</form>
+		</div>
+		
+		<form name="viewtopic" method="post" action="./viewtopic.php?f=10&amp;t=159639"><span class="gensmall">Display posts from previous:</span> <select name="st" id="st"><option value="0" selected="selected">All posts</option><option value="1">1 day</option><option value="7">7 days</option><option value="14">2 weeks</option><option value="30">1 month</option><option value="90">3 months</option><option value="180">6 months</option><option value="365">1 year</option></select>&nbsp;<span class="gensmall">Sort by</span> <select name="sk" id="sk"><option value="a">Author</option><option value="t" selected="selected">Post time</option><option value="s">Subject</option></select> <select name="sd" id="sd"><option value="a" selected="selected">Ascending</option><option value="d">Descending</option></select>&nbsp;<input class="btnlite" type="submit" value="Go" name="sort" /></form></td>
+	</tr>
+	</table>
+	
+
+	<table width="100%" cellspacing="1">
+	<tr>
+		<td align="left" valign="middle" nowrap="nowrap">
+		<!--<a href="./posting.php?mode=post&amp;f=10"><img src="./styles/rinDark/imageset/en/button_topic_new.gif" alt="Post new topic" title="Post new topic" /></a>&nbsp;--><a href="./posting.php?mode=reply&amp;f=10&amp;t=159639"><img src="./styles/rinDark/imageset/en/button_topic_reply.gif" alt="Reply to topic" title="Reply to topic" /></a>
+		</td>
+		
+			<td class="nav" valign="middle" nowrap="nowrap">&nbsp;Page <strong>1</strong> of <strong>3</strong><br /></td>
+			<td class="gensmall" nowrap="nowrap">&nbsp;[ 35 posts ]&nbsp;</td>
+			<td class="gensmall" width="100%" align="right" nowrap="nowrap"><b><a href="#" onclick="jumpto(); return false;" title="Click to jump to page…">Go to page</a> <strong>1</strong><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=159639&amp;start=15">2</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=159639&amp;start=30">3</a> &nbsp;<a href="./viewtopic.php?f=10&amp;t=159639&amp;start=15">Next</a></b></td>
+		
+	</tr>
+	</table>
+
+</div>
+
+<div id="pagefooter"></div>
+
+<br clear="all" />
+<table class="tablebg" width="100%" cellspacing="1" cellpadding="0" style="margin-top: 5px;">
+	<tr>
+		<td class="row5">
+			<p class="breadcrumbs"><a class="breadcrumbs" href="./index.php">Board index</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=27">English Forums</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=10">Main Forum</a></p>
+			
+		<div id="search-box">
+			<form method="post" id="topic-search" action="./search.php">
+				<input class="inputbox search tiny"  type="text" name="keywords" id="search_keywords" size="22" value="Search this topic…" onclick="if(this.value=='Search this topic…')this.value='';" onblur="if(this.value=='')this.value='Search this topic…';" />
+				<input class="button1" type="submit" value="Search" />
+				<input type="hidden" value="159639" name="t" />
+				<input type="hidden" value="msgonly" name="sf" />
+				<input type="hidden" name="terms" value="any" />
+			</form>
+		</div>
+
+
+		</td>
+	</tr>
+	</table>
+	<br clear="all" />
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr>
+		<td class="cat"><h4>Who is online</h4></td>
+	</tr>
+	<tr>
+		<td class="row1"><p class="gensmall">Users browsing this forum: <a href="./memberlist.php?mode=viewprofile&amp;u=2771857">0xMRocon</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3808486">a164372217</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2845580">Acoustic_ace</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2741559">alansyah</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3800248">aleix.mimi</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=658288">angel60</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2752134">Antsa</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2822720">Aquaris</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1446311">Artx</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2406068">asmodeus01</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3917660">Autapomorph</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2178367">bakasol9</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3450478">bataanaraa</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2053622">BlixedDevan</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=961473">bond1999</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3353588">BYMER_STK</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=595332">caparasdjc</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3947217">centarsirius</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=627322">CIKOMELANTIK</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=745180">colors1237</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1062173">cristialex01</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3429119">Crow281</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2121056">cynder_66</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=649871">Daimon</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2803795">DanteTheAshura</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=492472">darkzonez</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=600758">Debera</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1551143" style="color: #BF9F00;" class="username-coloured">democefepime</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3507683">Desertfox99</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1006633">djelinek</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1078423">dobon</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3872510">drego26</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2931819">ellienokami</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3918737">ErDerpino</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1052708">EsperDen</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3548156">Falebin</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3913054">FaLLen0</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=737923">flight2727</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=731480">foks888</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3008827">freg13T07</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1221055">fura89</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1194194">gdach</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1609403">gosvoh</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3947640">Gridchaser</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=605370">gubruikertje</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1110011">Gunnm</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2410964">helb</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3674925">hitmanman69</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2526820">huan2345</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2617259">icanhazit1</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1573702">iknowiamsosmart</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2606790">ilia_x</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=928929">ilikeblue</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2386462">infiniteflow24</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3084236">Iputinthewrongmail</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1776433">jackshinobi21</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=921768">Jiant16</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1202102">jonasfan</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1295472">Jotiwis</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3401223">K33ply</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=575632">kaseya14</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3443855">kennethvaph</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2382887">kermt</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=459491">kevni12</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1741170">kfc1988</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2104486">khalideth</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3812123">kratomguy27</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=814947">kura</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2068821">LagZy1</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2096765">Lci.Gaming89</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2466369">Legend38</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=721239">Likulau</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3257316">LordOfLordran</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=745744">lordsamuel45</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=653018">manessa</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=537812">Maou</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2894306">Marcopol0</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1475141">Mauzimauz</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1106587">melesant</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3824154">mikehacker182</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2270454">mio2023</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=592119">Mongoon</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1309721">MorallyAmbiguous</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3431793">Mortimeyer</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2473201">Mrkrabbis</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=605397">Murat_Pasaoglu</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=568001">Nanashi28</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3453254">nihilistowner</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3588342">noein-noir</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3705667">Not_Exist</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3708586">Nuk111e</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3321013">ogi</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3639902">OmarX551</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=594300">Pawlo26</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=795382">Pekhin23</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3875536">perlit8995</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=642566">Phiraxis</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1845894">Pink1126</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3868842">polylysine</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2674615">Pouettejrrr</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3948203">pr3haps</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3678442">psnerik72</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3025961">psychic6</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2883426">quintuple</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3459119">RamblingBearGuy</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3153836">RandoJf121</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3910727">RAWexe</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2393865">rawri</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=511117">Rebby</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1186303">Resjan</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1226698">RoopsDoo</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1898215">sanagas</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=777401">saosinfangirl04</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3769882">SausageFarmer1973</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2505850">scionarbor</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2550383">scop4224</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1644002">seuqled</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1125879">shakevaniliowy</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=586591">simbol00</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2007770">sirready</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=491163">smartsoldier</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2127721">snakeeater92</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1286566">spymaster12312</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3311805">stielgranate12345</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2133863">stunsails</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=855776">Submin</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2836861">sukitzian</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3050956">sun490</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1524387">suqiner</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3944089">swrny2</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1018584">Tallanvor</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=688482">tara-n-tool</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=656892">the_innocent_dude</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=883500">tommy7676</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1012957">Trainlover2020</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2708738">Troy44</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2730504">usernameunimportant</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=998136">vas22</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3630571">velcrostfs</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2953474">Viatria</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2028760">VoidKitty</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3931838">wirztofwizzdomddsdfa12</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3043924">wodgey</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2177244">xiaozheng16</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2173454">yata1991</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3400705">yegor</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2944477">yousifmk16</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2035047">Zage</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1377117">zajabuli</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1249928">zatoclife</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3908695">zyvsen</a> and 295 guests</p></td>
+	</tr>
+	</table>
+
+
+<br clear="all" />
+	
+
+<table width="100%" cellspacing="1">
+<tr>
+	<td width="40%" valign="top" nowrap="nowrap" align="left"></td>
+	<td align="right">
+	<form method="post" name="jumpbox" action="./viewforum.php" onsubmit="if(document.jumpbox.f.value == -1){return false;}">
+
+	<table cellspacing="0" cellpadding="0" border="0">
+	<tr>
+		<td nowrap="nowrap"><span class="gensmall">Jump to:</span>&nbsp;<select name="f" onchange="if(this.options[this.selectedIndex].value != -1){ document.forms['jumpbox'].submit() }">
+
+		
+			<option value="-1">Select a forum</option>
+		<option value="-1">------------------</option>
+			<option value="26">Russian Forums (Форумы)</option>
+		
+			<option value="5">&nbsp; &nbsp;Новости</option>
+		
+			<option value="1">&nbsp; &nbsp;Общий форум</option>
+		
+			<option value="2">&nbsp; &nbsp;Counter Strike</option>
+		
+			<option value="3">&nbsp; &nbsp;Сервер cs.rin.ru</option>
+		
+			<option value="4">&nbsp; &nbsp;Книга жалоб</option>
+		
+			<option value="9">&nbsp; &nbsp;Читы и Читеры</option>
+		
+			<option value="6">&nbsp; &nbsp;Оффтопик</option>
+		
+			<option value="8">&nbsp; &nbsp;Чемпионат</option>
+		
+			<option value="11">&nbsp; &nbsp;Опросы</option>
+		
+			<option value="27">English Forums</option>
+		
+			<option value="10" selected="selected">&nbsp; &nbsp;Main Forum</option>
+		
+			<option value="29">&nbsp; &nbsp;&nbsp; &nbsp;Releases</option>
+		
+			<option value="32">&nbsp; &nbsp;&nbsp; &nbsp;Standalones</option>
+		
+			<option value="38">&nbsp; &nbsp;&nbsp; &nbsp;Other Gaming Platforms</option>
+		
+			<option value="41">&nbsp; &nbsp;&nbsp; &nbsp;Temporarily Restricted Topics</option>
+		
+			<option value="14">&nbsp; &nbsp;Off Topic</option>
+		
+			<option value="20">&nbsp; &nbsp;Developer Forum</option>
+		
+			<option value="22">&nbsp; &nbsp;Steam Content Sharing</option>
+		
+			<option value="19">&nbsp; &nbsp;Foreign Languages Forum</option>
+		
+			<option value="15">&nbsp; &nbsp;Archive</option>
+		
+			<option value="31">&nbsp; &nbsp;&nbsp; &nbsp;Ancient Threads</option>
+		
+			<option value="24">&nbsp; &nbsp;Junk</option>
+		
+
+		</select>&nbsp;<input class="btnlite" type="submit" value="Go" /></td>
+	</tr>
+	</table>
+
+	</form>
+</td>
+</tr>
+</table>
+<table width="100%" cellspacing="1">
+<tr>
+	<td align="right" valign="top" nowrap="nowrap"><span class="gensmall">You <strong>can</strong> post new topics in this forum<br />You <strong>can</strong> reply to topics in this forum<br />You <strong>can</strong> edit your posts in this forum<br />You <strong>cannot</strong> delete your posts in this forum<br />You <strong>cannot</strong> post attachments in this forum<br /></span></td>
+</tr>
+</table>
+<br clear="all" />
+
+
+</div>
+
+<div id="wrapfooter">
+    <br><br><br>
+	
+	<span class="copyright">Powered by <a href="https://www.phpbb.com/">phpBB</a>&reg; Forum Software &copy; phpBB Group
+	</span>
+	<br><br>
+</div>
+	
+		</td>
+	</tr>
+	<br>
+</table>
+	<br>
+</body>
+</html>

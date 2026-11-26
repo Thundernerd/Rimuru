@@ -1,0 +1,1420 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-gb" xml:lang="en-gb">
+<head>
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta http-equiv="content-language" content="en-gb" />
+<meta http-equiv="content-style-type" content="text/css" />
+<meta http-equiv="imagetoolbar" content="no" />
+<meta name="resource-type" content="document" />
+<meta name="distribution" content="global" />
+<meta name="keywords" content="" />
+<meta name="description" content="Cracking Steam and coding Steam related tools and emulators since 2003. Get all Steam games you want and play them the way you want to - for free!" />
+<meta name="robots" content="noindex,nofollow" />
+
+<title>CS RIN - Steam Underground &bull; Search</title>
+
+<link rel="alternate" type="application/atom+xml" title="Feed - CS RIN - Steam Underground" href="https://cs.rin.ru/forum/feed.php" /><link rel="alternate" type="application/atom+xml" title="Feed - All forums" href="https://cs.rin.ru/forum/feed.php?mode=forums" /><link rel="alternate" type="application/atom+xml" title="Feed - New Topics" href="https://cs.rin.ru/forum/feed.php?mode=topics" /><link rel="alternate" type="application/atom+xml" title="Feed - Active Topics" href="https://cs.rin.ru/forum/feed.php?mode=topics_active" />
+
+<link rel="stylesheet" href="./styles/rinDark/theme/stylesheet.css" type="text/css" />
+<!-- <script type="text/javascript" src="./mobiquo/tapatalkdetect.js"></script> -->
+<script type="text/javascript" src="./styles/subsilver2/template/forum_fn.js"></script>
+<!-- <script type="text/javascript" src="//yandex.st/share/share.js" charset="utf-8"></script>-->
+<script type="text/javascript">
+// <![CDATA[
+
+
+function popup(url, width, height, name)
+{
+	if (!name)
+	{
+		name = '_popup';
+	}
+
+	window.open(url.replace(/&amp;/g, '&'), name, 'height=' + height + ',resizable=yes,scrollbars=yes,width=' + width);
+	return false;
+}
+
+function jumpto()
+{
+	var page = prompt('Enter the page number you wish to go to:', '1');
+	var per_page = '';
+	var base_url = '';
+
+	if (page !== null && !isNaN(page) && page == Math.floor(page) && page > 0)
+	{
+		if (base_url.indexOf('?') == -1)
+		{
+			document.location.href = base_url + '?start=' + ((page - 1) * per_page);
+		}
+		else
+		{
+			document.location.href = base_url.replace(/&amp;/g, '&') + '&start=' + ((page - 1) * per_page);
+		}
+	}
+}
+
+/**
+* Find a member
+*/
+function find_username(url)
+{
+	popup(url, 760, 570, '_usersearch');
+	return false;
+}
+
+/**
+* Mark/unmark checklist
+* id = ID of parent container, name = name prefix, state = state [true/false]
+*/
+function marklist(id, name, state)
+{
+	var parent = document.getElementById(id);
+	if (!parent)
+	{
+		eval('parent = document.' + id);
+	}
+
+	if (!parent)
+	{
+		return;
+	}
+
+	var rb = parent.getElementsByTagName('input');
+	
+	for (var r = 0; r < rb.length; r++)
+	{
+		if (rb[r].name.substr(0, name.length) == name)
+		{
+			rb[r].checked = state;
+		}
+	}
+}
+
+
+
+// ]]>
+
+// RIN donation overlay
+//subsilver2
+window.onload = onloadFunction;
+//proSilver
+if (!(typeof onload_functions === 'undefined')) {
+	onload_functions.push('onloadFunction();');
+} 
+
+function overlayconfirm() {
+  document.getElementById("overlay").style.display = "none";
+  document.cookie = "csrin_overlay=0; path=/forum; max-age=31536000";
+}
+
+function onloadFunction()
+{
+    // RIN donation overlay
+    // if cookie NOT set, display
+    var decodedCookie = decodeURIComponent(document.cookie);
+    if (decodedCookie.search("csrin_overlay=0") === -1)
+    {
+        //document.getElementById("overlay").style.display = "block";
+    }
+}
+
+// RIN: load page in the background
+function loadAsync(page, returnTarget, returnText, returnClass) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onload = () => {
+        if (xhttp.readyState === XMLHttpRequest.DONE) {
+            if (xhttp.status === 200) {
+                console.log("yay");
+                var successText = document.createElement("span");
+                successText.innerHTML = returnText;
+                successText.className = returnClass;
+                returnTarget.replaceWith(successText);
+            } else {
+                console.error(xhttp.statusText);
+            }
+        }
+    };
+    xhttp.open("GET", page, true);
+    xhttp.send();
+}
+
+// RIN image resizer
+function resizeimg(img)
+{
+    if (img.style.maxHeight == 'none')
+        img.style.maxHeight = '250px';
+    else
+        img.style.maxHeight = 'none';
+}
+</script>
+
+<!-- Malicious filehosts -->
+<script type="text/javascript">
+function reveal_unsafe(e) {
+  e.style.display = "none";
+  e.parentElement.getElementsByClassName('link_unsafe')[0].style.display = "inline";
+}
+</script>
+<style></style>
+<style>
+.link_unsafe_overlay {
+  --warning-color: red;
+  border-style:dashed;
+  border-color: var(--warning-color);
+  border-width: thin;
+  width: fit-content;
+  display: inline-block;
+  color: var(--warning-color);
+}
+
+.link_unsafe_overlay2 {
+  --warning-color: orange;
+  border-style:dashed;
+  border-color: var(--warning-color);
+  border-width: thin;
+  width: fit-content;
+  display: inline-block;
+  color: var(--warning-color);
+}
+
+.link_unsafe_reveal {
+  cursor: pointer;
+  color: #AAAAAA;
+}
+
+.link_unsafe {
+  display: none;
+}
+
+.link_unsafe_note {
+  font-size: 0.8em;
+  vertical-align: super;
+  position: relative;
+}
+
+.tooltip {
+  border-bottom: 1px dotted green;
+  color: green;
+  cursor: pointer;
+}
+
+.tooltiptext {
+  visibility: hidden;
+  font-size: 1.3em;
+  width: 22em;
+  color: var(--warning-color);
+  background-color: black;
+  text-align: center;
+  padding: 0.5em 0.5em;
+  border-radius: 6px;
+  position: absolute;
+  cursor: default;
+  z-index: 1;
+  top: 100%;
+  left: -13em;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+</style>
+
+<!-- Donation overlay --><!-- duplicated here because of caching issues -->
+<style>
+#overlay {
+  position: fixed;
+  width: 40%;
+  height: 40%;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%; 
+  right: 0;
+  bottom: 0;
+  min-width: 300px;
+  min-height: 300px;
+  background-color: rgba(0,0,0,0.9);
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  border: 1px solid #777777;
+  display: none;
+}
+
+#overlaytext {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  font-size: 1.2em;
+  color: white;
+  transform: translate(-5%,-5%);
+  -ms-transform: translate(-5%,-5%);
+}
+
+#overlayconfirmbtn {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  bottom: 0px;
+  font-size: 1.2em;
+  padding: 1px 5px;
+}
+</style>
+<!-- RIN: image resize and page stretch fix -->
+<style>
+.postbody img,
+.postbody ~ table img {
+  max-width: 95%;
+  max-height: 250px;
+}
+</style>
+
+</head>
+<body class="ltr">
+
+<!-- Donation overlay -->
+<div id="overlay">
+  <div id="overlaytext">
+  <p align="center">We need your help!</p>
+  <br /><br />
+  <p>For 17 years, this forum has served us as a platform for sharing games with each other, graciously hosted by the owner of RIN for all this time. Sadly, he can no longer afford our server.</p>
+  <br /><br />
+  <p>To keep this forum alive, we need your help with covering the hosting expenses.</p>
+  <br /><br />
+  <p>For more information, click <a href="../donate" target="_blank" onclick="overlayconfirm()">here</a>.</p>
+  
+  </div>
+  <a id="overlayconfirmbtn" onclick="overlayconfirm()" href="javascript:overlayconfirm();">Close</a>
+</div>
+
+<table align="center" width="100%" class="bodyline">
+	<tr>
+		<td>
+<a name="top"></a>		
+<div id="wrapheader">
+
+	<div id="logodesc">
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td><a href="./index.php"><img src="./styles/rinDark/imageset/site_logo-2.png" alt="Logo" title="Logo" /></a></td>
+			<td width="100%" align="center"><h1>CS RIN - Steam Underground</h1><span class="gen">cs.rin.ru | csrin.org | The password is usually one of these.</span></td>
+		</tr>
+		</table>
+	</div>
+
+	<div id="menubar">
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				<a href="./viewtopic.php?f=10&amp;t=44034"><img src="./styles/rinDark/theme/images/icon_mini_rules.gif" width="14" height="14" alt="*" /> Forum rules</a>
+                &nbsp;:: &nbsp;<a href="../donate"><img src="./styles/rinDark/theme/images/icon_donate.gif" width="14" height="14" alt="*" /> Donate</a>
+			</td>
+			<td class="genmed" align="right">
+                <a href="chat.php"><img src="./styles/rinDark/theme/images/icon_mini_irc.gif" width="14" height="14" alt="*" /> Chat</a>
+				&nbsp;:: &nbsp;<a href="./viewtopic.php?f=10&amp;t=98158"><img src="./styles/rinDark/theme/images/icon_mini_faq.gif" width="12" height="13" alt="*" /> FAQ</a><!--<sup style="color:#FF0000;"> new!</sup>-->
+				&nbsp;:: &nbsp;<a href="./memberlist.php"><img src="./styles/rinDark/theme/images/icon_mini_members.gif" width="12" height="13" alt="*" /> Members</a>
+			</td>
+		</tr>
+		</table>
+		<br>
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				 <a href="./ucp.php"><img src="./styles/rinDark/theme/images/icon_mini_profile.gif" width="12" height="13" alt="*" /> User Control Panel</a> &nbsp;:: &nbsp;<a href="./ucp.php?i=pm&amp;folder=inbox"><img src="./styles/rinDark/theme/images/icon_mini_message.gif" width="12" height="13" alt="*" /> <strong>0</strong> new messages</a>
+			</td>
+			<td class="genmed" align="right">
+				<a href="./search.php"><img src="./styles/rinDark/theme/images/icon_mini_search.gif" width="12" height="13" alt="*" /> Search</a>
+                        &nbsp;:: &nbsp;<a href="./ucp.php?mode=logout&amp;sid=00000000000000000000000000000000"><img src="./styles/rinDark/theme/images/icon_mini_login.gif" width="12" height="13" alt="*" /> Logout [ TestUser ]</a>
+				
+			</td>
+		</tr>
+		</table>
+		
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				
+			</td>
+		</tr>
+		</table>
+	</div>
+
+	<div id="datebar">
+		<table width="100%" cellspacing="0">
+			<td class="gensmall">Last visit was: Yesterday, 12:26</td>
+            
+			<td class="gensmall" align="right">It is currently Thursday, 26 Nov 2026, 19:32<br /></td>
+		</tr>
+		</table>
+	</div>
+
+	<div>
+		<table width="100%" cellspacing="0">
+		<br>
+		<tr>
+			<td class="genmed" align="right"></td>
+		</tr>
+		</table>
+</div>
+</div>
+
+<div id="wrapcentre">
+
+	
+	<p class="searchbar">
+		<span style="float: left;"><a href="./search.php?search_id=unanswered">View unanswered posts</a> | <a href="./search.php?search_id=active_topics">View active topics</a></span>
+		
+		<span style="float: right;"><a href="./search.php?search_id=unreadposts">View unread posts</a> | <a href="./search.php?search_id=newposts">View new posts</a> | <a href="./search.php?search_id=egosearch">View your posts</a></span>
+		
+	</p>
+	
+
+	<br style="clear: both;" />
+
+	<table class="tablebg" width="100%" cellspacing="1" cellpadding="0" style="margin-top: 5px;">
+	<tr>
+		<td class="row5">
+			<p class="breadcrumbs"><a class="breadcrumbs" href="./index.php">Board index</a></p>
+			
+		<div id="search-box">
+			<form method="post" id="search" action="./search.php?st=0&amp;sk=t&amp;sd=d&amp;sr=topics&amp;keywords=please&amp;fid%5B%5D=10&amp;sf=titleonly">
+				<input class="inputbox search tiny" type="text" name="add_keywords" id="search_keywords" value="Search these results" size="23" onclick="if(this.value=='Search these results')this.value='';" onblur="if(this.value=='')this.value='Search these results';"/> 
+				<input class="button1" type="submit" name="submit" value="Search" />
+			</form>
+		</div>
+
+
+		</td>
+	</tr>
+	</table>
+
+	<br />
+
+<form method="post" action="./search.php?st=0&amp;sk=t&amp;sd=d&amp;sr=topics&amp;keywords=please&amp;fid%5B%5D=10&amp;sf=titleonly">
+
+<table width="100%" cellspacing="1">
+<tr>
+	<td colspan="2"><span class="titles">Search found 38 matches</span><br /></td>
+</tr>
+<tr>
+	<td class="genmed">Search term used: <a href="./search.php?st=0&amp;sk=t&amp;sd=d&amp;sr=topics&amp;keywords=please&amp;fid%5B%5D=10&amp;sf=titleonly"><b>please</b></a></td>
+	<td align="right"><span class="genmed">Search these results: </span><input class="post" type="text" name="add_keywords" value="" /> <input class="btnlite" type="submit" name="submit" value="Go" /></td>
+</tr>
+</table>
+
+<br clear="all" />
+
+
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr>
+		<th width="4%" nowrap="nowrap">&nbsp;</th>
+		<th colspan="2" nowrap="nowrap">&nbsp;Topics&nbsp;</th>
+		<th nowrap="nowrap">&nbsp;Author&nbsp;</th>
+		<th nowrap="nowrap">&nbsp;Replies&nbsp;</th>
+		<th nowrap="nowrap">&nbsp;Views&nbsp;</th>
+		<th nowrap="nowrap">&nbsp;Last post&nbsp;</th>
+	</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=105047&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=105047&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Time Gentlemen, Please! / Ben There, Dan That!</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=496875" style="color: #ACBFAC;" class="username-coloured">Rui</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">5</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">536</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Friday, 20 Nov 2026, 02:58</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=3826540">Harvey Harvington</a>
+					<a href="./viewtopic.php?f=10&amp;t=105047&amp;hilit=please&amp;p=3630328#p3630328"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=162712&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Potato Please</a>
+				
+					<p class="gensmall"> [ <img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Go to page" title="Go to page" />Go to page: <a href="./viewtopic.php?f=10&amp;t=162712&amp;hilit=please">1</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=162712&amp;hilit=please&amp;start=15">2</a> ] </p>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=1740506">madej1312</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">16</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">4672</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Wednesday, 18 Nov 2026, 02:48</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=3444629">PM2G</a>
+					<a href="./viewtopic.php?f=10&amp;t=162712&amp;hilit=please&amp;p=3629226#p3629226"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=163025&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=163025&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> The Usual, Please</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=2851151" style="color: #BF9F00;" class="username-coloured">userunicode</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">227</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Tuesday, 17 Nov 2026, 05:00</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=2851151" style="color: #BF9F00;" class="username-coloured">userunicode</a>
+					<a href="./viewtopic.php?f=10&amp;t=163025&amp;hilit=please&amp;p=3626906#p3626906"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=156521&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=156521&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> My Beautiful Faraway, Please Don't Be Cruel To Me</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=3523904">Spinneret</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">4</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">643</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Wednesday, 14 Oct 2026, 22:49</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=2862009">DicDale</a>
+					<a href="./viewtopic.php?f=10&amp;t=156521&amp;hilit=please&amp;p=3608370#p3608370"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=119120&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=119120&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please, Touch The Artwork</a>
+				
+					<p class="gensmall"> [ <img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Go to page" title="Go to page" />Go to page: <a href="./viewtopic.php?f=10&amp;t=119120&amp;hilit=please">1</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=119120&amp;hilit=please&amp;start=15">2</a> ] </p>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=929291">stardreamcan</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">15</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">1556</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Monday, 28 Sep 2026, 10:02</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=2198052" style="color: #BF9F00;" class="username-coloured">FantasticIllusion</a>
+					<a href="./viewtopic.php?f=10&amp;t=119120&amp;hilit=please&amp;p=3587604#p3587604"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=161438&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=161438&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Next Girl, Please [NSFW]</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=384018" style="color: #BF9F00;" class="username-coloured">tentononc</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">1</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">1298</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Monday, 14 Sep 2026, 04:00</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=1843338">123email456</a>
+					<a href="./viewtopic.php?f=10&amp;t=161438&amp;hilit=please&amp;p=3588415#p3588415"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=161401&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=161401&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Agents! Please?</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=1773992">tigertiger_74</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">150</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Thursday, 10 Sep 2026, 21:10</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=1773992">tigertiger_74</a>
+					<a href="./viewtopic.php?f=10&amp;t=161401&amp;hilit=please&amp;p=3586357#p3586357"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=142984&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=142984&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please, Touch The Artwork 2</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=2198052" style="color: #BF9F00;" class="username-coloured">FantasticIllusion</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">519</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Monday, 07 Sep 2026, 12:16</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=2198052" style="color: #BF9F00;" class="username-coloured">FantasticIllusion</a>
+					<a href="./viewtopic.php?f=10&amp;t=142984&amp;hilit=please&amp;p=3115833#p3115833"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=152403&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=152403&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> One Iced Latte With Your Breast Milk, Please!</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=3444219">fabelhaftstilvoll</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">2</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">565</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Saturday, 29 Aug 2026, 18:14</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=2312626">thatonebiguy</a>
+					<a href="./viewtopic.php?f=10&amp;t=152403&amp;hilit=please&amp;p=3578739#p3578739"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=160519&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				<img src="./styles/rinDark/imageset/icon_topic_attach.gif" width="10" height="13" alt="Attachment(s)" title="Attachment(s)" /> <a href="./viewtopic.php?f=10&amp;t=160519&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Cargo, Please!</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=594828">kanggg</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">3</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">491</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Saturday, 08 Aug 2026, 21:00</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=553522">FitGirlLV</a>
+					<a href="./viewtopic.php?f=10&amp;t=160519&amp;hilit=please&amp;p=3565910#p3565910"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=67949&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=67949&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please, Don’t Touch Anything</a>
+				
+					<p class="gensmall"> [ <img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Go to page" title="Go to page" />Go to page: <a href="./viewtopic.php?f=10&amp;t=67949&amp;hilit=please">1</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=67949&amp;hilit=please&amp;start=15">2</a> ] </p>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=543818">Paul Li</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">27</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">7266</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Tuesday, 14 Jul 2026, 06:08</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=3106247">AstralGames</a>
+					<a href="./viewtopic.php?f=10&amp;t=67949&amp;hilit=please&amp;p=3549462#p3549462"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=127567&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=127567&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please Be Happy</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=916835" style="color: #00BF00;" class="username-coloured">Valentine</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">5</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">1160</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Monday, 13 Jul 2026, 05:48</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=712842">LikeAG6</a>
+					<a href="./viewtopic.php?f=10&amp;t=127567&amp;hilit=please&amp;p=3548910#p3548910"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=119325&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=119325&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please Subscribe</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=511722">loladass</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">4</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">501</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Tuesday, 16 Jun 2026, 03:57</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=1474923">True_Gamer4959</a>
+					<a href="./viewtopic.php?f=10&amp;t=119325&amp;hilit=please&amp;p=3531394#p3531394"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread_hot.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=63380&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				<img src="./styles/rinDark/imageset/icon_topic_attach.gif" width="10" height="13" alt="Attachment(s)" title="Attachment(s)" /> <a href="./viewtopic.php?f=10&amp;t=63380&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Papers, Please</a>
+				
+					<p class="gensmall"> [ <img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Go to page" title="Go to page" />Go to page: <a href="./viewtopic.php?f=10&amp;t=63380&amp;hilit=please">1</a><span class="page-dots"> ... </span><a href="./viewtopic.php?f=10&amp;t=63380&amp;hilit=please&amp;start=75">6</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=63380&amp;hilit=please&amp;start=90">7</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=63380&amp;hilit=please&amp;start=105">8</a> ] </p>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=474279" style="color: #BF9F00;" class="username-coloured">NoWayMan</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">114</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">38051</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Wednesday, 20 May 2026, 23:00</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=473054">IndigoHD</a>
+					<a href="./viewtopic.php?f=10&amp;t=63380&amp;hilit=please&amp;p=3514303#p3514303"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=112611&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				<img src="./styles/rinDark/imageset/icon_topic_attach.gif" width="10" height="13" alt="Attachment(s)" title="Attachment(s)" /> <a href="./viewtopic.php?f=10&amp;t=112611&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Organs Please</a>
+				
+					<p class="gensmall"> [ <img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Go to page" title="Go to page" />Go to page: <a href="./viewtopic.php?f=10&amp;t=112611&amp;hilit=please">1</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=112611&amp;hilit=please&amp;start=15">2</a> ] </p>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=594886">Bl@ckIce</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">16</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">2140</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Thursday, 12 Mar 2026, 07:41</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=2862009">DicDale</a>
+					<a href="./viewtopic.php?f=10&amp;t=112611&amp;hilit=please&amp;p=3468235#p3468235"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=135261&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				<img src="./styles/rinDark/imageset/icon_topic_attach.gif" width="10" height="13" alt="Attachment(s)" title="Attachment(s)" /> <a href="./viewtopic.php?f=10&amp;t=135261&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Get Me Out, Please</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=2157887">GameHoarder</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">9</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">1441</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Sunday, 01 Mar 2026, 01:34</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=586624">cloudslsw</a>
+					<a href="./viewtopic.php?f=10&amp;t=135261&amp;hilit=please&amp;p=3461380#p3461380"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=153067&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=153067&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> I Hate You, Please Suffer – Complete</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=3170451">yousifpiece32</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">1</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">298</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Saturday, 15 Nov 2025, 04:34</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=3463800">aaronwhateverr</a>
+					<a href="./viewtopic.php?f=10&amp;t=153067&amp;hilit=please&amp;p=3396338#p3396338"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=152646&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=152646&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please, Watch The Artwork [Pre-Release]</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=559695">Diogenes</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">152</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Monday, 27 Oct 2025, 13:43</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=559695">Diogenes</a>
+					<a href="./viewtopic.php?f=10&amp;t=152646&amp;hilit=please&amp;p=3384288#p3384288"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=87807&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=87807&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> The &quot;Quiet, Please!&quot; Collection</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=586878">maz666</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">1</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">256</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Tuesday, 09 Sep 2025, 04:26</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=550359" style="color: #BF9F00;" class="username-coloured">hal210</a>
+					<a href="./viewtopic.php?f=10&amp;t=87807&amp;hilit=please&amp;p=3353760#p3353760"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=75984&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=75984&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please, Don't Touch Anything 3D</a>
+				
+					<p class="gensmall"> [ <img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Go to page" title="Go to page" />Go to page: <a href="./viewtopic.php?f=10&amp;t=75984&amp;hilit=please">1</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=75984&amp;hilit=please&amp;start=15">2</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=75984&amp;hilit=please&amp;start=30">3</a> ] </p>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=614095">Brozel</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">36</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">14802</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Wednesday, 02 Jul 2025, 22:04</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=1147494" style="color: #BF9F00;" class="username-coloured">Kirigiri's</a>
+					<a href="./viewtopic.php?f=10&amp;t=75984&amp;hilit=please&amp;p=3314336#p3314336"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=148422&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				<img src="./styles/rinDark/imageset/icon_topic_attach.gif" width="10" height="13" alt="Attachment(s)" title="Attachment(s)" /> <a href="./viewtopic.php?f=10&amp;t=148422&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> 侦探，请守护我的秘密吧！[Detective Please Protect My Secret]</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=1769786">GAMEDRIVE.ORG</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">2</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">369</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Friday, 16 May 2025, 15:36</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=1769786">GAMEDRIVE.ORG</a>
+					<a href="./viewtopic.php?f=10&amp;t=148422&amp;hilit=please&amp;p=3281521#p3281521"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=148390&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=148390&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Animal Spa - Could this be deleted please</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=1503958">Soltanis</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">141</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Wednesday, 14 May 2025, 21:04</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=1503958">Soltanis</a>
+					<a href="./viewtopic.php?f=10&amp;t=148390&amp;hilit=please&amp;p=3280294#p3280294"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=147457&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=147457&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> PLEASE STOP CRYING: TERRIBLE TWOS</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=3094111">Tokacor</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">1</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">165</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Monday, 14 Apr 2025, 18:45</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=3174377">realermilkerer</a>
+					<a href="./viewtopic.php?f=10&amp;t=147457&amp;hilit=please&amp;p=3259294#p3259294"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=146406&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=146406&amp;hilit=please" class="topictitle"> Please Subscribe! Magical Revantia Channel: The Magical Girl</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=1309112">LiQuNaTie</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">258</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Monday, 24 Feb 2025, 05:40</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=1309112">LiQuNaTie</a>
+					<a href="./viewtopic.php?f=10&amp;t=146406&amp;hilit=please&amp;p=3227297#p3227297"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=134143&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				<img src="./styles/rinDark/imageset/icon_topic_attach.gif" width="10" height="13" alt="Attachment(s)" title="Attachment(s)" /> <a href="./viewtopic.php?f=10&amp;t=134143&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please, Forgive Me</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=594886">Bl@ckIce</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">4</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">903</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Sunday, 02 Feb 2025, 16:47</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=1074624">nomenomenom</a>
+					<a href="./viewtopic.php?f=10&amp;t=134143&amp;hilit=please&amp;p=3214467#p3214467"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=143596&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=143596&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> PLEASE STOP CRYING</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=2801029">CelestineHirthe</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">232</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Friday, 04 Oct 2024, 06:43</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=2801029">CelestineHirthe</a>
+					<a href="./viewtopic.php?f=10&amp;t=143596&amp;hilit=please&amp;p=3137994#p3137994"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_unread.png" width="31" height="27" alt="Unread posts" title="Unread posts" /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				<a href="./viewtopic.php?f=10&amp;t=143184&amp;hilit=please&amp;view=unread#unread"><img src="./styles/rinDark/imageset/icon_topic_newest.gif" width="18" height="9" alt="View first unread post" title="View first unread post" /></a>
+				 <a href="./viewtopic.php?f=10&amp;t=143184&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Get Me Out, Please</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=586624">cloudslsw</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">2</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">176</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Friday, 13 Sep 2024, 13:09</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=586624">cloudslsw</a>
+					<a href="./viewtopic.php?f=10&amp;t=143184&amp;hilit=please&amp;p=3124470#p3124470"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=80331&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please Knock on My Door</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=439862">Whatever.</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">11</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">1335</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Tuesday, 16 Jan 2024, 09:24</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=2351989">fleegaming412</a>
+					<a href="./viewtopic.php?f=10&amp;t=80331&amp;hilit=please&amp;p=2977348#p2977348"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=120209&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please Fix The Road</a>
+				
+					<p class="gensmall"> [ <img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Go to page" title="Go to page" />Go to page: <a href="./viewtopic.php?f=10&amp;t=120209&amp;hilit=please">1</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=120209&amp;hilit=please&amp;start=15">2</a> ] </p>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=594886">Bl@ckIce</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">16</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">1676</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Sunday, 03 Dec 2023, 21:45</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=712842">LikeAG6</a>
+					<a href="./viewtopic.php?f=10&amp;t=120209&amp;hilit=please&amp;p=2951427#p2951427"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=123280&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Survive 10 Minutes Please</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=478391">Haoose</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">124</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Friday, 03 Jun 2022, 18:48</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=478391">Haoose</a>
+					<a href="./viewtopic.php?f=10&amp;t=123280&amp;hilit=please&amp;p=2613913#p2613913"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=120492&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> End it, please ...</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=478391">Haoose</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">1</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">751</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Saturday, 12 Mar 2022, 16:42</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=1821935">Metaverse</a>
+					<a href="./viewtopic.php?f=10&amp;t=120492&amp;hilit=please&amp;p=2559771#p2559771"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=118632&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Help me please</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=594886">Bl@ckIce</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">136</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Monday, 10 Jan 2022, 07:40</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=594886">Bl@ckIce</a>
+					<a href="./viewtopic.php?f=10&amp;t=118632&amp;hilit=please&amp;p=2520887#p2520887"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=116812&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please Duology</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=594886">Bl@ckIce</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">82</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Monday, 25 Oct 2021, 18:16</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=594886">Bl@ckIce</a>
+					<a href="./viewtopic.php?f=10&amp;t=116812&amp;hilit=please&amp;p=2472034#p2472034"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=116326&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Check, please! : Restaurant Simulator</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=712842">LikeAG6</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">154</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Thursday, 07 Oct 2021, 17:24</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=712842">LikeAG6</a>
+					<a href="./viewtopic.php?f=10&amp;t=116326&amp;hilit=please&amp;p=2460247#p2460247"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=97585&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please The Gods</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=586878">maz666</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">1</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">217</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Wednesday, 17 Jul 2019, 12:59</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=594886">Bl@ckIce</a>
+					<a href="./viewtopic.php?f=10&amp;t=97585&amp;hilit=please&amp;p=1935554#p1935554"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=98136&amp;hilit=please" class="topictitle"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Please Find Me</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=594886">Bl@ckIce</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">1</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">136</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Friday, 28 Jun 2019, 18:46</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=550359" style="color: #BF9F00;" class="username-coloured">hal210</a>
+					<a href="./viewtopic.php?f=10&amp;t=98136&amp;hilit=please&amp;p=1925853#p1925853"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=78943&amp;hilit=please" class="topictitle"> Cracked Rustserver (from rusteo.com) - i need help, please..</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=679908">kortax</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">0</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">181</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Tuesday, 14 Mar 2017, 12:44</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=679908">kortax</a>
+					<a href="./viewtopic.php?f=10&amp;t=78943&amp;hilit=please&amp;p=1414683#p1414683"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+		<tr valign="middle">
+			<td class="row1" width="25" align="center"><img src="./styles/rinDark/imageset/topic_read.png" width="31" height="27" alt="There are no new unread posts for this topic." title="There are no new unread posts for this topic." /></td>
+			<td class="row1" width="25" align="center">
+			
+			</td>
+			<td class="row1">
+				
+				 <a href="./viewtopic.php?f=10&amp;t=66895&amp;hilit=please" class="topictitle"> request for steam april 2014 build please for my GL 3.0.3</a>
+				
+					<p class="gensmall">in <a href="./viewforum.php?f=10">Main Forum</a></p>
+				
+			</td>
+			<td class="row2" width="100" align="center"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=478299">shoalraft63409-78</a></p></td>
+			<td class="row1" width="50" align="center"><p class="topicdetails">1</p></td>
+			<td class="row2" width="50" align="center"><p class="topicdetails">4753</p></td>
+			<td class="row1" width="120" align="center">
+				<p class="topicdetails">Sunday, 11 Jan 2015, 17:14</p>
+				<p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=478299">shoalraft63409-78</a>
+					<a href="./viewtopic.php?f=10&amp;t=66895&amp;hilit=please&amp;p=1002288#p1002288"><img src="./styles/rinDark/imageset/icon_topic_latest.gif" width="18" height="9" alt="View the latest post" title="View the latest post" /></a>
+				</p>
+			</td>
+		</tr>
+	
+	<tr>
+		<td class="cat" colspan="7" valign="middle" align="center"><span class="gensmall">Display posts from previous:</span> <select name="st" id="st"><option value="0" selected="selected">All results</option><option value="1">1 day</option><option value="7">7 days</option><option value="14">2 weeks</option><option value="30">1 month</option><option value="90">3 months</option><option value="180">6 months</option><option value="365">1 year</option></select>&nbsp;<span class="gensmall">Sort by:</span> <select name="sk" id="sk"><option value="a">Author</option><option value="t" selected="selected">Post time</option><option value="f">Forum</option><option value="i">Topic title</option><option value="s">Post subject</option></select> <select name="sd" id="sd"><option value="a">Ascending</option><option value="d" selected="selected">Descending</option></select>&nbsp;<input class="btnlite" type="submit" value="Go" name="sort" /></td>
+	</tr>
+	</table>
+
+
+
+</form>
+
+<div class="gensmall" style="float: left;"><span class="nav">Page <strong>1</strong> of <strong>1</strong></span> [ Search found 38 matches ]</div>
+<div class="nav" style="float: right;"></div>
+
+<br clear="all" /><br />
+
+<table class="tablebg" width="100%" cellspacing="1" cellpadding="0" style="margin-top: 5px;">
+	<tr>
+		<td class="row5">
+			<p class="breadcrumbs"><a class="breadcrumbs" href="./index.php">Board index</a></p>
+			
+		<div id="search-box">
+			<form method="post" id="search" action="./search.php?st=0&amp;sk=t&amp;sd=d&amp;sr=topics&amp;keywords=please&amp;fid%5B%5D=10&amp;sf=titleonly">
+				<input class="inputbox search tiny" type="text" name="add_keywords" id="search_keywords" value="Search these results" size="23" onclick="if(this.value=='Search these results')this.value='';" onblur="if(this.value=='')this.value='Search these results';"/> 
+				<input class="button1" type="submit" name="submit" value="Search" />
+			</form>
+		</div>
+
+
+		</td>
+	</tr>
+	</table>
+
+<br clear="all" />
+
+<div align="right">
+	<form method="post" name="jumpbox" action="./viewforum.php" onsubmit="if(document.jumpbox.f.value == -1){return false;}">
+
+	<table cellspacing="0" cellpadding="0" border="0">
+	<tr>
+		<td nowrap="nowrap"><span class="gensmall">Jump to:</span>&nbsp;<select name="f" onchange="if(this.options[this.selectedIndex].value != -1){ document.forms['jumpbox'].submit() }">
+
+		
+			<option value="-1">Select a forum</option>
+		<option value="-1">------------------</option>
+			<option value="26">Russian Forums (Форумы)</option>
+		
+			<option value="5">&nbsp; &nbsp;Новости</option>
+		
+			<option value="1">&nbsp; &nbsp;Общий форум</option>
+		
+			<option value="2">&nbsp; &nbsp;Counter Strike</option>
+		
+			<option value="3">&nbsp; &nbsp;Сервер cs.rin.ru</option>
+		
+			<option value="4">&nbsp; &nbsp;Книга жалоб</option>
+		
+			<option value="9">&nbsp; &nbsp;Читы и Читеры</option>
+		
+			<option value="6">&nbsp; &nbsp;Оффтопик</option>
+		
+			<option value="8">&nbsp; &nbsp;Чемпионат</option>
+		
+			<option value="11">&nbsp; &nbsp;Опросы</option>
+		
+			<option value="27">English Forums</option>
+		
+			<option value="10">&nbsp; &nbsp;Main Forum</option>
+		
+			<option value="29">&nbsp; &nbsp;&nbsp; &nbsp;Releases</option>
+		
+			<option value="32">&nbsp; &nbsp;&nbsp; &nbsp;Standalones</option>
+		
+			<option value="38">&nbsp; &nbsp;&nbsp; &nbsp;Other Gaming Platforms</option>
+		
+			<option value="41">&nbsp; &nbsp;&nbsp; &nbsp;Temporarily Restricted Topics</option>
+		
+			<option value="14">&nbsp; &nbsp;Off Topic</option>
+		
+			<option value="20">&nbsp; &nbsp;Developer Forum</option>
+		
+			<option value="22">&nbsp; &nbsp;Steam Content Sharing</option>
+		
+			<option value="19">&nbsp; &nbsp;Foreign Languages Forum</option>
+		
+			<option value="15">&nbsp; &nbsp;Archive</option>
+		
+			<option value="31">&nbsp; &nbsp;&nbsp; &nbsp;Ancient Threads</option>
+		
+			<option value="24">&nbsp; &nbsp;Junk</option>
+		
+
+		</select>&nbsp;<input class="btnlite" type="submit" value="Go" /></td>
+	</tr>
+	</table>
+
+	</form>
+</div>
+
+
+</div>
+
+<div id="wrapfooter">
+    <br><br><br>
+	
+	<span class="copyright">Powered by <a href="https://www.phpbb.com/">phpBB</a>&reg; Forum Software &copy; phpBB Group
+	</span>
+	<br><br>
+</div>
+	
+		</td>
+	</tr>
+	<br>
+</table>
+	<br>
+</body>
+</html>

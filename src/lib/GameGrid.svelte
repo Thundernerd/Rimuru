@@ -1,0 +1,191 @@
+<script lang="ts">
+  import { settings } from "./settings.svelte";
+  import { onMount } from "svelte";
+
+  import { api, errorMessage } from "./api";
+  import GameCard from "./GameCard.svelte";
+  import { arrowNavigation } from "./keyboard";
+  import { setStatus } from "./status.svelte";
+  import { loadVisits, rememberListed } from "./visits.svelte";
+  import type { Listing, TopicSummary } from "./types";
+
+  let {
+    onselect,
+    fetchPage,
+    snapshotPath,
+    heading = null,
+    emptyText = "No games here.",
+    errorText = "Couldn't load the game list",
+    showSnapshot = true,
+    filter = null,
+  }: {
+    onselect: (topic: TopicSummary) => void;
+    fetchPage: (start: number) => Promise<Listing>;
+    snapshotPath: (start: number) => string;
+    heading?: string | null;
+    emptyText?: string;
+    errorText?: string;
+    showSnapshot?: boolean;
+    filter?: ((topic: TopicSummary) => boolean) | null;
+  } = $props();
+
+  const MAX_AUTO_LOADS = 5;
+  let autoLoads = 0;
+
+  let topics = $state<TopicSummary[]>([]);
+  let nextStart = $state<number | null>(0);
+  let lastStart = $state(0);
+  let pagesLoaded = $state(0);
+  let totalPages = $state<number | null>(null);
+  let loading = $state(false);
+  let error = $state<string | null>(null);
+  let totalMatches = $state<number | null>(null);
+  let sentinel = $state<HTMLElement>();
+
+  const shown = $derived(filter ? topics.filter(filter) : topics);
+
+  function nearEnd(): boolean {
+    const rect = sentinel?.getBoundingClientRect();
+    return !!rect && rect.top < window.innerHeight + 800;
+  }
+
+  async function loadMore() {
+    if (loading || nextStart === null) return;
+    loading = true;
+    error = null;
+    const start = nextStart;
+    try {
+      const page = await fetchPage(start);
+      const seen = new Set(topics.map((t) => t.id));
+      topics.push(...page.topics.filter((t) => !seen.has(t.id)));
+      loadVisits(page.topics.map((t) => t.id));
+      rememberListed(page.topics);
+      nextStart = page.pagination.next_start;
+      lastStart = start;
+      pagesLoaded += 1;
+      totalPages = page.pagination.total_pages;
+      totalMatches = page.total_matches ?? null;
+    } catch (e) {
+      error = errorMessage(e);
+    } finally {
+      loading = false;
+    }
+    if (filter && !error && nextStart !== null && autoLoads < MAX_AUTO_LOADS) {
+      await Promise.resolve();
+      if (nearEnd()) {
+        autoLoads++;
+        loadMore();
+        return;
+      }
+    }
+    autoLoads = 0;
+  }
+
+  async function saveSnapshot() {
+    try {
+      setStatus(`Saved ${await api.saveSnapshot(snapshotPath(lastStart))}`);
+    } catch (e) {
+      setStatus(errorMessage(e));
+    }
+  }
+
+  onMount(loadMore);
+
+  $effect(() => {
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) loadMore();
+      },
+      { rootMargin: "800px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  });
+</script>
+
+<div class="toolbar">
+  {#if heading}<h2>{heading}</h2>{/if}
+  <span class="count">
+    {#if totalMatches !== null}{totalMatches} matches ·{/if}
+    {#if filter}{shown.length} of {topics.length} games{:else}{topics.length} games{/if}
+    {#if totalPages}· {pagesLoaded} of {totalPages} pages{/if}
+  </span>
+  {#if showSnapshot && settings.value.dev_tools}
+    <button type="button" class="subtle" onclick={saveSnapshot} disabled={!pagesLoaded}>Save HTML</button>
+  {/if}
+</div>
+
+<div class="grid" use:arrowNavigation>
+  {#each shown as topic (topic.id)}
+    <GameCard {topic} {onselect} />
+  {/each}
+  {#if loading}
+    {#each { length: topics.length ? 4 : 12 } as _, i (i)}
+      <div class="placeholder"></div>
+    {/each}
+  {/if}
+</div>
+
+{#if error}
+  <div class="message">
+    <p>{errorText}: {error}</p>
+    <button type="button" onclick={loadMore}>Try again</button>
+  </div>
+{:else if !loading && pagesLoaded && !shown.length && nextStart === null}
+  <div class="message"><p>{emptyText}</p></div>
+{:else if !loading && nextStart !== null}
+  <div class="message">
+    {#if pagesLoaded && !shown.length}<p>{emptyText}</p>{/if}
+    <button type="button" onclick={loadMore}>Load more</button>
+  </div>
+{/if}
+<div bind:this={sentinel}></div>
+
+<style>
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  h2 {
+    margin: 0;
+    font-size: 16px;
+  }
+  .count {
+    color: var(--muted);
+    font-size: 12px;
+    margin-right: auto;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 16px;
+  }
+
+  .placeholder {
+    aspect-ratio: 2 / 3;
+    border-radius: 10px;
+    background: var(--surface);
+    animation: pulse 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes pulse {
+    from {
+      opacity: 0.4;
+    }
+    to {
+      opacity: 0.9;
+    }
+  }
+
+  .message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px;
+    color: var(--muted);
+  }
+</style>
