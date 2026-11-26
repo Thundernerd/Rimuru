@@ -11,6 +11,8 @@
   import ReleaseList from "./ReleaseList.svelte";
   import Requirements from "./Requirements.svelte";
   import Screenshots from "./Screenshots.svelte";
+  import Skeleton from "./Skeleton.svelte";
+  import { topicSkeletons } from "./skeleton";
   import TrailerPlayer from "./TrailerPlayer.svelte";
   import { setStatus } from "./status.svelte";
   import type { Artwork, GameFirstPage, Release, SteamApp, TopicSummary, Visit } from "./types";
@@ -189,6 +191,7 @@
   const movies = $derived(steam?.movies ?? []);
   const shots = $derived(steam?.screenshots ?? []);
   const requirements = $derived(first?.info?.system_requirements ?? []);
+  const skeletons = $derived(topicSkeletons(loading, !!first, !!steam));
   const appId = $derived(steam?.app_id ?? first?.info?.steam_app_id ?? null);
 
   const tabs = $derived(
@@ -265,11 +268,36 @@
 
     {#if shots.length}
       <Screenshots {shots} />
+    {:else if skeletons.screenshots}
+      <section aria-busy="true">
+        <h2>Screenshots</h2>
+        <div class="shot-skeletons">
+          {#each [0, 1, 2, 3] as i (i)}<Skeleton height={150} radius={8} />{/each}
+        </div>
+      </section>
     {/if}
 
     <div class="columns">
-      <div class="stack"><GameDetails forum={first?.info ?? null} {steam} part="main" /></div>
-      <div class="stack"><GameDetails forum={first?.info ?? null} {steam} part="side" /></div>
+      <div class="stack">
+        {#if skeletons.details}
+          <Skeleton height={180} />
+          <Skeleton height={120} />
+        {:else}
+          <GameDetails forum={first?.info ?? null} {steam} part="main" />
+        {/if}
+      </div>
+      <div class="stack">
+        {#if skeletons.details}
+          <Skeleton height={240} />
+          <Skeleton height={90} />
+        {:else}
+          <GameDetails forum={first?.info ?? null} {steam} part="side" />
+        {/if}
+      </div>
+    </div>
+  {:else if tab === "releases" && skeletons.releases}
+    <div class="stack" aria-busy="true">
+      {#each [0, 1, 2] as i (i)}<Skeleton height={120} radius={10} />{/each}
     </div>
   {:else if tab === "releases" && first}
     <ReleaseList
@@ -390,6 +418,16 @@
   .stack {
     display: grid;
     gap: 16px;
+  }
+  .shot-skeletons {
+    display: flex;
+    gap: 10px;
+    overflow: hidden;
+    padding-bottom: 8px;
+  }
+  .shot-skeletons > :global(.skeleton) {
+    flex: 0 0 auto;
+    aspect-ratio: 16 / 9;
   }
 
   .trailers {
