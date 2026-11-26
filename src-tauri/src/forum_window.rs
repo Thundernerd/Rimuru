@@ -57,6 +57,13 @@ pub fn refresh(app: &AppHandle) -> Result<()> {
     Ok(())
 }
 
+pub fn sign_out(app: &AppHandle) -> Result<()> {
+    let window = get(app)?;
+    window.clear_all_browsing_data()?;
+    window.navigate(forum_url("index.php")?)?;
+    Ok(())
+}
+
 pub fn cookie_header(app: &AppHandle, url: &Url) -> Result<String> {
     let cookies = get(app)?.cookies_for_url(url.clone())?;
     Ok(cookies

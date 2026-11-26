@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { api, errorMessage } from "./api";
+  import { errorMessage } from "./api";
+  import { openLink } from "./settings.svelte";
   import { setStatus } from "./status.svelte";
 
   let {
@@ -17,7 +18,7 @@
       return;
     }
     armed = false;
-    api.openInBrowser(url).catch((e) => setStatus(errorMessage(e)));
+    openLink(url).catch((e) => setStatus(errorMessage(e)));
   }
 </script>
 

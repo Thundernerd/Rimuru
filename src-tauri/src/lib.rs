@@ -61,6 +61,10 @@ pub fn run() {
             commands::library::owned_releases,
             commands::library::unnotified,
             commands::library::mark_notified,
+            commands::settings::get_settings,
+            commands::settings::set_settings,
+            commands::settings::clear_cache,
+            commands::settings::sign_out,
             commands::forum::save_snapshot,
         ])
         .run(tauri::generate_context!())

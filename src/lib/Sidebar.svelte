@@ -106,6 +106,16 @@
     <button type="button" class="subtle icon" onclick={showForum} title="Show the forum's browser window">
       <Icon name="globe" />
     </button>
+    <button
+      type="button"
+      class="subtle icon"
+      class:on={view.kind === "settings"}
+      onclick={() => onnavigate({ kind: "settings" })}
+      title="Settings"
+      aria-label="Settings"
+    >
+      <Icon name="settings" />
+    </button>
   </footer>
 </aside>
 
@@ -338,6 +348,9 @@
   .link:hover:not(:disabled) {
     background: none;
     text-decoration: underline;
+  }
+  .icon.on {
+    color: var(--accent);
   }
   .icon {
     display: grid;

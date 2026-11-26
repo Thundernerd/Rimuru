@@ -1,6 +1,7 @@
 pub mod forum;
 pub mod game;
 pub mod library;
+pub mod settings;
 pub mod steam;
 
 use std::time::Duration;

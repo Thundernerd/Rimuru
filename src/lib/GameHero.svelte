@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from "./Icon.svelte";
   import LinkButton from "./LinkButton.svelte";
+  import { settings } from "./settings.svelte";
   import type { Artwork, GameInfo, SteamApp, TopicSummary } from "./types";
 
   let {
@@ -68,7 +69,9 @@
   {/if}
   <div class="shade"></div>
 
-  <button type="button" class="snapshot" onclick={onsnapshot}>Save HTML</button>
+  {#if settings.value.dev_tools}
+    <button type="button" class="snapshot" onclick={onsnapshot}>Save HTML</button>
+  {/if}
 
   <div class="bottom">
     <div class="identity">

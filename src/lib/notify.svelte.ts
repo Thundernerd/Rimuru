@@ -2,9 +2,8 @@ import { isPermissionGranted, requestPermission, sendNotification } from "@tauri
 
 import { api } from "./api";
 import { onNewRelease } from "./refresh.svelte";
+import { settings } from "./settings.svelte";
 import type { Release, TopicSummary } from "./types";
-
-export const notifications = $state({ enabled: true });
 
 let permitted: boolean | null = null;
 
@@ -22,7 +21,7 @@ function describe(release: Release): string {
 }
 
 async function notify(topic: TopicSummary, release: Release) {
-  if (!notifications.enabled) return;
+  if (!settings.value.notifications) return;
   try {
     const fresh = await api.unnotified([release.post_id]);
     if (!fresh.length) return;

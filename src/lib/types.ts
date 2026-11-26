@@ -145,3 +145,10 @@ export type Owned = {
   title: string | null;
   marked_at: number;
 };
+
+export type Settings = {
+  link_browser: string | null;
+  refresh_minutes: number;
+  notifications: boolean;
+  dev_tools: boolean;
+};

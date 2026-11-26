@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { settings } from "./settings.svelte";
   import { onMount } from "svelte";
 
   import { api, errorMessage } from "./api";
@@ -109,7 +110,7 @@
     {#if filter}{shown.length} of {topics.length} games{:else}{topics.length} games{/if}
     {#if totalPages}· {pagesLoaded} of {totalPages} pages{/if}
   </span>
-  {#if showSnapshot}
+  {#if showSnapshot && settings.value.dev_tools}
     <button type="button" class="subtle" onclick={saveSnapshot} disabled={!pagesLoaded}>Save HTML</button>
   {/if}
 </div>

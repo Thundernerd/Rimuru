@@ -7,6 +7,7 @@ export type View =
   | { kind: "browse"; forumId: number; sort: ForumSort; label: string | null }
   | { kind: "recent" }
   | { kind: "following" }
+  | { kind: "settings" }
   | { kind: "search"; query: string; allForums: boolean; run: number }
   | { kind: "game"; topic: TopicSummary };
 
@@ -73,5 +74,5 @@ function sameView(a: View, b: View): boolean {
   if (a.kind === "browse" && b.kind === "browse") {
     return a.forumId === b.forumId && a.sort === b.sort && a.label === b.label;
   }
-  return a.kind === "home" || a.kind === "recent" || a.kind === "following";
+  return a.kind === "home" || a.kind === "recent" || a.kind === "following" || a.kind === "settings";
 }

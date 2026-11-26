@@ -7,6 +7,8 @@
   import { loadOwned } from "./lib/owned.svelte";
   import { startNotifications } from "./lib/notify.svelte";
   import { startRefresh, stopRefresh } from "./lib/refresh.svelte";
+  import { loadSettings, settings } from "./lib/settings.svelte";
+  import SettingsView from "./lib/SettingsView.svelte";
   import FollowingView from "./lib/FollowingView.svelte";
   import { clearForumPages } from "./lib/forum";
   import GameGrid from "./lib/GameGrid.svelte";
@@ -74,6 +76,12 @@
     }
   });
 
+  $effect(() => {
+    if (!settings.loaded) return;
+    const minutes = settings.value.refresh_minutes;
+    untrack(() => startRefresh(minutes));
+  });
+
   function onkeydown(e: KeyboardEvent) {
     const mod = mac ? e.metaKey : e.ctrlKey;
     if (mod && e.key.toLowerCase() === "k") {
@@ -99,7 +107,7 @@
     loadFollows();
     loadOwned();
     const stopNotifications = startNotifications();
-    startRefresh();
+    loadSettings();
     const unlisten = api.onForumPageLoaded(() => refreshSession());
     return () => {
       stopRefresh();
@@ -161,6 +169,8 @@
         <RecentView onselect={openGame} />
       {:else if view.kind === "following"}
         <FollowingView onselect={openGame} />
+      {:else if view.kind === "settings"}
+        <SettingsView />
       {:else if view.kind === "game"}
         {#key view.topic.id}
           <GameView topic={view.topic} />
