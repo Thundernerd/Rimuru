@@ -9,35 +9,35 @@
   </head>
 
   <body>
-    <main class="container">
-      <h1>Welcome to Tauri</h1>
+    <header>
+      <h1>RinRu Desktop</h1>
+      <span id="session">Checking session…</span>
+      <button id="sign-in" type="button">Sign in</button>
+      <button id="show-forum" type="button">Show forum window</button>
+    </header>
 
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img
-            src="/src/assets/tauri.svg"
-            class="logo tauri"
-            alt="Tauri logo"
-          />
-        </a>
-        <a href="https://www.typescriptlang.org/docs" target="_blank">
-          <img
-            src="/src/assets/typescript.svg"
-            class="logo typescript"
-            alt="typescript logo"
-          />
-        </a>
-      </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
+    <main>
+      <section id="forum-pane">
+        <form id="forum-form">
+          <label>Forum id <input id="forum-id" type="number" value="10" min="1" /></label>
+          <button type="submit">Load</button>
+          <button id="prev" type="button" disabled>‹ Prev</button>
+          <button id="next" type="button" disabled>Next ›</button>
+          <button id="snapshot-forum" type="button">Save HTML</button>
+        </form>
+        <h2 id="forum-title"></h2>
+        <ol id="topics"></ol>
+      </section>
 
-      <form class="row" id="greet-form">
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg"></p>
+      <section id="topic-pane">
+        <div class="toolbar">
+          <h2 id="topic-title">Select a topic</h2>
+          <button id="snapshot-topic" type="button" disabled>Save HTML</button>
+        </div>
+        <div id="posts"></div>
+      </section>
     </main>
+
+    <footer id="status"></footer>
   </body>
 </html>
