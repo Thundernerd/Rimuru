@@ -18,7 +18,7 @@ selector!(PROFILE_LINK, r#"a[href*="mode=viewprofile"]"#);
 selector!(TOPIC_DETAILS, "p.topicdetails");
 selector!(HEADING_LINK, "h2 a");
 selector!(TITLE, "title");
-selector!(NAV, "td.nav");
+selector!(NAV, "td.nav, span.nav");
 selector!(START_LINK, r#"a[href*="start="]"#);
 selector!(LOGOUT_LINK, r#"a[href*="mode=logout"]"#);
 selector!(POST_TABLE, "table.tablebg");
@@ -233,6 +233,9 @@ fn parse_topic_rows(doc: &Html, page_url: &Url) -> Vec<TopicSummary> {
     let mut topics = Vec::new();
 
     for row in doc.select(&TR) {
+        if row.select(&TR).next().is_some() {
+            continue;
+        }
         if let Some(header) = Columns::from_header(row) {
             columns = header;
             continue;
@@ -849,6 +852,35 @@ mod tests {
         assert_eq!(
             (p.next_start, p.page, p.total_pages),
             (Some(25), Some(1), Some(2))
+        );
+    }
+
+    #[test]
+    fn real_search_page() {
+        let html = include_str!("../tests/fixtures/search_please.html");
+        let url = url("search.php?keywords=please&fid[]=10&sr=topics&sf=titleonly&start=0");
+        let page = parse_search(html, &url, "please", 0).unwrap();
+        assert_eq!(page.total_matches, Some(38));
+        assert_eq!(page.topics.len(), 38);
+        let first = &page.topics[0];
+        assert_eq!(first.id, 105047);
+        assert_eq!(first.name, "Time Gentlemen, Please! / Ben There, Dan That!");
+        assert_eq!(first.author.as_deref(), Some("Rui"));
+        assert_eq!((first.replies, first.views), (Some(5), Some(536)));
+        assert_eq!(
+            first.last_post_at.as_deref(),
+            Some("Friday, 20 Nov 2026, 02:58")
+        );
+        assert_eq!(first.last_poster.as_deref(), Some("Harvey Harvington"));
+        assert!(
+            page.topics
+                .iter()
+                .all(|t| t.author.is_some() && t.replies.is_some())
+        );
+        let p = &page.pagination;
+        assert_eq!(
+            (p.page, p.total_pages, p.next_start),
+            (Some(1), Some(1), None)
         );
     }
 
