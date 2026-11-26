@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cardArt } from "./cardArt";
+  import { art, requestArt } from "./cardArt.svelte";
   import type { TopicSummary } from "./types";
 
   let { topic, onselect }: { topic: TopicSummary; onselect: (topic: TopicSummary) => void } = $props();
@@ -21,8 +21,9 @@
   let element = $state<HTMLElement>();
   let visible = false;
   let requested = false;
-  let image = $state<string | null>(null);
-  let imageLoaded = $state(false);
+  const image = $derived(art.get(topic.name)?.capsule_image ?? null);
+  /** The image that finished loading, so a replaced image fades in too. */
+  let loaded = $state<string | null>(null);
 
   // Look the game up on Steam once the card is (nearly) on screen.
   $effect(() => {
@@ -30,14 +31,11 @@
     const observer = new IntersectionObserver(
       ([entry]) => {
         visible = entry.isIntersecting;
-        if (!visible || requested || image) return;
+        if (!visible || requested || art.has(topic.name)) return;
         requested = true;
-        cardArt(topic.name, () => visible)
-          .then((match) => {
-            if (match === undefined) requested = false; // skipped; ask again when visible
-            else image = match?.capsule_image ?? null;
-          })
-          .catch(() => (requested = false));
+        requestArt(topic.name, () => visible).then((looked) => {
+          if (!looked) requested = false; // skipped or failed; ask again when visible
+        });
       },
       { rootMargin: "200px" },
     );
@@ -50,7 +48,9 @@
   <div class="art" style:--hue={hue}>
     <span>{initials}</span>
     {#if image}
-      <img src={image} alt="" class:loaded={imageLoaded} onload={() => (imageLoaded = true)} />
+      {#key image}
+        <img src={image} alt="" class:loaded={loaded === image} onload={() => (loaded = image)} />
+      {/key}
     {/if}
   </div>
   <div class="body">

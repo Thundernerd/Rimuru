@@ -202,6 +202,19 @@ pub async fn steam_match(
     Ok(found)
 }
 
+/// Records the Steam app a game name belongs to, overriding a name-search
+/// result. Used when a topic's first post links its Steam store page,
+/// which is more reliable than matching by name.
+#[tauri::command]
+pub async fn remember_steam_match(
+    cache: State<'_, Cache>,
+    name: String,
+    found: SteamMatch,
+) -> Result<()> {
+    cache.put("steam_match", &steam::normalize_name(&name), None, &found);
+    Ok(())
+}
+
 /// Saves the raw HTML of a forum page (e.g. `viewforum.php?f=10`) to the
 /// app's data directory, for turning into parser test fixtures. Returns the
 /// file path. The page contains the signed-in username, so check it before

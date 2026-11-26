@@ -52,6 +52,7 @@ export const api = {
     forum<Release[]>("game_releases", { topicId, start, replies }),
   steamApp: (appId: number) => invoke<SteamApp | null>("steam_app", { appId }),
   steamMatch: (name: string) => invoke<SteamMatch | null>("steam_match", { name }),
+  rememberSteamMatch: (name: string, found: SteamMatch) => invoke<void>("remember_steam_match", { name, found }),
   saveSnapshot: (path: string) => forum<string>("save_snapshot", { path }),
   showForumWindow: (path?: string) => invoke<void>("show_forum_window", { path }),
   hideForumWindow: () => invoke<void>("hide_forum_window"),

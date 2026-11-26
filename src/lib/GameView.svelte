@@ -1,5 +1,6 @@
 <script lang="ts">
   import { api, errorMessage } from "./api";
+  import { rememberArt } from "./cardArt.svelte";
   import GameInfoPanel from "./GameInfoPanel.svelte";
   import ReleaseList from "./ReleaseList.svelte";
   import { setStatus } from "./status.svelte";
@@ -76,6 +77,11 @@
       if (appId && isCurrent()) {
         const app = await api.steamApp(appId);
         if (isCurrent()) steam = app;
+        // The topic links this Steam app itself: use its artwork for the
+        // card, which fills in or corrects a match by name.
+        if (app?.capsule_image && page.info?.steam_app_id === app.app_id) {
+          rememberArt(name, { app_id: app.app_id, name: app.name, capsule_image: app.capsule_image });
+        }
       }
     } catch (e) {
       if (isCurrent()) setStatus(`Steam details unavailable: ${errorMessage(e)}`);
