@@ -1,5 +1,7 @@
 <script lang="ts">
   import { api, errorMessage } from "./api";
+  import LinkButton from "./LinkButton.svelte";
+  import SlimeLogo from "./SlimeLogo.svelte";
   import { clearForumPages } from "./forum";
   import { refresh, runRefresh } from "./refresh.svelte";
   import { refreshSession, session } from "./session.svelte";
@@ -141,6 +143,25 @@
       />
     </label>
   </section>
+  <section class="card">
+    <h2>About</h2>
+    <div class="row">
+      <span class="label about">
+        <SlimeLogo size={34} />
+        <span class="label">
+          Rimuru
+          <small>
+            App icon and logo: “Vector Slime” by mailbun (mailbun@systemli.org), licensed under CC-BY 4.0, with a
+            background added.
+          </small>
+        </span>
+      </span>
+      <span class="links">
+        <LinkButton url="https://opengameart.org/content/vector-slime" label="Original artwork" />
+        <LinkButton url="https://creativecommons.org/licenses/by/4.0/" label="CC-BY 4.0" />
+      </span>
+    </div>
+  </section>
 </div>
 
 <style>
@@ -200,6 +221,16 @@
     width: 18px;
     height: 18px;
     accent-color: var(--accent);
+  }
+  .label.about {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .links {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
   }
   .note {
     margin: 0 0 12px;

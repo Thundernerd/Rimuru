@@ -4,6 +4,7 @@
   import { followedTopics, follows } from "./follows.svelte";
   import { updateAvailable } from "./owned.svelte";
   import Icon from "./Icon.svelte";
+  import SlimeLogo from "./SlimeLogo.svelte";
   import { current, type View } from "./nav.svelte";
   import { session, signIn } from "./session.svelte";
   import { setStatus } from "./status.svelte";
@@ -39,7 +40,7 @@
 
 <aside class:mac>
   <div class="brand" data-tauri-drag-region>
-    <span class="logo"><Icon name="layers" size={18} /></span>
+    <span class="logo"><SlimeLogo size={28} /></span>
     <span class="name">Rimuru</span>
   </div>
 
@@ -169,12 +170,10 @@
   .logo {
     display: grid;
     place-items: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    color: var(--accent-text);
-    background: linear-gradient(135deg, #5ad7f7, #2b8fd6);
+    width: 30px;
+    height: 30px;
     pointer-events: none;
+    filter: drop-shadow(0 2px 6px rgb(63 200 240 / 0.35));
   }
   .name {
     font-weight: 800;
