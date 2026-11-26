@@ -2,7 +2,8 @@
   import { SvelteMap } from "svelte/reactivity";
 
   import { api } from "./api";
-  import { artFor, matches, requestArt } from "./cardArt.svelte";
+  import { artFor, artLoading, matches, requestArt } from "./cardArt.svelte";
+  import { thumbSlots } from "./featured";
   import type { SteamApp, TopicSummary } from "./types";
 
   let { topics, onselect }: { topics: TopicSummary[]; onselect: (topic: TopicSummary) => void } = $props();
@@ -23,6 +24,11 @@
       .filter((t) => artFor(t.name)?.hero)
       .slice(0, FEATURED),
   );
+
+  // While art for the candidates is still arriving, keep the row at FEATURED slots,
+  // with empty ones for entries yet to come, so it doesn't grow as images land.
+  const loading = $derived(topics.length === 0 || topics.slice(0, CANDIDATES).some((t) => artLoading(t.name)));
+  const slots = $derived(thumbSlots(featured, loading, FEATURED));
 
   let index = $state(0);
   let paused = $state(false);
@@ -88,12 +94,13 @@
       </div>
     </div>
 
-    {#if featured.length > 1}
+    {#if slots.length > 1}
       <div class="thumbs">
         {#each featured as topic, i (topic.id)}
           {@const thumb = artFor(topic.name)}
           <button
             type="button"
+            class="thumb"
             class:active={i === index}
             onclick={() => show(i)}
             aria-label={`Show ${topic.name}`}
@@ -105,11 +112,20 @@
             {/if}
           </button>
         {/each}
+        {#each slots.slice(featured.length) as _, i (i)}
+          <span class="thumb slot"><span class="frame"></span></span>
+        {/each}
       </div>
     {/if}
   </section>
 {:else}
-  <div class="featured placeholder" aria-hidden="true"></div>
+  <div class="featured placeholder" aria-hidden="true">
+    <div class="thumbs">
+      {#each thumbSlots([], true, FEATURED) as _, i (i)}
+        <span class="thumb slot"><span class="frame"></span></span>
+      {/each}
+    </div>
+  </div>
 {/if}
 
 <style>
@@ -218,7 +234,7 @@
     display: flex;
     gap: 8px;
   }
-  .thumbs button {
+  .thumb {
     position: relative;
     width: 96px;
     padding: 0;
@@ -237,7 +253,13 @@
   .thumbs button.active {
     border-color: rgb(255 255 255 / 0.9);
   }
-  .thumbs img {
+  .slot {
+    display: block;
+    background: rgb(255 255 255 / 0.06);
+    opacity: 1;
+  }
+  .thumbs img,
+  .slot .frame {
     display: block;
     width: 100%;
     aspect-ratio: 460 / 215;
@@ -262,7 +284,7 @@
     }
   }
   @media (max-width: 1100px) {
-    .thumbs button {
+    .thumb {
       width: 72px;
     }
   }
