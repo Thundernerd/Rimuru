@@ -1,0 +1,1767 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-gb" xml:lang="en-gb">
+<head>
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta http-equiv="content-language" content="en-gb" />
+<meta http-equiv="content-style-type" content="text/css" />
+<meta http-equiv="imagetoolbar" content="no" />
+<meta name="resource-type" content="document" />
+<meta name="distribution" content="global" />
+<meta name="keywords" content="" />
+<meta name="description" content="Cracking Steam and coding Steam related tools and emulators since 2003. Get all Steam games you want and play them the way you want to - for free!" />
+<meta name="robots" content="noindex,nofollow" />
+
+<title>CS RIN - Steam Underground &bull; View topic - Wizordum</title>
+
+<link rel="alternate" type="application/atom+xml" title="Feed - CS RIN - Steam Underground" href="https://cs.rin.ru/forum/feed.php" /><link rel="alternate" type="application/atom+xml" title="Feed - All forums" href="https://cs.rin.ru/forum/feed.php?mode=forums" /><link rel="alternate" type="application/atom+xml" title="Feed - New Topics" href="https://cs.rin.ru/forum/feed.php?mode=topics" /><link rel="alternate" type="application/atom+xml" title="Feed - Active Topics" href="https://cs.rin.ru/forum/feed.php?mode=topics_active" /><link rel="alternate" type="application/atom+xml" title="Feed - Forum - Main Forum" href="https://cs.rin.ru/forum/feed.php?f=10" /><link rel="alternate" type="application/atom+xml" title="Feed - Topic - Wizordum" href="https://cs.rin.ru/forum/feed.php?f=10&amp;t=135719" />
+
+<link rel="stylesheet" href="./styles/rinDark/theme/stylesheet.css" type="text/css" />
+<!-- <script type="text/javascript" src="./mobiquo/tapatalkdetect.js"></script> -->
+<script type="text/javascript" src="./styles/subsilver2/template/forum_fn.js"></script>
+<!-- <script type="text/javascript" src="//yandex.st/share/share.js" charset="utf-8"></script>-->
+<script type="text/javascript">
+// <![CDATA[
+
+
+function popup(url, width, height, name)
+{
+	if (!name)
+	{
+		name = '_popup';
+	}
+
+	window.open(url.replace(/&amp;/g, '&'), name, 'height=' + height + ',resizable=yes,scrollbars=yes,width=' + width);
+	return false;
+}
+
+function jumpto()
+{
+	var page = prompt('Enter the page number you wish to go to:', '1');
+	var per_page = '15';
+	var base_url = './viewtopic.php?f=10&amp;t=135719';
+
+	if (page !== null && !isNaN(page) && page == Math.floor(page) && page > 0)
+	{
+		if (base_url.indexOf('?') == -1)
+		{
+			document.location.href = base_url + '?start=' + ((page - 1) * per_page);
+		}
+		else
+		{
+			document.location.href = base_url.replace(/&amp;/g, '&') + '&start=' + ((page - 1) * per_page);
+		}
+	}
+}
+
+/**
+* Find a member
+*/
+function find_username(url)
+{
+	popup(url, 760, 570, '_usersearch');
+	return false;
+}
+
+/**
+* Mark/unmark checklist
+* id = ID of parent container, name = name prefix, state = state [true/false]
+*/
+function marklist(id, name, state)
+{
+	var parent = document.getElementById(id);
+	if (!parent)
+	{
+		eval('parent = document.' + id);
+	}
+
+	if (!parent)
+	{
+		return;
+	}
+
+	var rb = parent.getElementsByTagName('input');
+	
+	for (var r = 0; r < rb.length; r++)
+	{
+		if (rb[r].name.substr(0, name.length) == name)
+		{
+			rb[r].checked = state;
+		}
+	}
+}
+
+
+
+	/**
+	* Play quicktime file by determining it's width/height
+	* from the displayed rectangle area
+	*
+	* Only defined if there is a file block present.
+	*/
+	function play_qt_file(obj)
+	{
+		var rectangle = obj.GetRectangle();
+
+		if (rectangle)
+		{
+			rectangle = rectangle.split(',')
+			var x1 = parseInt(rectangle[0]);
+			var x2 = parseInt(rectangle[2]);
+			var y1 = parseInt(rectangle[1]);
+			var y2 = parseInt(rectangle[3]);
+
+			var width = (x1 < 0) ? (x1 * -1) + x2 : x2 - x1;
+			var height = (y1 < 0) ? (y1 * -1) + y2 : y2 - y1;
+		}
+		else
+		{
+			var width = 200;
+			var height = 0;
+		}
+
+		obj.width = width;
+		obj.height = height + 16;
+
+		obj.SetControllerVisible(true);
+
+		obj.Play();
+	}
+
+
+// ]]>
+
+// RIN donation overlay
+//subsilver2
+window.onload = onloadFunction;
+//proSilver
+if (!(typeof onload_functions === 'undefined')) {
+	onload_functions.push('onloadFunction();');
+} 
+
+function overlayconfirm() {
+  document.getElementById("overlay").style.display = "none";
+  document.cookie = "csrin_overlay=0; path=/forum; max-age=31536000";
+}
+
+function onloadFunction()
+{
+    // RIN donation overlay
+    // if cookie NOT set, display
+    var decodedCookie = decodeURIComponent(document.cookie);
+    if (decodedCookie.search("csrin_overlay=0") === -1)
+    {
+        //document.getElementById("overlay").style.display = "block";
+    }
+}
+
+// RIN: load page in the background
+function loadAsync(page, returnTarget, returnText, returnClass) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onload = () => {
+        if (xhttp.readyState === XMLHttpRequest.DONE) {
+            if (xhttp.status === 200) {
+                console.log("yay");
+                var successText = document.createElement("span");
+                successText.innerHTML = returnText;
+                successText.className = returnClass;
+                returnTarget.replaceWith(successText);
+            } else {
+                console.error(xhttp.statusText);
+            }
+        }
+    };
+    xhttp.open("GET", page, true);
+    xhttp.send();
+}
+
+// RIN image resizer
+function resizeimg(img)
+{
+    if (img.style.maxHeight == 'none')
+        img.style.maxHeight = '250px';
+    else
+        img.style.maxHeight = 'none';
+}
+</script>
+
+<!-- Malicious filehosts -->
+<script type="text/javascript">
+function reveal_unsafe(e) {
+  e.style.display = "none";
+  e.parentElement.getElementsByClassName('link_unsafe')[0].style.display = "inline";
+}
+</script>
+<style></style>
+<style>
+.link_unsafe_overlay {
+  --warning-color: red;
+  border-style:dashed;
+  border-color: var(--warning-color);
+  border-width: thin;
+  width: fit-content;
+  display: inline-block;
+  color: var(--warning-color);
+}
+
+.link_unsafe_overlay2 {
+  --warning-color: orange;
+  border-style:dashed;
+  border-color: var(--warning-color);
+  border-width: thin;
+  width: fit-content;
+  display: inline-block;
+  color: var(--warning-color);
+}
+
+.link_unsafe_reveal {
+  cursor: pointer;
+  color: #AAAAAA;
+}
+
+.link_unsafe {
+  display: none;
+}
+
+.link_unsafe_note {
+  font-size: 0.8em;
+  vertical-align: super;
+  position: relative;
+}
+
+.tooltip {
+  border-bottom: 1px dotted green;
+  color: green;
+  cursor: pointer;
+}
+
+.tooltiptext {
+  visibility: hidden;
+  font-size: 1.3em;
+  width: 22em;
+  color: var(--warning-color);
+  background-color: black;
+  text-align: center;
+  padding: 0.5em 0.5em;
+  border-radius: 6px;
+  position: absolute;
+  cursor: default;
+  z-index: 1;
+  top: 100%;
+  left: -13em;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+</style>
+
+<!-- Donation overlay --><!-- duplicated here because of caching issues -->
+<style>
+#overlay {
+  position: fixed;
+  width: 40%;
+  height: 40%;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%; 
+  right: 0;
+  bottom: 0;
+  min-width: 300px;
+  min-height: 300px;
+  background-color: rgba(0,0,0,0.9);
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  border: 1px solid #777777;
+  display: none;
+}
+
+#overlaytext {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  font-size: 1.2em;
+  color: white;
+  transform: translate(-5%,-5%);
+  -ms-transform: translate(-5%,-5%);
+}
+
+#overlayconfirmbtn {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  bottom: 0px;
+  font-size: 1.2em;
+  padding: 1px 5px;
+}
+</style>
+<!-- RIN: image resize and page stretch fix -->
+<style>
+.postbody img,
+.postbody ~ table img {
+  max-width: 95%;
+  max-height: 250px;
+}
+</style>
+
+</head>
+<body class="ltr">
+
+<!-- Donation overlay -->
+<div id="overlay">
+  <div id="overlaytext">
+  <p align="center">We need your help!</p>
+  <br /><br />
+  <p>For 17 years, this forum has served us as a platform for sharing games with each other, graciously hosted by the owner of RIN for all this time. Sadly, he can no longer afford our server.</p>
+  <br /><br />
+  <p>To keep this forum alive, we need your help with covering the hosting expenses.</p>
+  <br /><br />
+  <p>For more information, click <a href="../donate" target="_blank" onclick="overlayconfirm()">here</a>.</p>
+  
+  </div>
+  <a id="overlayconfirmbtn" onclick="overlayconfirm()" href="javascript:overlayconfirm();">Close</a>
+</div>
+
+<table align="center" width="100%" class="bodyline">
+	<tr>
+		<td>
+<a name="top"></a>		
+<div id="wrapheader">
+
+	<div id="logodesc">
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td><a href="./index.php"><img src="./styles/rinDark/imageset/site_logo-2.png" alt="Logo" title="Logo" /></a></td>
+			<td width="100%" align="center"><h1>CS RIN - Steam Underground</h1><span class="gen">cs.rin.ru | csrin.org | The password is usually one of these.</span></td>
+		</tr>
+		</table>
+	</div>
+
+	<div id="menubar">
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				<a href="./viewtopic.php?f=10&amp;t=44034"><img src="./styles/rinDark/theme/images/icon_mini_rules.gif" width="14" height="14" alt="*" /> Forum rules</a>
+                &nbsp;:: &nbsp;<a href="../donate"><img src="./styles/rinDark/theme/images/icon_donate.gif" width="14" height="14" alt="*" /> Donate</a>
+			</td>
+			<td class="genmed" align="right">
+                <a href="chat.php"><img src="./styles/rinDark/theme/images/icon_mini_irc.gif" width="14" height="14" alt="*" /> Chat</a>
+				&nbsp;:: &nbsp;<a href="./viewtopic.php?f=10&amp;t=98158"><img src="./styles/rinDark/theme/images/icon_mini_faq.gif" width="12" height="13" alt="*" /> FAQ</a><!--<sup style="color:#FF0000;"> new!</sup>-->
+				&nbsp;:: &nbsp;<a href="./memberlist.php"><img src="./styles/rinDark/theme/images/icon_mini_members.gif" width="12" height="13" alt="*" /> Members</a>
+			</td>
+		</tr>
+		</table>
+		<br>
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				 <a href="./ucp.php"><img src="./styles/rinDark/theme/images/icon_mini_profile.gif" width="12" height="13" alt="*" /> User Control Panel</a> &nbsp;:: &nbsp;<a href="./ucp.php?i=pm&amp;folder=inbox"><img src="./styles/rinDark/theme/images/icon_mini_message.gif" width="12" height="13" alt="*" /> <strong>0</strong> new messages</a>
+			</td>
+			<td class="genmed" align="right">
+				<a href="./search.php"><img src="./styles/rinDark/theme/images/icon_mini_search.gif" width="12" height="13" alt="*" /> Search</a>
+                        &nbsp;:: &nbsp;<a href="./ucp.php?mode=logout&amp;sid=00000000000000000000000000000000"><img src="./styles/rinDark/theme/images/icon_mini_login.gif" width="12" height="13" alt="*" /> Logout [ TestUser ]</a>
+				
+			</td>
+		</tr>
+		</table>
+		
+		<table width="100%" cellspacing="0">
+		<tr>
+			<td class="genmed">
+				
+			</td>
+		</tr>
+		</table>
+	</div>
+
+	<div id="datebar">
+		<table width="100%" cellspacing="0">
+			<td class="gensmall">Last visit was: Yesterday, 12:26</td>
+            
+			<td class="gensmall" align="right">It is currently Thursday, 26 Nov 2026, 14:32<br /></td>
+		</tr>
+		</table>
+	</div>
+
+	<div>
+		<table width="100%" cellspacing="0">
+		<br>
+		<tr>
+			<td class="genmed" align="right"></td>
+		</tr>
+		</table>
+</div>
+</div>
+
+<div id="wrapcentre">
+
+	
+	<p class="searchbar">
+		<span style="float: left;"><a href="./search.php?search_id=unanswered">View unanswered posts</a> | <a href="./search.php?search_id=active_topics">View active topics</a></span>
+		
+		<span style="float: right;"><a href="./search.php?search_id=unreadposts">View unread posts</a> | <a href="./search.php?search_id=newposts">View new posts</a> | <a href="./search.php?search_id=egosearch">View your posts</a></span>
+		
+	</p>
+	
+
+	<br style="clear: both;" />
+
+	<table class="tablebg" width="100%" cellspacing="1" cellpadding="0" style="margin-top: 5px;">
+	<tr>
+		<td class="row5">
+			<p class="breadcrumbs"><a class="breadcrumbs" href="./index.php">Board index</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=27">English Forums</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=10">Main Forum</a></p>
+			
+		<div id="search-box">
+			<form method="post" id="topic-search" action="./search.php">
+				<input class="inputbox search tiny"  type="text" name="keywords" id="search_keywords" size="22" value="Search this topic…" onclick="if(this.value=='Search this topic…')this.value='';" onblur="if(this.value=='')this.value='Search this topic…';" />
+				<input class="button1" type="submit" value="Search" />
+				<input type="hidden" value="135719" name="t" />
+				<input type="hidden" value="msgonly" name="sf" />
+				<input type="hidden" name="terms" value="any" />
+			</form>
+		</div>
+
+
+		</td>
+	</tr>
+	</table>
+
+	<br />
+
+<div id="pageheader">
+	<h2><a class="titles" href="./viewtopic.php?f=10&amp;t=135719"><span style="color:#258CBC;">[</span><span style="color:#258CBC;font-size: 0.9em;">Info</span><span style="color:#258CBC;">]</span> Wizordum</a></h2>
+	<br>
+
+	<p class="gensmall"><b><a href="#" onclick="jumpto(); return false;" title="Click to jump to page…">Go to page</a> <strong>1</strong><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=135719&amp;start=15">2</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=135719&amp;start=30">3</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=135719&amp;start=45">4</a> &nbsp;<a href="./viewtopic.php?f=10&amp;t=135719&amp;start=15">Next</a></b></p>
+
+</div>
+
+<br clear="all" /><br />
+
+<div id="pagecontent">
+
+	<table width="100%" cellspacing="1">
+	<tr>
+		<td align="left" valign="middle" nowrap="nowrap">
+		<!--<a href="./posting.php?mode=post&amp;f=10"><img src="./styles/rinDark/imageset/en/button_topic_new.gif" alt="Post new topic" title="Post new topic" /></a>&nbsp;--><a href="./posting.php?mode=reply&amp;f=10&amp;t=135719"><img src="./styles/rinDark/imageset/en/button_topic_reply.gif" alt="Reply to topic" title="Reply to topic" /></a>
+		</td>
+		
+			<td class="nav" valign="middle" nowrap="nowrap">&nbsp;Page <strong>1</strong> of <strong>4</strong><br /></td>
+			<td class="gensmall" nowrap="nowrap">&nbsp;[ 58 posts ]&nbsp;</td>
+			<td class="gensmall" width="100%" align="right" nowrap="nowrap"></td>
+		
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr>
+		<td class="cat">
+			<table width="100%" cellspacing="0">
+			<tr>
+				<td class="nav" nowrap="nowrap">&nbsp;
+				<a href="./viewtopic.php?uid=2733823&amp;f=10&amp;t=135719&amp;watch=topic&amp;start=0&amp;hash=00000000" title="Subscribe topic">Subscribe topic</a> | <a href="./viewtopic.php?f=10&amp;t=135719&amp;bookmark=1&amp;hash=00000000" title="Bookmark topic">Bookmark topic</a> | <a href="./viewtopic.php?f=10&amp;t=135719&amp;view=print" title="Print view">Print view</a> | <a href="./memberlist.php?mode=email&amp;t=135719" title="E-mail friend">E-mail friend</a>
+				</td>
+				<td class="nav" align="right" nowrap="nowrap"><a href="./viewtopic.php?f=10&amp;t=135719&amp;view=previous">Previous topic</a> | <a href="./viewtopic.php?f=10&amp;t=135719&amp;view=next">Next topic</a>&nbsp;</td>
+			</tr>
+			</table>
+		</td>
+	</tr>
+
+	</table>
+
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	
+		<tr>
+			<th>Author</th>
+			<th>Message</th>
+		</tr>
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p2908782"></a>
+				<b class="postauthor">LikeAG6</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=2908782#p2908782"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Wizordum&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Sunday, 01 Oct 2023, 10:23&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=2908782"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">I live here Три раза сломал клаву :)</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=712842_1615919599.jpg" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Sunday, 14 May 2017, 23:07<br /><b>Posts:</b> 16097
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1715590/header.jpg?t=1745939867" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br /><span style="color: #FF0000"><span style="font-size: 150%; line-height: normal"><span style="font-weight: bold">Wizordum</span></span></span><br /><br /><span style="color: #FF0000"><span style="font-weight: bold">Details</span></span><br /><span style="font-weight: bold">Store Page:</span> <a href="http://store.steampowered.com/app/1715590" class="postlink" rel="nofollow">http://store.steampowered.com/app/1715590</a><br /><span style="font-weight: bold">Genre(s):</span> Action, Indie<br /><span style="font-weight: bold">Developer:</span> Emberheart Games<br /><span style="font-weight: bold">Publisher:</span> Apogee Entertainment<br /><span style="font-weight: bold">Release Date:</span> 29 Apr, 2025<br /><span style="font-weight: bold">Language(s):</span> English<br /><span style="font-weight: bold">Operating system(s):</span> <img width=26px height=16px src="https://cdn.akamai.steamstatic.com/store/icons/icon_platform_win.svg" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> <br /><br /><span style="color: #FF0000"><span style="font-weight: bold">Features</span></span><br /><ul><li><img width=26px height=16px src="https://store.akamai.steamstatic.com/public/images/v6/ico/ico_singlePlayer.png" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Single-player</li><li><img width=26px height=16px src="https://store.akamai.steamstatic.com/public/images/v6/ico/ico_achievements.png" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Steam Achievements</li><li><img width=26px height=16px src="https://cs.rin.ru/forum/images/spacer.gif" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Partial Controller Support</li><li><img width=26px height=16px src="https://store.akamai.steamstatic.com/public/images/v6/ico/ico_cloud.png" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Steam Cloud</li><li><img width=26px height=16px src="https://cs.rin.ru/forum/images/spacer.gif" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Steam Leaderboards</li><li><img width=26px height=16px src="https://store.akamai.steamstatic.com/public/images/v6/ico/ico_editor.png" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Includes level editor</li><li><img width=26px height=16px src="https://cs.rin.ru/forum/images/spacer.gif" alt="Image" onclick="resizeimg(this)" title="Click to resize" /> Family Sharing</li></ul><br /><span style="color: #FF0000"><span style="font-weight: bold">About The Game</span></span><br /><div class="spoiler">
+<div style="margin-bottom: 2px;">
+<input value="Show" style="margin: 0px; padding: 0px; width: 60px; font-size: 10px;" onclick="if(this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display != 'inline') { this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display = 'inline'; this.innerText = ''; this.value = 'Hide'; } else { this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display = 'none'; this.innerText = ''; this.value='Show'; }" type="button">
+<b>Spoiler </b>
+</div>
+<div class="quotecontent" style="padding: 2px;"> <div style="display: none;">The Ancient Seal of Terrabruma has shattered, unleashing the forces of Chaos once more. As one of the last Mages of Wizordum sanctuary, you must embark on a quest to find the source of this corruption and push the Chaos back before they consume the kingdom in a speedrun-friendly fantasy FPS tearing a page from the spellbooks of ‘90s fantasy FPS classics like Hexen and Heretic.<br /><br /><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1715590/extras/wizordum-steam-1.gif?t=1745939867" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br /><span style="font-weight: bold">KEY FEATURES</span><br /><ul><li> A vast arsenal of magic weapons &amp; items<br /></li><li> Search for secret places filled with treasures<br /></li><li> Solve puzzles and avoid traps<br /></li><li> Embark on a single-player campaign to find the source of Chaos, traveling from the Town of Grimbrook through swamps over the snowy mountains and beyond.<br /></li><li> Collect bonus items and beat the hardest difficulty levels to climb to the top of the leaderboards<br /></li><li> Beat challenges at each level<br /></li><li> Compete online for the best time<br /></li><li> Create and share custom levels, all from inside the game</li></ul><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1715590/extras/wizordum-steam-2.gif?t=1745939867" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br /><span style="font-weight: bold">LEVEL EDITOR</span><br />Design and download custom adventures or full-fledged episodes with the in-game level editor.<br /><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1715590/extras/level-editor.gif?t=1745939867" alt="Image" onclick="resizeimg(this)" title="Click to resize" /></div></div>
+</div><br /><br /><span style="color: #FF0000"><span style="font-weight: bold">System Requirements</span></span><br /><span style="font-weight: bold">Minimum:</span><br /><ul><li><span style="font-weight: bold">OS:</span> Windows 10<br /></li><li><span style="font-weight: bold">Processor:</span> 2.4 GHz Dual-Core<br /></li><li><span style="font-weight: bold">Memory:</span> 2000 MB RAM<br /></li><li><span style="font-weight: bold">Graphics:</span> GeForce 9800GT Or Equivalent<br /></li><li><span style="font-weight: bold">Storage:</span> 512 MB available space</li></ul><br /><span style="font-weight: bold">Recommended:</span><br /><ul><li><span style="font-weight: bold">OS:</span> Windows 10<br /></li><li><span style="font-weight: bold">Processor:</span> Quad Core 2.4 GHz 64-bit<br /></li><li><span style="font-weight: bold">Memory:</span> 8000 MB RAM<br /></li><li><span style="font-weight: bold">Graphics:</span> Geforce GTX 460 Or Equivalent<br /></li><li><span style="font-weight: bold">Storage:</span> 512 MB available space</li></ul></div>
+
+					
+						<div class="postbody"><br />_________________<br />I occasionally post scene releases, but there will never be a download link in the post, just an info.<br />To download see <a href="https://cs.rin.ru/forum/viewtopic.php?f=10&amp;t=95461" class="postlink" rel="nofollow">this</a> post , or on private torrents.<br /><br />---<br />If there is a post, and the link(s) is &quot;dead&quot;, feel free to pm me for a reupload.<br /><a href="https://cs.rin.ru/forum/viewtopic.php?p=3621221#p3621221" class="postlink" rel="nofollow">Just a reminder,about &quot;ElAmigos&quot; update(s) !</a></div>
+					
+							<br /><br />
+							<span class="gensmall">Last edited by <a href="./memberlist.php?mode=viewprofile&amp;u=712842">LikeAG6</a> on Thursday, 01 May 2025, 18:18, edited 2 times in total.</span>
+						<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=712842"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=2908782"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=2908782"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p2948471"></a>
+				<b class="postauthor">deadite</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=2948471#p2948471"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access] [Pre-Release]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Wednesday, 29 Nov 2023, 15:35&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=2948471"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=608108_1567270867.jpg" width="113" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Wednesday, 08 Jun 2016, 00:17<br /><b>Posts:</b> 158
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">been lookign forward for this shooter, played the demo and reminds me of project warlock, but more RPG</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=608108"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=2948471"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=2948471"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p2948564"></a>
+				<b class="postauthor">FidelCastrol</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=2948564#p2948564"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access] [Pre-Release]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Wednesday, 29 Nov 2023, 18:17&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=2948564"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Forum ghost Местное привидение</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 03 Jul 2009, 19:00<br /><b>Posts:</b> 265
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">And it's out !<br />Can't wait to see it around <img src="./images/smilies/icon_e_biggrin.gif" alt=":D" title="Very Happy" /></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=412080"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=2948564"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=2948564"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p2949011"></a>
+				<b class="postauthor">SasKP</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=2949011#p2949011"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Thursday, 30 Nov 2023, 12:11&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=2949011"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">User Редкий гость</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Monday, 27 Apr 2015, 18:19<br /><b>Posts:</b> 44
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Here you go: <!-- m --><span class="link_unsafe_overlay2"><a class="postlink link_unsafe_reveal" onclick="return reveal_unsafe(this);">privatebin link</a><span class="link_unsafe"><a class="postlink" href="https://privatebin.rinuploads.org/?806ab070237920fa#2FXebTeeRZi8KPQZT41ApzqvbpZJhPLKuEcYGhfW6YC3">https://privatebin.rinuploads.org/?806a ... cYGhfW6YC3</a></span> ⚠   <span class="link_unsafe_note">Unsafe filehosts - <span class="tooltip">[READ ME] <span class="tooltiptext">This site may link to filehosts that show fake download pages with malware.<br />Learn how to stay safe <a class="postlink" href="/forum/viewtopic.php?f=14&t=159345">here</a>.</span></span></span></span><!-- m --><br /><br />With the usual password.</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=556040"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=2949011"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=2949011"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p2949013"></a>
+				<b class="postauthor">FidelCastrol</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=2949013#p2949013"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Thursday, 30 Nov 2023, 12:18&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=2949013"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Forum ghost Местное привидение</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 03 Jul 2009, 19:00<br /><b>Posts:</b> 265
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Ty &lt;3 !</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=412080"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=2949013"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=2949013"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p2957311"></a>
+				<b class="postauthor">Marias K7</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=2957311#p2957311"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Tuesday, 12 Dec 2023, 03:03&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=2957311"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Forum ghost Местное привидение</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 29 Apr 2022, 20:09<br /><b>Posts:</b> 395
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Any chance someone has a mirror? The 1fichier link just gives a &quot;file has been deleted error&quot;</div>
+
+					
+						<div class="postbody"><br />_________________<br />No IGG or SteamUnlocked files please. Keep em clean.</div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=1871136"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=2957311"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=2957311"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p2967730"></a>
+				<b class="postauthor">SasKP</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=2967730#p2967730"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Thursday, 28 Dec 2023, 09:15&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=2967730"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">User Редкий гость</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Monday, 27 Apr 2015, 18:19<br /><b>Posts:</b> 44
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><div class="quotetitle">Marias K7 wrote:</div><div class="quotecontent">Any chance someone has a mirror? The 1fichier link just gives a &quot;file has been deleted error&quot;</div><br /><br />They took it down I guess. I recommend getting it from gog-games.to</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=556040"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=2967730"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=2967730"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p2968656"></a>
+				<b class="postauthor">irukanjji</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=2968656#p2968656"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Saturday, 30 Dec 2023, 00:02&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=2968656"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Forum ghost Местное привидение</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=1138404_1657571502.jpg" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Monday, 03 Feb 2020, 03:44<br /><b>Posts:</b> 294
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Here is the GOG version :<br /><br />setup_wizordum_v0.2.0.4_(69503).exe<br /><br /><!-- m --><a class="postlink" href="https://1fichier.com/?m178butb0z4j4toxw6ef" rel="nofollow">https://1fichier.com/?m178butb0z4j4toxw6ef</a><!-- m --><br /><br /><br /> <img src="./images/smilies/az.gif" alt=":DRINK:" title=":DRINK:" />  <img src="./images/smilies/az.gif" alt=":DRINK:" title=":DRINK:" />  <img src="./images/smilies/az.gif" alt=":DRINK:" title=":DRINK:" /></div>
+
+					
+						<div class="postbody"><br />_________________<br /><img src="https://i.postimg.cc/fLS57HLP/four-horsemen.gif" alt="Image" onclick="resizeimg(this)" title="Click to resize" /></div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=1138404"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=2968656"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=2968656"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p2975667"></a>
+				<b class="postauthor">irukanjji</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=2975667#p2975667"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Friday, 12 Jan 2024, 21:34&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=2975667"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Forum ghost Местное привидение</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=1138404_1657571502.jpg" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Monday, 03 Feb 2020, 03:44<br /><b>Posts:</b> 294
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Here is the GOG version :<br /><br />setup_wizordum_v0.2.1.2_(70197).exe<br /><br /><!-- m --><a class="postlink" href="https://1fichier.com/?cnpine0uq39vfxkho4dn" rel="nofollow">https://1fichier.com/?cnpine0uq39vfxkho4dn</a><!-- m --><br /><br /> <img src="./images/smilies/az.gif" alt=":DRINK:" title=":DRINK:" />  <img src="./images/smilies/az.gif" alt=":DRINK:" title=":DRINK:" />  <img src="./images/smilies/az.gif" alt=":DRINK:" title=":DRINK:" /></div>
+
+					
+						<div class="postbody"><br />_________________<br /><img src="https://i.postimg.cc/fLS57HLP/four-horsemen.gif" alt="Image" onclick="resizeimg(this)" title="Click to resize" /></div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=1138404"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=2975667"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=2975667"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p2992770"></a>
+				<b class="postauthor">CrashChip</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=2992770#p2992770"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Sunday, 11 Feb 2024, 18:04&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=2992770"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Super flooder Почетный графоман</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Thursday, 28 Oct 2021, 16:29<br /><b>Posts:</b> 603
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Annnnd, it's out of date again, now up to 2.1.4 hotfix.  g-g.to hasn't updated yet.<br /><br />SteamDB<br /><a href="https://steamdb.info/patchnotes/13095049/" class="postlink" rel="nofollow">2.1.3</a><br /><a href="https://steamdb.info/patchnotes/13098561/" class="postlink" rel="nofollow">2.1.4</a></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=1682234"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=2992770"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=2992770"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3065493"></a>
+				<b class="postauthor">JDCrenton</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3065493#p3065493"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Thursday, 06 Jun 2024, 04:54&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3065493"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Saturday, 04 Apr 2020, 12:18<br /><b>Posts:</b> 72
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><span style="font-size: 200%; line-height: normal"><span style="font-weight: bold">Episode 2 Released</span></span><br /><br />Latest Steam Clean Files:<br /><br /><div class="spoiler">
+<div style="margin-bottom: 2px;">
+<input value="Show" style="margin: 0px; padding: 0px; width: 60px; font-size: 10px;" onclick="if(this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display != 'inline') { this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display = 'inline'; this.innerText = ''; this.value = 'Hide'; } else { this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display = 'none'; this.innerText = ''; this.value='Show'; }" type="button">
+<b>Spoiler </b>
+</div>
+<div class="quotecontent" style="padding: 2px;"> <div style="display: none;"><div class="codebox"><div class="codeheader"><b>Code:</b> <a href="#" onclick="linenumberOnOff('cb93959'); selectCode(this); return false;" class="postlink-local">Select all</a> | <a href="#" onclick="linenumberOnOff('cb93959'); return false;" class="postlink-local">Line number On/Off</a> | <a href="#" onclick="expandCode('cb93959'); return false;" class="postlink-local">Expand/Contract</a></div><!-- we need this dummy div to fix a firefox bug when selecting code lines --><div class="codeholder"><div class="text" id="cb93959" style="font-family: monospace;"><ol><li style="" class="li1"><!-- m --><a class="postlink" href="https://pixeldrain.com/u/aMsBvEkT" rel="nofollow">https://pixeldrain.com/u/aMsBvEkT</a><!-- m --></li></ol></div></div></div></div></div>
+</div></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=1196708"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3065493"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3065493"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p3067677"></a>
+				<b class="postauthor">Joshuan</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3067677#p3067677"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Sunday, 09 Jun 2024, 12:00&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3067677"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">I live here Три раза сломал клаву :)</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Sunday, 02 Nov 2014, 16:04<br /><b>Posts:</b> 3996
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Thank you very much JDCrenton.</div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=542090"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3067677"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3067677"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3145372"></a>
+				<b class="postauthor">Ice_Queen</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3145372#p3145372"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Tuesday, 15 Oct 2024, 12:36&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3145372"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">I live here Три раза сломал клаву :)</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=2091453_1708426740.jpg" width="96" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Friday, 02 Dec 2022, 18:39<br /><b>Posts:</b> 3558
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><span style="color: #FF0000"><span style="font-weight: bold">  wizordum_windows_gog_(76906)[PORTABLE]</span></span><br /><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1715590/header.jpg?t=1717770934" alt="Image" onclick="resizeimg(this)" title="Click to resize" /><br /><br /><span style="color: #FF0000"><span style="font-weight: bold">Exe Locations:</span></span><br /><span style="font-style: italic"> \wizordum_windows_gog_(76906)[PORTABLE]\Wizordum.exe </span><br /><br /><span style="color: #FF0000"><span style="font-weight: bold">MagnetLink:</span></span><br /><div class="spoiler">
+<div style="margin-bottom: 2px;">
+<input value="Show" style="margin: 0px; padding: 0px; width: 60px; font-size: 10px;" onclick="if(this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display != 'inline') { this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display = 'inline'; this.innerText = ''; this.value = 'Hide'; } else { this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display = 'none'; this.innerText = ''; this.value='Show'; }" type="button">
+<b>Spoiler </b>
+</div>
+<div class="quotecontent" style="padding: 2px;"> <div style="display: none;"><div class="codebox"><div class="codeheader"><b>Code:</b> <a href="#" onclick="linenumberOnOff('cb21816'); selectCode(this); return false;" class="postlink-local">Select all</a> | <a href="#" onclick="linenumberOnOff('cb21816'); return false;" class="postlink-local">Line number On/Off</a> | <a href="#" onclick="expandCode('cb21816'); return false;" class="postlink-local">Expand/Contract</a></div><!-- we need this dummy div to fix a firefox bug when selecting code lines --><div class="codeholder"><div class="text" id="cb21816" style="font-family: monospace;"><ol><li style="" class="li1"> magnet:?xt=urn:btih:d0ac41df621daa7d5848980d738114051eb33a8b&amp;dn=wizordum_windows_gog_%2876906%29%5BPORTABLE%5D&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&amp;tr=udp%3A%2F%2Fexplodie.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=http%3A%2F%2Fopen.acgnxtracker.com%3A80%2Fannounce&amp;tr=udp%3A%2F%2Foh.fuuuuuck.com%3A6969%2Fannounce&amp;tr=http%3A%2F%2Ftracker.bt4g.com%3A2095%2Fannounce&amp;tr=udp%3A%2F%2Fopentracker.io%3A6969%2Fannounce&amp;tr=https%3A%2F%2Ftracker.tamersunion.org%3A443%2Fannounce&amp;tr=udp%3A%2F%2Fec2-18-191-163-220.us-east-2.compute.amazonaws.com%3A6969%2Fannounce&amp;tr=https%3A%2F%2Ftrackers.mlsub.net%3A443%2Fannounce&amp;tr=http%3A%2F%2Ftracker.files.fm%3A6969%2Fannounce&amp;tr=https%3A%2F%2Ftracker.loligirl.cn%3A443%2Fannounce&amp;tr=https%3A%2F%2Ftracker.yemekyedim.com%3A443%2Fannounce&amp;tr=http%3A%2F%2Fbt.okmp3.ru%3A2710%2Fannounce&amp;tr=udp%3A%2F%2Frun.publictracker.xyz%3A6969%2Fannounce </li></ol></div></div></div></div></div>
+</div><br /><br />Thanks to for files:<span style="color: #FF0000"> gog </span><br />Thanks to for crack:<span style="color: #FF0000"> gog </span></div>
+
+					
+						<br clear="all" /><br />
+
+						<table class="tablebg" width="100%" cellspacing="1">
+						<tr>
+							<td class="row3"><b class="genmed">Attachments: </b></td>
+						</tr>
+						
+							<tr>
+								<td class="row2">
+			<span class="genmed">
+				<img src="./styles/rinDark/imageset/icon_topic_attach.gif" width="10" height="13" alt="" title="" /> 
+				<a href="./download/file.php?id=142443">wizordum_windows_gog_(76906)[PORTABLE].torrent</a> [37.23 KiB]
+			</span><br />
+			<span class="gensmall">Downloaded 22 times</span>
+		
+
+		<br />
+	</td>
+							</tr>
+						
+						</table>
+					
+						<div class="postbody"><br />_________________<br /><a href="https://t.me/+jHdSyT85BAg5NDg8" class="postlink" rel="nofollow"><span style="color: #FF0000">Portable Games Telegram</span></a>,<br /><a href="https://game-box.win/" class="postlink" rel="nofollow"><span style="font-weight: bold">PORTABLE SITE</span></a> = New Portables Site (Live updates)<br /><span style="color: #FFFF00"><span style="font-weight: bold">Trusted by </span><a href="https://fmhy.net/gaming#download-games" class="postlink" rel="nofollow"><span style="font-weight: bold">FMHY</span></a></span><br /><br />PW DDLS ONLY:<span style="font-weight: bold">cs.rin.ru</span> -&gt; only for DDLS</div>
+					
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=2091453"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3145372"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3145372"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row2">
+
+			<td align="center" valign="middle">
+				<a name="p3175134"></a>
+				<b class="postauthor">JDCrenton</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3175134#p3175134"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Thursday, 28 Nov 2024, 12:18&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3175134"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row2">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Advanced forumer Завсегдатай</td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Saturday, 04 Apr 2020, 12:18<br /><b>Posts:</b> 72
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody">Latest Steam Clean Files: <div class="spoiler">
+<div style="margin-bottom: 2px;">
+<input value="Show" style="margin: 0px; padding: 0px; width: 60px; font-size: 10px;" onclick="if(this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display != 'inline') { this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display = 'inline'; this.innerText = ''; this.value = 'Hide'; } else { this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display = 'none'; this.innerText = ''; this.value='Show'; }" type="button">
+<b>Spoiler </b>
+</div>
+<div class="quotecontent" style="padding: 2px;"> <div style="display: none;"><div class="codebox"><div class="codeheader"><b>Code:</b> <a href="#" onclick="linenumberOnOff('cb40603'); selectCode(this); return false;" class="postlink-local">Select all</a> | <a href="#" onclick="linenumberOnOff('cb40603'); return false;" class="postlink-local">Line number On/Off</a> | <a href="#" onclick="expandCode('cb40603'); return false;" class="postlink-local">Expand/Contract</a></div><!-- we need this dummy div to fix a firefox bug when selecting code lines --><div class="codeholder"><div class="text" id="cb40603" style="font-family: monospace;"><ol><li style="" class="li1"><!-- m --><a class="postlink" href="https://www.mediafire.com/file/nlt8sufui4emslt/Wizordum.7z/file" rel="nofollow">https://www.mediafire.com/file/nlt8sufu ... um.7z/file</a><!-- m --></li></ol></div></div></div></div></div>
+</div></div>
+
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row2">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=1196708"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3175134"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3175134"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr class="row1">
+
+			<td align="center" valign="middle">
+				<a name="p3249519"></a>
+				<b class="postauthor">Dude Dude</b>
+			</td>
+			<td width="100%" height="25">
+				<table width="100%" cellspacing="0">
+				<tr>
+				
+					<td class="gensmall" width="100%"><div style="float: left;"><br><a href="./viewtopic.php?p=3249519#p3249519"><img src="./styles/rinDark/imageset/icon_post_target.gif" width="12" height="9" alt="Post" title="Post" /></a>&nbsp;<b>Post subject:</b> Re: Wizordum [Early Access]&nbsp;&nbsp;&nbsp;</div><div style="float: right;"><b>Posted:</b> Monday, 31 Mar 2025, 07:25&nbsp;&nbsp;&nbsp;<a href="./posting.php?mode=quote&amp;f=10&amp;p=3249519"><img src="./styles/rinDark/imageset/en/icon_post_quote.gif" alt="Reply with quote" title="Reply with quote" /></a> </div></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr class="row1">
+
+			<td valign="top" class="profile">
+				<table cellspacing="4" align="center" width="150">
+			
+				<tr>
+					<td class="postdetails">Forum ghost Местное привидение</td>
+				</tr>
+			
+				<tr>
+					<td><img src="./download/file.php?avatar=2877860_1736946019.jpg" width="120" height="120" alt="User avatar" /></td>
+				</tr>
+			
+				</table>
+
+				<span class="postdetails">
+				
+					<b>Joined:</b> Wednesday, 21 Aug 2024, 00:00<br /><b>Posts:</b> 445<br /><b>Location:</b> The Sauce
+				</span>
+
+			</td>
+			<td valign="top">
+				<table width="100%" cellspacing="5">
+				<tr>
+					<td>
+					
+
+						<div class="postbody"><a href="https://pixeldrain.com/u/M1aNYuW4" class="postlink" rel="nofollow"><span style="color: white"><span style="font-weight: bold">Wizordum [Win64] [Branch: Public] (Clean Steam Files)</span></span></a><br /><span style="font-size: 85%; line-height: normal"><span style="color: white"><span style="font-weight: bold">Version:</span> <span style="font-style: italic">October 29, 2024 - 14:14:10 UTC [Build 16222355]</span></span></span><br /><br /><div class="spoiler">
+<div style="margin-bottom: 2px;">
+<input value="Show" style="margin: 0px; padding: 0px; width: 60px; font-size: 10px;" onclick="if(this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display != 'inline') { this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display = 'inline'; this.innerText = ''; this.value = 'Hide'; } else { this.closest('.spoiler').getElementsByTagName('div')[1].getElementsByTagName('div')[0].style.display = 'none'; this.innerText = ''; this.value='Show'; }" type="button">
+<b><span style="color: white">Depots &amp; Manifests</span> </b>
+</div>
+<div class="quotecontent" style="padding: 2px;"> <div style="display: none;"><div class="codebox"><div class="codeheader"><b>Code:</b> <a href="#" onclick="linenumberOnOff('cb73541'); selectCode(this); return false;" class="postlink-local">Select all</a> | <a href="#" onclick="linenumberOnOff('cb73541'); return false;" class="postlink-local">Line number On/Off</a> | <a href="#" onclick="expandCode('cb73541'); return false;" class="postlink-local">Expand/Contract</a></div><!-- we need this dummy div to fix a firefox bug when selecting code lines --><div class="codeholder"><div class="text" id="cb73541" style="font-family: monospace;"><ol><li style="" class="li1">1715591 - [Manifest 7547127682647088261]</li></ol></div></div></div></div>
+</div>
+</div><span style="color: white"><span style="font-weight: bold">Uploaded version:</span> <span style="font-style: italic">October 29, 2024 - 14:14:10 UTC [Build 16222355]</span></span></div>
+
+					
+						<div class="postbody"><br />_________________<br /><span style="font-size: 85%; line-height: normal"><span style="color: pink">Read the</span> <a href="https://cs.rin.ru/forum/viewtopic.php?f=10&amp;t=98158" class="postlink" rel="nofollow"><span style="color: pink"><span style="text-decoration: underline"><span style="font-weight: bold">FAQ</span></span></span></a> <span style="color: pink">for the password.</span></span><br /><br /><span style="color: white"><span style="font-size: 60%; line-height: normal"><span style="font-style: italic"> - It's a nice day for a white Russian - </span></span></span></div>
+					<br clear="all" /><br />
+
+						<table width="100%" cellspacing="0">
+						<tr valign="middle">
+							<td class="gensmall" align="right">
+							
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+
+		<tr class="row1">
+
+			<td class="profile"><strong><a href="#wrapheader">Top</a></strong></td>
+			<td><div class="gensmall" style="float: left;">&nbsp;<a href="./memberlist.php?mode=viewprofile&amp;u=2877860"><img src="./styles/rinDark/imageset/en/icon_user_profile.gif" alt="Profile" title="Profile" /></a> <a href="./ucp.php?i=pm&amp;mode=compose&amp;action=quotepost&amp;p=3249519"><img src="./styles/rinDark/imageset/en/icon_contact_pm.gif" alt="Send private message" title="Send private message" /></a> &nbsp;</div> <div class="gensmall" style="float: right;">  <span style="vertical-align: 4px;"></span> <a href="./report.php?f=10&amp;p=3249519"><img src="./styles/rinDark/imageset/en/icon_post_report.gif" alt="Report this post" title="Report this post" /></a>  </div></td>
+	
+		</tr>
+
+	<tr>
+		<td class="spacer" colspan="2" height="1"><img src="images/spacer.gif" alt="" width="1" height="1" /></td>
+	</tr>
+	</table>
+
+	<table width="100%" cellspacing="1" class="tablebg">
+	<tr align="center">
+		<td class="cat">
+		
+		<div id="search-box_thread">
+			<form method="post" id="topic-search" action="./search.php">
+				<input class="inputbox search tiny"  type="text" name="keywords" id="search_keywords" size="22" value="Search this topic…" onclick="if(this.value=='Search this topic…')this.value='';" onblur="if(this.value=='')this.value='Search this topic…';" />
+				<input class="button1" type="submit" value="Search" />
+				<input type="hidden" value="135719" name="t" />
+				<input type="hidden" value="msgonly" name="sf" />
+			</form>
+		</div>
+		
+		<form name="viewtopic" method="post" action="./viewtopic.php?f=10&amp;t=135719"><span class="gensmall">Display posts from previous:</span> <select name="st" id="st"><option value="0" selected="selected">All posts</option><option value="1">1 day</option><option value="7">7 days</option><option value="14">2 weeks</option><option value="30">1 month</option><option value="90">3 months</option><option value="180">6 months</option><option value="365">1 year</option></select>&nbsp;<span class="gensmall">Sort by</span> <select name="sk" id="sk"><option value="a">Author</option><option value="t" selected="selected">Post time</option><option value="s">Subject</option></select> <select name="sd" id="sd"><option value="a" selected="selected">Ascending</option><option value="d">Descending</option></select>&nbsp;<input class="btnlite" type="submit" value="Go" name="sort" /></form></td>
+	</tr>
+	</table>
+	
+
+	<table width="100%" cellspacing="1">
+	<tr>
+		<td align="left" valign="middle" nowrap="nowrap">
+		<!--<a href="./posting.php?mode=post&amp;f=10"><img src="./styles/rinDark/imageset/en/button_topic_new.gif" alt="Post new topic" title="Post new topic" /></a>&nbsp;--><a href="./posting.php?mode=reply&amp;f=10&amp;t=135719"><img src="./styles/rinDark/imageset/en/button_topic_reply.gif" alt="Reply to topic" title="Reply to topic" /></a>
+		</td>
+		
+			<td class="nav" valign="middle" nowrap="nowrap">&nbsp;Page <strong>1</strong> of <strong>4</strong><br /></td>
+			<td class="gensmall" nowrap="nowrap">&nbsp;[ 58 posts ]&nbsp;</td>
+			<td class="gensmall" width="100%" align="right" nowrap="nowrap"><b><a href="#" onclick="jumpto(); return false;" title="Click to jump to page…">Go to page</a> <strong>1</strong><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=135719&amp;start=15">2</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=135719&amp;start=30">3</a><span class="page-sep">, </span><a href="./viewtopic.php?f=10&amp;t=135719&amp;start=45">4</a> &nbsp;<a href="./viewtopic.php?f=10&amp;t=135719&amp;start=15">Next</a></b></td>
+		
+	</tr>
+	</table>
+
+</div>
+
+<div id="pagefooter"></div>
+
+<br clear="all" />
+<table class="tablebg" width="100%" cellspacing="1" cellpadding="0" style="margin-top: 5px;">
+	<tr>
+		<td class="row5">
+			<p class="breadcrumbs"><a class="breadcrumbs" href="./index.php">Board index</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=27">English Forums</a> &#187; <a class="breadcrumbs" href="./viewforum.php?f=10">Main Forum</a></p>
+			
+		<div id="search-box">
+			<form method="post" id="topic-search" action="./search.php">
+				<input class="inputbox search tiny"  type="text" name="keywords" id="search_keywords" size="22" value="Search this topic…" onclick="if(this.value=='Search this topic…')this.value='';" onblur="if(this.value=='')this.value='Search this topic…';" />
+				<input class="button1" type="submit" value="Search" />
+				<input type="hidden" value="135719" name="t" />
+				<input type="hidden" value="msgonly" name="sf" />
+				<input type="hidden" name="terms" value="any" />
+			</form>
+		</div>
+
+
+		</td>
+	</tr>
+	</table>
+	<br clear="all" />
+
+	<table class="tablebg" width="100%" cellspacing="1">
+	<tr>
+		<td class="cat"><h4>Who is online</h4></td>
+	</tr>
+	<tr>
+		<td class="row1"><p class="gensmall">Users browsing this forum: <a href="./memberlist.php?mode=viewprofile&amp;u=1707853">1lethn1</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3368361">ader987</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1017316">Aehein</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=215868">ahab</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1643279">Alctern</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=943768">Appnetica</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=510740">aria</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1412878">AshWilliams</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2406068">asmodeus01</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=825415">auauau97</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1847303">avim1337</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3869719">Azuuru</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1169727">bauchiku123</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3279916">Benutzerman</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1140969">blackholesky</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=879635">bluetowel</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1998155">Boom Boom</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1688847">CFHrobi</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1060059">Charlie68</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2594826">ColossalHavoc</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=613232">cowcow69</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3061704">CuretheToony</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2121056">cynder_66</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2280461">DaniMocanu3</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2055237">dark_ronu</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=492472">darkzonez</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3621137">DeadReaper</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=562664">dennisberg</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2804355">Deri2k</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=979841">Det0naMarkBR</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=958751">dexecafe</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3239799">dogontogo</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=540213">Domestic</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=540614">Dondelladadski</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1261001">dontknowdontcare</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1384783">eds00</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2601910">ellenia</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3277028">EndME0011</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2297728">Ente 23</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2787494">Esterfourth</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=627711">eyebiz</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3114472">Fahad Hussain</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=592490">Fat_Shadow_X</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3723816">Finder Tracker</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=606790">framas</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=680947">GabrieleMor</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1225587">ghostkkahmed</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=771632">GIM47N</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3413237">gobabe7343</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1348400">Gurkannn</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3245749">hertzcs</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3626776">heyyyspacecadet</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2386612">hhwtest9@</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3743062">holupteddy</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3823672">hpxekky</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2561193">iamkrispyy</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3627612">IcyJayy</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=627721">Idaero Ace</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3817729">iLight18</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2386462">infiniteflow24</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3420612">iSlavik</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2424832">itsmoritz</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1986928">iut0</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2825224">IYMYAG</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1030616">Jessieisasnitch</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2318672">JohnGames2005</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1474625">kabalkin</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3561749">KawLL</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2851834">KeepMeLooped</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3948216">KingRedbeard83</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2720748">KJdragon</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=354955">KNAPPI_23</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1136653">koipendeu</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1009844">Kransekage</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3763613">KurDonXX</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2068821">LagZy1</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3948198">LapisPhos</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1902750">Layerplayer</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=747508">LeeKuper</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3314337">lianaflores</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3434303">lilwgray</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1070355">luckyisadogsname</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=464129">lycanwrath</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1994196">Madabruh</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2225918">Mammonza</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=537812">Maou</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3827676">Maridolce006</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2961708">mbkqhmblxjgn</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3948215">Merueth</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1057842">MicrowaveSoup</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=754141">MioBambino</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=591189">miraculix33</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=605397">Murat_Pasaoglu</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2178713">MythicPhoenixx</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3238720">nechrist</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=502511">nfsmw</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=732664">nikitaluger</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2645255">NoPann</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1450292">notsowright320</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3946721">nyfuli</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2989899">okokokok555</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=757030">Opeer</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1686602">otakunoodles</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1048834">ozgal</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1872398">Pips013</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3223892">PoolPirate</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=995581">PudimSedutor</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2392513">Pumpel</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=552620">railway</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3688124">Randomdude911</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2858327">rarumafeng</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=543194">razorice</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1143012">Renmaaru</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2072780">richterblack</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1419006">rigoletto12</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2351624">roj8667</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1218055">Rumbarozpór</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3943874">RyokaiOkai</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1891529">Saturnus</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3763708">ScarFaceW</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2638327">Sehnsucht</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3444961">seppukuu</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3290835">Shildeo</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3486742">Shirou25</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=831358">SineRequie</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=587891">sotir</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2301992">SrFaper</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1677744">StalkerGER</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3311805">stielgranate12345</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1540719">SupRyze</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1326450">swardoff</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3537396">SwordfishTyrant</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=660857">szejtan</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1308574">TctStrawberry</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3948209">TheGroocher</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3079801">thrownawayhero</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1188514">TimmaX</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2908207">toe31535</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2557164">tofu1</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1549385">togietogs</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1677031">UnKnownLG00</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1316727">unsolder@orescom.tk</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3779168">veutr542</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3667580">vevrk</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=348435">Waats</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1448676">williant112</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3043924">wodgey</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3557703">Wraiax</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2224850">WrathfulKnight</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3723063">xinkaizhong</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3073759">xXBelengheruXx</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3517734">XxCoolMan121</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=3108933">xybeck</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1995403">Youpimatin</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=2927261" style="color: #BF9F00;" class="username-coloured">Zoroxpai</a>, <a href="./memberlist.php?mode=viewprofile&amp;u=1058037">zxe21</a> and 328 guests</p></td>
+	</tr>
+	</table>
+
+
+<br clear="all" />
+	
+
+<table width="100%" cellspacing="1">
+<tr>
+	<td width="40%" valign="top" nowrap="nowrap" align="left"></td>
+	<td align="right">
+	<form method="post" name="jumpbox" action="./viewforum.php" onsubmit="if(document.jumpbox.f.value == -1){return false;}">
+
+	<table cellspacing="0" cellpadding="0" border="0">
+	<tr>
+		<td nowrap="nowrap"><span class="gensmall">Jump to:</span>&nbsp;<select name="f" onchange="if(this.options[this.selectedIndex].value != -1){ document.forms['jumpbox'].submit() }">
+
+		
+			<option value="-1">Select a forum</option>
+		<option value="-1">------------------</option>
+			<option value="26">Russian Forums (Форумы)</option>
+		
+			<option value="5">&nbsp; &nbsp;Новости</option>
+		
+			<option value="1">&nbsp; &nbsp;Общий форум</option>
+		
+			<option value="2">&nbsp; &nbsp;Counter Strike</option>
+		
+			<option value="3">&nbsp; &nbsp;Сервер cs.rin.ru</option>
+		
+			<option value="4">&nbsp; &nbsp;Книга жалоб</option>
+		
+			<option value="9">&nbsp; &nbsp;Читы и Читеры</option>
+		
+			<option value="6">&nbsp; &nbsp;Оффтопик</option>
+		
+			<option value="8">&nbsp; &nbsp;Чемпионат</option>
+		
+			<option value="11">&nbsp; &nbsp;Опросы</option>
+		
+			<option value="27">English Forums</option>
+		
+			<option value="10" selected="selected">&nbsp; &nbsp;Main Forum</option>
+		
+			<option value="29">&nbsp; &nbsp;&nbsp; &nbsp;Releases</option>
+		
+			<option value="32">&nbsp; &nbsp;&nbsp; &nbsp;Standalones</option>
+		
+			<option value="38">&nbsp; &nbsp;&nbsp; &nbsp;Other Gaming Platforms</option>
+		
+			<option value="41">&nbsp; &nbsp;&nbsp; &nbsp;Temporarily Restricted Topics</option>
+		
+			<option value="14">&nbsp; &nbsp;Off Topic</option>
+		
+			<option value="20">&nbsp; &nbsp;Developer Forum</option>
+		
+			<option value="22">&nbsp; &nbsp;Steam Content Sharing</option>
+		
+			<option value="19">&nbsp; &nbsp;Foreign Languages Forum</option>
+		
+			<option value="15">&nbsp; &nbsp;Archive</option>
+		
+			<option value="31">&nbsp; &nbsp;&nbsp; &nbsp;Ancient Threads</option>
+		
+			<option value="24">&nbsp; &nbsp;Junk</option>
+		
+
+		</select>&nbsp;<input class="btnlite" type="submit" value="Go" /></td>
+	</tr>
+	</table>
+
+	</form>
+</td>
+</tr>
+</table>
+<table width="100%" cellspacing="1">
+<tr>
+	<td align="right" valign="top" nowrap="nowrap"><span class="gensmall">You <strong>can</strong> post new topics in this forum<br />You <strong>can</strong> reply to topics in this forum<br />You <strong>can</strong> edit your posts in this forum<br />You <strong>cannot</strong> delete your posts in this forum<br />You <strong>cannot</strong> post attachments in this forum<br /></span></td>
+</tr>
+</table>
+<br clear="all" />
+
+
+</div>
+
+<div id="wrapfooter">
+    <br><br><br>
+	
+	<span class="copyright">Powered by <a href="https://www.phpbb.com/">phpBB</a>&reg; Forum Software &copy; phpBB Group
+	</span>
+	<br><br>
+</div>
+	
+		</td>
+	</tr>
+	<br>
+</table>
+	<br>
+</body>
+</html>

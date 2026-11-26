@@ -458,6 +458,9 @@ impl<'a> Walker<'a> {
         let name = el.value().name();
         let has_class = |c: &str| el.value().classes().any(|x| x == c);
         if matches!(name, "script" | "style" | "video" | "audio") || has_class("link_unsafe_reveal")
+            // The "Unsafe filehosts - [READ ME] ..." note next to flagged
+            // links; the flag itself is kept on the link.
+            || has_class("link_unsafe_note")
         {
             return;
         }

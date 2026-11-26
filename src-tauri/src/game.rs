@@ -232,20 +232,36 @@ pub struct DownloadLink {
     pub flagged_unsafe: bool,
 }
 
-/// External sites that show up in posts but aren't downloads.
+/// External sites that show up in posts but aren't downloads: stores,
+/// communities, wikis, video and image hosts. Subdomains match too.
 const NOT_DOWNLOAD_HOSTS: &[&str] = &[
+    // stores and launchers
+    "steampowered.com",
+    "steamstatic.com",
+    "epicgames.com",
+    "gog.com",
+    "ubisoft.com",
+    "ea.com",
+    "xbox.com",
+    "microsoft.com",
+    "humblebundle.com",
+    "itch.io",
+    // communities and docs
+    "steamcommunity.com",
     "discord.gg",
     "discord.com",
     "github.com",
     "reddit.com",
     "fmhy.net",
+    "pcgamingwiki.com",
+    "wikipedia.org",
+    "twitter.com",
+    "x.com",
+    // media
     "youtube.com",
     "youtu.be",
+    "twitch.tv",
     "imgur.com",
-    "i.imgur.com",
-    "steamcommunity.com",
-    "store.akamai.steamstatic.com",
-    "pcgamingwiki.com",
 ];
 
 static STEAM_APP_ID: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"/app/(\d+)").unwrap());
@@ -264,11 +280,13 @@ static PRE_INSTALLED: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)pre-?installed").unwrap());
 
 fn is_download(link: &PostLink) -> bool {
-    link.kind == LinkKind::External
-        && !link.in_quote
-        && !NOT_DOWNLOAD_HOSTS
-            .iter()
-            .any(|h| link.host == *h || link.host.ends_with(&format!(".{h}")))
+    let host = link.host.as_str();
+    let listed = NOT_DOWNLOAD_HOSTS
+        .iter()
+        .any(|h| host == *h || host.ends_with(&format!(".{h}")));
+    // Other sites' forums, e.g. forums.focus-home.com.
+    let forum = host.starts_with("forum.") || host.starts_with("forums.");
+    link.kind == LinkKind::External && !link.in_quote && !listed && !forum
 }
 
 /// A post is a release when it has download links of its own, i.e. outside
@@ -391,6 +409,98 @@ mod tests {
         );
         // Requirement lines don't leak into the details' extra fields.
         assert!(info.fields.iter().all(|f| f.key != "OS"));
+    }
+
+    fn fixture(topic_id: u64) -> TopicPage {
+        let html =
+            std::fs::read_to_string(format!("tests/fixtures/viewtopic_php_t_{topic_id}.html"))
+                .unwrap();
+        let url = Url::parse(&format!(
+            "https://cs.rin.ru/forum/viewtopic.php?t={topic_id}&start=0"
+        ))
+        .unwrap();
+        parse_topic(&html, &url, topic_id, 0)
+    }
+
+    #[test]
+    fn game_info_across_topics() {
+        // (topic, title, app id, developer, has requirements)
+        let cases = [
+            (135719, "Wizordum", 1715590, "Emberheart Games", true),
+            (
+                80048,
+                "Star Wars Battlefront II (2017)",
+                1237950,
+                "DICE",
+                true,
+            ),
+            (
+                91289,
+                "Workers & Resources: Soviet Republic",
+                784150,
+                "3Division",
+                false,
+            ),
+            (91823, "World War Z", 699130, "Saber Interactive Inc", true),
+        ];
+        for (topic_id, title, app_id, developer, has_reqs) in cases {
+            let page = fixture(topic_id);
+            let info =
+                parse_game_info(&page.posts[0]).unwrap_or_else(|| panic!("no info in {topic_id}"));
+            assert_eq!(info.title.as_deref(), Some(title));
+            assert_eq!(info.steam_app_id, Some(app_id), "{title}");
+            assert_eq!(info.developer.as_deref(), Some(developer), "{title}");
+            assert!(
+                info.header_image.as_deref().unwrap().contains("header.jpg"),
+                "{title}"
+            );
+            assert!(
+                !info.genres.is_empty() && !info.languages.is_empty(),
+                "{title}"
+            );
+            assert!(info.description.is_some(), "{title}");
+            assert_eq!(!info.system_requirements.is_empty(), has_reqs, "{title}");
+        }
+        // Extra detail lines are kept as fields.
+        let swbf = parse_game_info(&fixture(80048).posts[0]).unwrap();
+        assert_eq!(swbf.fields[0].key, "Steam Release Date");
+    }
+
+    #[test]
+    fn releases_across_topics() {
+        let releases = |t| {
+            fixture(t)
+                .posts
+                .iter()
+                .filter_map(parse_release)
+                .collect::<Vec<_>>()
+        };
+
+        let wizordum = releases(135719);
+        let hosts: Vec<_> = wizordum.iter().map(|r| r.links[0].host.as_str()).collect();
+        assert_eq!(
+            hosts,
+            [
+                "privatebin.rinuploads.org",
+                "1fichier.com",
+                "1fichier.com",
+                "pixeldrain.com"
+            ]
+        );
+        assert!(wizordum[0].links[0].flagged_unsafe);
+        // The forum's unsafe-filehost note doesn't end up in the text.
+        assert!(
+            wizordum
+                .iter()
+                .all(|r| r.details.iter().all(|l| !l.contains("[READ ME]")))
+        );
+        let csf = &wizordum[3];
+        assert_eq!(csf.build.as_deref(), Some("16222355"));
+        assert_eq!(csf.tags, ["Clean Steam Files"]);
+
+        // Store pages and other sites' forums are not releases.
+        assert!(releases(91823).is_empty());
+        assert!(releases(80048).is_empty());
     }
 
     #[test]
