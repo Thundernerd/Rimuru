@@ -23,7 +23,34 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data: blob: https:",
+        "media-src": "'self' blob: https://*.steamstatic.com",
+        "connect-src": "'self' ipc: http://ipc.localhost https://*.steamstatic.com",
+        "worker-src": "'self' blob:",
+        "font-src": "'self' data:",
+        "object-src": "'none'",
+        "frame-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'none'"
+      },
+      "devCsp": {
+        "default-src": "'self'",
+        "script-src": "'self' http://localhost:1420",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data: blob: https:",
+        "media-src": "'self' blob: https://*.steamstatic.com",
+        "connect-src": "'self' ipc: http://ipc.localhost https://*.steamstatic.com http://localhost:1420 ws://localhost:1420 ws://localhost:1421",
+        "worker-src": "'self' blob:",
+        "font-src": "'self' data:",
+        "object-src": "'none'",
+        "frame-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'none'"
+      }
     }
   },
   "bundle": {
