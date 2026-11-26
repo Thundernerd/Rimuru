@@ -8,9 +8,10 @@
    * WebKit (macOS) plays those natively; other webviews use hls.js, loaded
    * only when needed. Older entries may have a plain MP4 instead.
    */
-  let { movies, onclose }: { movies: Movie[]; onclose: () => void } = $props();
+  let { movies, start = 0, onclose }: { movies: Movie[]; start?: number; onclose: () => void } = $props();
 
-  let index = $state(0);
+  // svelte-ignore state_referenced_locally
+  let index = $state(start);
   let video = $state<HTMLVideoElement>();
   let error = $state<string | null>(null);
   let hls: { destroy(): void } | null = null;

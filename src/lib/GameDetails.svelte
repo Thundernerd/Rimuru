@@ -1,19 +1,59 @@
 <script lang="ts">
   import type { GameInfo, SteamApp } from "./types";
 
-  /** Cards with the longer details: about, features, requirements, languages. */
-  let { forum, steam }: { forum: GameInfo | null; steam: SteamApp | null } = $props();
+  /**
+   * The game's details for the Overview tab: a facts card, then about,
+   * features and languages. `part` picks the column.
+   */
+  let { forum, steam, part }: { forum: GameInfo | null; steam: SteamApp | null; part: "main" | "side" } = $props();
 
-  const about = $derived(forum?.description ?? null);
+  const PLATFORM_NAMES: Record<string, string> = { windows: "Windows", macos: "macOS", linux: "Linux" };
+  const list = (values: string[] | undefined) => (values?.length ? values.join(", ") : null);
+
+  const about = $derived(forum?.description ?? steam?.short_description ?? null);
   const features = $derived(forum?.features.length ? forum.features : (steam?.categories ?? []));
-  const requirements = $derived(forum?.system_requirements ?? []);
   const languages = $derived(steam?.languages.length ? steam.languages : (forum?.languages ?? []));
-  const extra = $derived(forum?.fields ?? []);
+  const facts = $derived(
+    (
+      [
+        ["Developer", list(steam?.developers) ?? forum?.developer],
+        ["Publisher", list(steam?.publishers) ?? forum?.publisher],
+        [
+          "Release date",
+          steam?.release_date ? steam.release_date + (steam.coming_soon ? " (coming soon)" : "") : forum?.release_date,
+        ],
+        ["Genres", list(steam?.genres) ?? list(forum?.genres)],
+        ["Platforms", list((steam?.platforms ?? forum?.platforms)?.map((p) => PLATFORM_NAMES[p] ?? p))],
+        ["Price", steam ? (steam.is_free ? "Free" : steam.price) : null],
+        ["Metacritic", steam?.metacritic?.toString()],
+        ["Steam app", (steam?.app_id ?? forum?.steam_app_id)?.toString()],
+        ...(forum?.fields.map((f) => [f.key, f.value]) ?? []),
+      ] as [string, string | null | undefined][]
+    ).filter((row): row is [string, string] => !!row[1]),
+  );
 
   let aboutOpen = $state(false);
 </script>
 
-<div class="details">
+{#if part === "side"}
+  {#if facts.length}
+    <section class="card">
+      <h3>Details</h3>
+      <dl>
+        {#each facts as [key, value] (key)}
+          <dt>{key}</dt>
+          <dd class:mono={key === "Steam app"}>{value}</dd>
+        {/each}
+      </dl>
+    </section>
+  {/if}
+  {#if languages.length}
+    <section class="card">
+      <h3>Languages</h3>
+      <p class="langs">{languages.join(", ")}</p>
+    </section>
+  {/if}
+{:else}
   {#if about}
     <section class="card about" class:open={aboutOpen}>
       <h3>About the game</h3>
@@ -25,26 +65,6 @@
       {/if}
     </section>
   {/if}
-
-  {#if requirements.length}
-    <section class="card">
-      <h3>System requirements</h3>
-      <div class="reqs">
-        {#each requirements as set, i (i)}
-          <div>
-            {#if set.label}<h4>{set.label}</h4>{/if}
-            <dl>
-              {#each set.items as item, j (j)}
-                <dt>{item.key}</dt>
-                <dd>{item.value}</dd>
-              {/each}
-            </dl>
-          </div>
-        {/each}
-      </div>
-    </section>
-  {/if}
-
   {#if features.length}
     <section class="card">
       <h3>Features</h3>
@@ -53,32 +73,12 @@
       </div>
     </section>
   {/if}
-
-  {#if languages.length || extra.length}
-    <section class="card">
-      {#if languages.length}
-        <h3>Languages</h3>
-        <p class="langs">{languages.join(", ")}</p>
-      {/if}
-      {#if extra.length}
-        <dl>
-          {#each extra as f (f.key)}
-            <dt>{f.key}</dt>
-            <dd>{f.value}</dd>
-          {/each}
-        </dl>
-      {/if}
-    </section>
-  {/if}
-</div>
+{/if}
 
 <style>
-  .details {
-    display: grid;
-    gap: 16px;
-  }
   .card {
     padding: 16px 18px;
+    border: 1px solid var(--border);
     border-radius: 12px;
     background: var(--surface);
   }
@@ -86,21 +86,15 @@
     margin: 0 0 10px;
     font-size: 14px;
   }
-  h4 {
-    margin: 0 0 6px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-  }
   .text {
     margin: 0;
     white-space: pre-wrap;
-    line-height: 1.55;
+    line-height: 1.6;
     font-size: 13px;
+    color: #c9cedb;
   }
   .about:not(.open) .text {
-    max-height: 14em;
+    max-height: 16em;
     overflow: hidden;
     mask-image: linear-gradient(to bottom, #000 70%, transparent);
   }
@@ -108,16 +102,12 @@
     margin-top: 6px;
     padding-left: 0;
   }
-  .reqs {
-    display: grid;
-    gap: 14px;
-  }
   dl {
     display: grid;
     grid-template-columns: max-content 1fr;
-    gap: 4px 12px;
+    gap: 8px 14px;
     margin: 0;
-    font-size: 12px;
+    font-size: 13px;
   }
   dt {
     color: var(--muted);
@@ -132,7 +122,7 @@
     gap: 6px;
   }
   .langs {
-    margin: 0 0 10px;
+    margin: 0;
     font-size: 13px;
     line-height: 1.5;
   }

@@ -1,6 +1,13 @@
 <script lang="ts">
-  /** A strip of screenshots; click one to view it large, ← → to browse. */
-  let { shots }: { shots: { thumbnail: string; full: string }[] } = $props();
+  /**
+   * Screenshots as a strip (or a grid); click one to view it large, ← → to
+   * browse.
+   */
+  let {
+    shots,
+    grid = false,
+    title = "Screenshots",
+  }: { shots: { thumbnail: string; full: string }[]; grid?: boolean; title?: string | null } = $props();
 
   let open = $state<number | null>(null);
 
@@ -20,8 +27,8 @@
 <svelte:window {onkeydown} />
 
 <section>
-  <h2>Screenshots</h2>
-  <div class="strip">
+  {#if title}<h2>{title}</h2>{/if}
+  <div class="strip" class:grid>
     {#each shots as shot, i (shot.full)}
       <button type="button" onclick={() => (open = i)} aria-label={`Screenshot ${i + 1}`}>
         <img src={shot.thumbnail} alt="" loading="lazy" />
@@ -66,6 +73,15 @@
   }
   .strip button:hover {
     transform: translateY(-2px);
+  }
+  .strip.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    overflow: visible;
+  }
+  .strip.grid img {
+    width: 100%;
+    height: auto;
   }
   .strip img {
     display: block;

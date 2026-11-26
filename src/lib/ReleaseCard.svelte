@@ -2,7 +2,12 @@
   import LinkButton from "./LinkButton.svelte";
   import type { Release } from "./types";
 
-  let { release, isNew = false }: { release: Release; isNew?: boolean } = $props();
+  /** A release post; `featured` shows it larger, with a download button per host. */
+  let {
+    release,
+    isNew = false,
+    featured = false,
+  }: { release: Release; isNew?: boolean; featured?: boolean } = $props();
 
   const facts = $derived(
     [
@@ -14,7 +19,7 @@
   );
 </script>
 
-<article class:new={isNew}>
+<article class:new={isNew} class:featured>
   <header>
     <h4>
       {#if isNew}<span class="new-badge">New</span>{/if}
@@ -28,10 +33,25 @@
   {#if release.tags.length || facts.length}
     <div class="facts">
       {#each release.tags as tag (tag)}<span class="tag accent">{tag}</span>{/each}
-      {#each facts as fact (fact)}<span class="tag">{fact}</span>{/each}
+      {#each facts as fact (fact)}<span class="tag mono">{fact}</span>{/each}
     </div>
   {/if}
 
+  {#if featured}
+    <div class="downloads">
+      {#each release.links as link (link.url)}
+        <LinkButton
+          url={link.url}
+          label={(link.flagged_unsafe ? "⚠ " : "") + (link.label !== link.host ? `${link.label} · ${link.host}` : link.host)}
+          confirm={link.flagged_unsafe}
+          primary={!link.flagged_unsafe}
+        />
+      {/each}
+    </div>
+    {#if release.links.some((l) => l.flagged_unsafe)}
+      <p class="unsafe note">⚠ The forum flags some of these hosts as unsafe; those need a second click.</p>
+    {/if}
+  {:else}
   <ul>
     {#each release.links as link (link.url)}
       <li>
@@ -42,6 +62,7 @@
       </li>
     {/each}
   </ul>
+  {/if}
 
   {#if release.details.length > 1}
     <details>
@@ -54,9 +75,28 @@
 <style>
   article {
     padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
     border-radius: 10px;
     background: var(--surface);
-    border-left: 3px solid transparent;
+  }
+  article.featured {
+    padding: 18px 20px;
+    border-color: rgb(63 200 240 / 0.35);
+    border-left-color: var(--accent);
+    background: linear-gradient(135deg, rgb(63 200 240 / 0.08), transparent 60%), var(--surface);
+  }
+  article.featured h4 {
+    font-size: 16px;
+  }
+  .downloads {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .note {
+    margin: 10px 0 0;
   }
   article.new {
     border-left-color: var(--accent);

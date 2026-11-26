@@ -1,35 +1,34 @@
 <script lang="ts">
   import LinkButton from "./LinkButton.svelte";
-  import TrailerPlayer from "./TrailerPlayer.svelte";
-  import type { Artwork, GameInfo, Release, SteamApp, TopicSummary } from "./types";
+  import type { Artwork, GameInfo, SteamApp, TopicSummary } from "./types";
 
   /**
-   * The top of a game's page: key art behind the game's cover, title and
-   * facts, and the latest release with its download links.
+   * The top of a game's page, launcher style: key art, the game's logo
+   * (or its name), labels and facts, actions, and a strip of stats.
    */
   let {
     topic,
     forum,
     steam,
     art,
-    latest,
+    appId,
+    stats,
+    hasTrailer,
     latestIsNew,
-    releaseCount,
-    loadingReleases,
+    ontrailer,
     onsnapshot,
-    onallreleases,
   }: {
     topic: TopicSummary;
     forum: GameInfo | null;
     steam: SteamApp | null;
     art: Artwork | null;
-    latest: Release | null;
-    /** The latest release wasn't there on the previous visit. */
+    appId: number | null;
+    /** [label, value, monospace?] */
+    stats: [string, string, boolean?][];
+    hasTrailer: boolean;
     latestIsNew: boolean;
-    releaseCount: number;
-    loadingReleases: boolean;
+    ontrailer: () => void;
     onsnapshot: () => void;
-    onallreleases: () => void;
   } = $props();
 
   const PLATFORM_NAMES: Record<string, string> = { windows: "Windows", macos: "macOS", linux: "Linux" };
@@ -38,11 +37,15 @@
   const backdrop = $derived(
     art?.hero ?? steam?.screenshots[0]?.full ?? steam?.header_image ?? forum?.header_image ?? null,
   );
-  const cover = $derived(art?.portrait ?? null);
-  const header = $derived(steam?.header_image ?? forum?.header_image ?? art?.header ?? null);
-  const appId = $derived(steam?.app_id ?? forum?.steam_app_id ?? null);
+  // Steam keeps a transparent logo at a plain path for most older games;
+  // newer ones use a hashed path we can't look up, so fall back to the name.
+  const logo = $derived(
+    appId ? `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/logo.png` : null,
+  );
+  let logoFailed = $state<string | null>(null);
+  let logoLoaded = $state<string | null>(null);
+  const showLogo = $derived(!!logo && logoFailed !== logo);
 
-  const labels = $derived(topic.labels);
   const facts = $derived(
     [
       (steam?.platforms ?? forum?.platforms)?.map((p) => PLATFORM_NAMES[p] ?? p).join(" · "),
@@ -50,159 +53,81 @@
         ? steam.release_date + (steam.coming_soon ? " (coming soon)" : "")
         : forum?.release_date,
       steam ? (steam.is_free ? "Free" : steam.price) : null,
-      steam?.metacritic ? `Metacritic ${steam.metacritic}` : null,
-      topic.replies !== null ? `${topic.replies} replies` : null,
-      topic.last_post_at ? `Updated ${topic.last_post_at}` : null,
+      (steam?.genres.length ? steam.genres : forum?.genres)?.slice(0, 3).join(" · "),
     ].filter((f): f is string => !!f),
-  );
-  const people = $derived(
-    [
-      ["Developer", steam?.developers.join(", ") || forum?.developer],
-      ["Publisher", steam?.publishers.join(", ") || forum?.publisher],
-    ].filter((p): p is [string, string] => !!p[1]),
-  );
-  const genres = $derived(steam?.genres.length ? steam.genres : (forum?.genres ?? []));
-  const summary = $derived(steam?.short_description ?? null);
-
-  const latestFacts = $derived(
-    latest
-      ? [
-          latest.version &&
-            (/^v?\d+(\.\d+)+/i.test(latest.version) ? `v${latest.version.replace(/^v/i, "")}` : latest.version),
-          latest.build && `Build ${latest.build}`,
-          latest.size,
-        ].filter((f): f is string => !!f)
-      : [],
   );
 
   let backdropLoaded = $state(false);
-  let showTrailer = $state(false);
-  const movies = $derived(steam?.movies ?? []);
 </script>
 
 <section class="hero">
   {#if backdrop}
     {#key backdrop}
-      <img
-        class="backdrop"
-        class:loaded={backdropLoaded}
-        src={backdrop}
-        alt=""
-        onload={() => (backdropLoaded = true)}
-      />
+      <img class="backdrop" class:loaded={backdropLoaded} src={backdrop} alt="" onload={() => (backdropLoaded = true)} />
     {/key}
   {/if}
   <div class="shade"></div>
 
-  <div class="inner">
-    <div class="topbar">
-      <button type="button" class="glass subtle" onclick={onsnapshot}>Save HTML</button>
-    </div>
+  <button type="button" class="snapshot" onclick={onsnapshot}>Save HTML</button>
 
-    <div class="body">
-      <div class="side">
-        <div class="cover">
-          {#if cover}
-            <img src={cover} alt="" />
-          {:else if header}
-            <img class="cover-blur" src={header} alt="" />
-            <img class="cover-header" src={header} alt="" />
-          {/if}
-        </div>
-        {#if movies.length}
-          <button type="button" class="glass trailer" onclick={() => (showTrailer = true)}>
-            ▶ Watch trailer
-          </button>
-        {/if}
+  <div class="bottom">
+    <div class="identity">
+      <div class="badges">
+        {#if latestIsNew}<span class="badge new">New release</span>{/if}
+        {#each topic.labels as label (label)}<span class="badge">{label}</span>{/each}
+        {#if topic.last_post_at}<span class="eyebrow">Updated {topic.last_post_at}</span>{/if}
       </div>
 
-      <div class="info">
-        {#if labels.length}
-          <div class="labels">
-            {#each labels as label (label)}<span class="label">{label}</span>{/each}
-          </div>
+      {#if showLogo && logo}
+        <img
+          class="logo"
+          class:loaded={logoLoaded === logo}
+          src={logo}
+          alt={title}
+          onload={() => (logoLoaded = logo)}
+          onerror={() => (logoFailed = logo)}
+        />
+      {/if}
+      <!-- The name stays for screen readers, and shows until a logo loads. -->
+      <h1 class:hidden-by-logo={showLogo && logoLoaded === logo}>{title}</h1>
+
+      {#if facts.length}<p class="facts">{facts.join("  ·  ")}</p>{/if}
+
+      <div class="actions">
+        {#if hasTrailer}
+          <button type="button" class="primary" onclick={ontrailer}>▶ Watch trailer</button>
         {/if}
-        <h1>{title}</h1>
-
-        {#if facts.length}
-          <p class="facts">
-            {#each facts as fact, i (fact)}{#if i}<span class="dot">•</span>{/if}<span>{fact}</span>{/each}
-          </p>
+        {#if appId}
+          <LinkButton url={steam?.store_url ?? `https://store.steampowered.com/app/${appId}`} label="Steam store" />
+          <LinkButton url={forum?.steamdb_url ?? `https://steamdb.info/app/${appId}`} label="SteamDB" />
         {/if}
-
-        {#if summary}<p class="summary">{summary}</p>{/if}
-
-        {#if people.length || genres.length}
-          <div class="chips">
-            {#each people as [role, name] (role)}
-              <span class="chip"><span class="role">{role}</span>{name}</span>
-            {/each}
-            {#each genres as genre (genre)}<span class="chip">{genre}</span>{/each}
-          </div>
-        {/if}
-
-        <div class="latest">
-          {#if latest}
-            <div class="latest-head">
-              <span class="kicker">
-                Latest release{#if latestIsNew}<span class="new">New</span>{/if}
-              </span>
-              <span class="when">{[latest.author && `by ${latest.author}`, latest.posted].filter(Boolean).join(" · ")}</span>
-            </div>
-            <p class="latest-title">{latest.title ?? title}</p>
-            {#if latest.tags.length || latestFacts.length}
-              <div class="latest-facts">
-                {#each latest.tags as tag (tag)}<span class="pill accent">{tag}</span>{/each}
-                {#each latestFacts as fact (fact)}<span class="pill">{fact}</span>{/each}
-              </div>
-            {/if}
-            <div class="downloads">
-              {#each latest.links as link (link.url)}
-                <LinkButton
-                  url={link.url}
-                  label={(link.flagged_unsafe ? "⚠ " : "") + (link.label !== link.host ? link.label : link.host)}
-                  confirm={link.flagged_unsafe}
-                  primary
-                />
-              {/each}
-              {#if releaseCount > 1}
-                <button type="button" class="glass all" onclick={onallreleases}>
-                  All {releaseCount} releases ↓
-                </button>
-              {/if}
-            </div>
-          {:else if loadingReleases}
-            <span class="kicker">Latest release</span>
-            <p class="muted">Looking for releases…</p>
-          {:else}
-            <span class="kicker">Latest release</span>
-            <p class="muted">No posts with download links found yet.</p>
-          {/if}
-        </div>
-
-        <div class="links">
-          {#if appId}
-            <LinkButton url={steam?.store_url ?? `https://store.steampowered.com/app/${appId}`} label="Steam store" />
-            <LinkButton url={forum?.steamdb_url ?? `https://steamdb.info/app/${appId}`} label="SteamDB" />
-          {/if}
-          <LinkButton url={topic.url} label="Forum topic" />
-          {#if steam?.website}<LinkButton url={steam.website} label="Website" />{/if}
-        </div>
+        <LinkButton url={topic.url} label="Forum topic" />
+        {#if steam?.website}<LinkButton url={steam.website} label="Website" />{/if}
       </div>
     </div>
+
+    {#if stats.length}
+      <dl class="stats">
+        {#each stats as [label, value, mono] (label)}
+          <div>
+            <dt>{label}</dt>
+            <dd class:mono>{value}</dd>
+          </div>
+        {/each}
+      </dl>
+    {/if}
   </div>
 </section>
 
-{#if showTrailer}
-  <TrailerPlayer {movies} onclose={() => (showTrailer = false)} />
-{/if}
-
 <style>
-  /* Always dark over the key art, whatever the app theme. */
   .hero {
     position: relative;
     margin: -20px -28px 0;
-    padding: 16px 28px 32px;
+    min-height: 380px;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
     color: #f3f4f8;
     background: #0d1018;
     overflow: hidden;
@@ -231,96 +156,43 @@
     inset: 0;
     z-index: -1;
     background:
-      linear-gradient(to right, rgb(10 12 20 / 0.94) 0%, rgb(10 12 20 / 0.78) 45%, rgb(10 12 20 / 0.5) 100%),
-      linear-gradient(to top, var(--bg) 0%, transparent 18%);
+      linear-gradient(to top, var(--bg) 0%, rgb(11 14 20 / 0.75) 30%, rgb(11 14 20 / 0.15) 70%),
+      linear-gradient(to right, rgb(11 14 20 / 0.7) 0%, transparent 60%);
   }
 
-  .topbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 8px;
-  }
-  .glass,
-  .hero :global(button) {
-    background: rgb(255 255 255 / 0.08);
-    border-color: rgb(255 255 255 / 0.18);
-    color: #f3f4f8;
-    backdrop-filter: blur(6px);
-  }
-  .hero :global(button:hover:not(:disabled)) {
-    background: rgb(255 255 255 / 0.18);
-  }
-  .hero :global(button.primary) {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--accent-text);
-  }
-  .hero :global(button.primary:hover) {
-    filter: brightness(1.1);
-    background: var(--accent);
-  }
-  .glass.subtle {
-    border-color: transparent;
-    background: none;
-    color: rgb(255 255 255 / 0.7);
-  }
-
-  .body {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 28px;
-    align-items: start;
-  }
-  @media (max-width: 760px) {
-    .body {
-      grid-template-columns: 1fr;
-    }
-    .side {
-      width: 160px;
-    }
-  }
-
-  .side {
-    display: grid;
-    gap: 10px;
-  }
-  .trailer {
-    padding: 8px 12px;
-    font-weight: 600;
-  }
-  .cover {
-    position: relative;
-    aspect-ratio: 2 / 3;
-    border-radius: 12px;
-    overflow: hidden;
-    background: rgb(255 255 255 / 0.06);
-    box-shadow: 0 18px 40px rgb(0 0 0 / 0.5);
-  }
-  .cover img {
+  .snapshot {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    top: 14px;
+    right: 20px;
+    font-size: 12px;
+    color: rgb(255 255 255 / 0.65);
+    background: none;
+    border-color: transparent;
   }
-  .cover .cover-blur {
-    filter: blur(16px) brightness(0.6);
-    transform: scale(1.2);
-  }
-  .cover .cover-header {
-    object-fit: contain;
+  .snapshot:hover:not(:disabled) {
+    color: #fff;
+    background: rgb(255 255 255 / 0.1);
   }
 
-  .info {
-    min-width: 0;
+  .bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
   }
-  .labels {
+  .identity {
+    min-width: 0;
+    max-width: 720px;
+  }
+  .badges {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 6px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
   }
-  .label {
+  .badge {
     padding: 2px 8px;
     border-radius: 6px;
     font-size: 11px;
@@ -329,123 +201,102 @@
     background: rgb(255 190 60 / 0.14);
     border: 1px solid rgb(255 190 60 / 0.35);
   }
-  h1 {
-    margin: 0;
-    font-size: 30px;
-    line-height: 1.15;
-    letter-spacing: -0.01em;
+  .badge.new {
+    color: #052e16;
+    background: var(--good);
+    border-color: var(--good);
   }
-  .facts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 10px 0 0;
-    font-size: 13px;
-    color: rgb(255 255 255 / 0.72);
-  }
-  .dot {
-    opacity: 0.5;
-  }
-  .summary {
-    max-width: 70ch;
-    margin: 14px 0 0;
-    line-height: 1.5;
-    color: rgb(255 255 255 / 0.85);
-  }
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 14px;
-  }
-  .chip {
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    background: rgb(255 255 255 / 0.08);
-    border: 1px solid rgb(255 255 255 / 0.12);
-  }
-  .role {
-    color: rgb(255 255 255 / 0.55);
-    margin-right: 6px;
+  .eyebrow {
+    color: rgb(255 255 255 / 0.7);
   }
 
-  .latest {
-    margin-top: 20px;
-    padding: 14px 16px;
-    max-width: 720px;
-    border-radius: 12px;
-    background: rgb(255 255 255 / 0.07);
-    border: 1px solid rgb(255 255 255 / 0.14);
-    backdrop-filter: blur(10px);
+  .logo {
+    display: block;
+    max-width: min(440px, 80%);
+    max-height: 150px;
+    object-fit: contain;
+    object-position: left bottom;
+    filter: drop-shadow(0 4px 18px rgb(0 0 0 / 0.6));
+    opacity: 0;
+    transition: opacity 300ms ease;
   }
-  .latest-head {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 8px;
+  .logo.loaded {
+    opacity: 1;
   }
-  .kicker {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #7ee2a8;
+  h1 {
+    margin: 0;
+    font-size: 40px;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    text-shadow: 0 2px 14px rgb(0 0 0 / 0.55);
   }
-  .new {
-    margin-left: 8px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    letter-spacing: 0.04em;
-    color: #0d1018;
-    background: #7ee2a8;
+  /* Visually hidden while the logo stands in for it. */
+  h1.hidden-by-logo {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
-  .when {
-    font-size: 12px;
-    color: rgb(255 255 255 / 0.6);
+  .facts {
+    margin: 12px 0 0;
+    font-size: 13px;
+    color: rgb(255 255 255 / 0.72);
+    white-space: pre-wrap;
   }
-  .latest-title {
-    margin: 6px 0 0;
-    font-weight: 600;
-    overflow-wrap: anywhere;
-  }
-  .latest-facts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
-  }
-  .pill {
-    padding: 1px 8px;
-    border-radius: 999px;
-    font-size: 11px;
-    color: rgb(255 255 255 / 0.8);
-    border: 1px solid rgb(255 255 255 / 0.25);
-  }
-  .pill.accent {
-    color: #7ee2a8;
-    border-color: rgb(126 226 168 / 0.5);
-  }
-  .downloads {
+
+  .actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 18px;
   }
-  .all {
-    margin-left: auto;
+  .actions :global(button) {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: #f3f4f8;
+    background: rgb(255 255 255 / 0.08);
+    border-color: rgb(255 255 255 / 0.18);
+    backdrop-filter: blur(6px);
   }
-  .muted {
-    margin: 6px 0 0;
-    color: rgb(255 255 255 / 0.6);
+  .actions :global(button:hover:not(:disabled)) {
+    background: rgb(255 255 255 / 0.18);
+  }
+  .actions :global(button.primary) {
+    font-weight: 600;
+    color: var(--accent-text);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .actions :global(button.primary:hover:not(:disabled)) {
+    background: var(--accent);
+    filter: brightness(1.08);
   }
 
-  .links {
+  .stats {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 14px;
+    margin: 0;
+  }
+  .stats div {
+    padding: 0 20px;
+    border-left: 1px solid rgb(255 255 255 / 0.14);
+  }
+  .stats div:first-child {
+    border-left: none;
+  }
+  dt {
+    font-size: 11px;
+    color: rgb(255 255 255 / 0.6);
+  }
+  dd {
+    margin: 4px 0 0;
+    font-size: 18px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  dd.mono {
+    font-family: var(--mono);
+    font-size: 15px;
   }
 </style>

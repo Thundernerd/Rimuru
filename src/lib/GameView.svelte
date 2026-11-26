@@ -5,8 +5,11 @@
   import { rememberArt } from "./cardArt.svelte";
   import GameDetails from "./GameDetails.svelte";
   import GameHero from "./GameHero.svelte";
+  import ReleaseCard from "./ReleaseCard.svelte";
   import ReleaseList from "./ReleaseList.svelte";
+  import Requirements from "./Requirements.svelte";
   import Screenshots from "./Screenshots.svelte";
+  import TrailerPlayer from "./TrailerPlayer.svelte";
   import { setStatus } from "./status.svelte";
   import type { Artwork, GameFirstPage, Release, SteamApp, TopicSummary, Visit } from "./types";
   import { previousVisit, recordVisit } from "./visits.svelte";
@@ -26,7 +29,6 @@
   let loading = $state(false);
   let error = $state<string | null>(null);
   let attempt = $state(0);
-  let releasesSection = $state<HTMLElement>();
   /** The visit before this one; null on a first visit (nothing is "new" then). */
   let previous = $state<Visit | null>(null);
 
@@ -124,6 +126,47 @@
       setStatus(errorMessage(e));
     }
   }
+
+  // ---------------------------------------------------------------- layout
+
+  type Tab = "overview" | "releases" | "media" | "requirements";
+  let tab = $state<Tab>("overview");
+  let trailerAt = $state<number | null>(null);
+
+  // Each game opens on its overview.
+  $effect(() => {
+    void topic.id;
+    tab = "overview";
+    trailerAt = null;
+  });
+
+  const latest = $derived(releases[0] ?? null);
+  const movies = $derived(steam?.movies ?? []);
+  const shots = $derived(steam?.screenshots ?? []);
+  const requirements = $derived(first?.info?.system_requirements ?? []);
+  const appId = $derived(steam?.app_id ?? first?.info?.steam_app_id ?? null);
+
+  const tabs = $derived(
+    [
+      ["overview", "Overview", null],
+      ["releases", "Releases", releases.length || null],
+      ["media", "Media", movies.length + shots.length || null],
+      ["requirements", "Requirements", null],
+    ].filter(([id]) => (id === "media" ? movies.length + shots.length > 0 : id === "requirements" ? requirements.length > 0 : true)) as [
+      Tab,
+      string,
+      number | null,
+    ][],
+  );
+
+  const stats = $derived(
+    [
+      ["Replies", topic.replies?.toLocaleString()],
+      ["Views", topic.views?.toLocaleString()],
+      ["Releases", first ? `${releases.length}${loading ? "…" : ""}` : null],
+      ["Latest build", latest?.build ?? latest?.version ?? null, true],
+    ].filter((s) => !!s[1]) as [string, string, boolean?][],
+  );
 </script>
 
 <GameHero
@@ -131,48 +174,125 @@
   forum={first?.info ?? null}
   {steam}
   {art}
-  latest={releases[0] ?? null}
-  latestIsNew={!!releases[0] && newIds.has(releases[0].post_id)}
-  releaseCount={releases.length}
-  loadingReleases={loading}
+  {appId}
+  {stats}
+  hasTrailer={movies.length > 0}
+  latestIsNew={!!latest && newIds.has(latest.post_id)}
+  ontrailer={() => (trailerAt = 0)}
   onsnapshot={saveSnapshot}
-  onallreleases={() => releasesSection?.scrollIntoView({ behavior: "smooth", block: "start" })}
 />
 
-<div class="page">
-  {#if steam?.screenshots.length}
-    <Screenshots shots={steam.screenshots} />
-  {/if}
+<nav class="tabs" aria-label="Game sections">
+  {#each tabs as [id, label, count] (id)}
+    <button type="button" class:active={tab === id} aria-current={tab === id} onclick={() => (tab = id)}>
+      {label}{#if count}<span class="count">{count}</span>{/if}
+    </button>
+  {/each}
+</nav>
 
-  <div class="columns">
-    <div bind:this={releasesSection} class="releases">
-      {#if first}
-        <ReleaseList
-          {releases}
-          {newIds}
-          {pagesRead}
-          {pagesPlanned}
-          totalPages={first.total_pages}
-          {loading}
-          {error}
-          onretry={() => attempt++}
-        />
-      {:else if error}
-        <div class="message">
-          <p>Couldn't load this topic: {error}</p>
-          <button type="button" onclick={() => attempt++}>Try again</button>
-        </div>
-      {:else}
-        <p class="muted">Loading the topic…</p>
-      {/if}
+<div class="page">
+  {#if error && !first}
+    <div class="message">
+      <p>Couldn't load this topic: {error}</p>
+      <button type="button" onclick={() => attempt++}>Try again</button>
     </div>
-    <aside>
-      <GameDetails forum={first?.info ?? null} {steam} />
-    </aside>
-  </div>
+  {:else if tab === "overview"}
+    <section class="latest">
+      <header>
+        <h2>Latest release</h2>
+        {#if releases.length > 1}
+          <button type="button" class="subtle" onclick={() => (tab = "releases")}>All {releases.length} releases ›</button>
+        {/if}
+      </header>
+      {#if latest}
+        <ReleaseCard release={latest} isNew={newIds.has(latest.post_id)} featured />
+      {:else if loading}
+        <div class="placeholder"></div>
+      {:else}
+        <p class="muted">No posts with download links found on the pages read.</p>
+      {/if}
+    </section>
+
+    {#if shots.length}
+      <Screenshots {shots} />
+    {/if}
+
+    <div class="columns">
+      <div class="stack"><GameDetails forum={first?.info ?? null} {steam} part="main" /></div>
+      <div class="stack"><GameDetails forum={first?.info ?? null} {steam} part="side" /></div>
+    </div>
+  {:else if tab === "releases" && first}
+    <ReleaseList
+      {releases}
+      {newIds}
+      {pagesRead}
+      {pagesPlanned}
+      totalPages={first.total_pages}
+      {loading}
+      {error}
+      onretry={() => attempt++}
+    />
+  {:else if tab === "media"}
+    {#if movies.length}
+      <section>
+        <h2>Trailers</h2>
+        <div class="trailers">
+          {#each movies as movie, i (i)}
+            <button type="button" onclick={() => (trailerAt = i)}>
+              {#if movie.thumbnail}<img src={movie.thumbnail} alt="" loading="lazy" />{/if}
+              <span class="play">▶</span>
+              <span class="name">{movie.name}</span>
+            </button>
+          {/each}
+        </div>
+      </section>
+    {/if}
+    {#if shots.length}
+      <Screenshots {shots} grid />
+    {/if}
+  {:else if tab === "requirements"}
+    <Requirements sets={requirements} />
+  {/if}
 </div>
 
+{#if trailerAt !== null}
+  <TrailerPlayer {movies} start={trailerAt} onclose={() => (trailerAt = null)} />
+{/if}
+
 <style>
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin: 0 -28px;
+    padding: 0 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tabs button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 12px 11px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    background: none;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .tabs button:hover:not(:disabled) {
+    background: none;
+    color: var(--text);
+  }
+  .tabs button.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+  .count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
   .page {
     display: grid;
     /* minmax(0, …): don't let the screenshot strip widen the page. */
@@ -180,20 +300,83 @@
     gap: 28px;
     padding-top: 24px;
   }
+  h2 {
+    margin: 0 0 12px;
+    font-size: 16px;
+  }
+  .latest header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .placeholder {
+    height: 140px;
+    border-radius: 12px;
+    background: var(--surface);
+    animation: pulse 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes pulse {
+    from {
+      opacity: 0.4;
+    }
+    to {
+      opacity: 0.9;
+    }
+  }
   .columns {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
-    gap: 24px;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+    gap: 20px;
     align-items: start;
   }
-  @media (max-width: 900px) {
+  @media (max-width: 960px) {
     .columns {
       grid-template-columns: 1fr;
     }
   }
-  .releases {
-    scroll-margin-top: 12px;
+  .stack {
+    display: grid;
+    gap: 16px;
   }
+
+  .trailers {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  .trailers button {
+    position: relative;
+    padding: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+  .trailers img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.85;
+  }
+  .play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 30px;
+    color: #fff;
+    text-shadow: 0 2px 10px rgb(0 0 0 / 0.6);
+  }
+  .trailers .name {
+    position: absolute;
+    left: 10px;
+    bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 4px rgb(0 0 0 / 0.8);
+  }
+
   .muted {
     color: var(--muted);
   }
