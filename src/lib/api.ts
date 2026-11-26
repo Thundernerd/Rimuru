@@ -57,10 +57,10 @@ export const api = {
     forum<ForumPage>("fetch_forum", { forumId, start, sort }),
   searchTopics: (query: string, start: number, allForums = false) =>
     forum<SearchPage>("search_topics", { query, start, allForums }),
-  gameFirstPage: (topicId: number, replies: number | null) =>
-    forum<GameFirstPage>("game_first_page", { topicId, replies }),
-  gameReleases: (topicId: number, start: number, replies: number | null) =>
-    forum<Release[]>("game_releases", { topicId, start, replies }),
+  gameFirstPage: (topicId: number, replies: number | null, refresh = false) =>
+    forum<GameFirstPage>("game_first_page", { topicId, replies, refresh }),
+  gameReleases: (topicId: number, start: number, replies: number | null, refresh = false) =>
+    forum<Release[]>("game_releases", { topicId, start, replies, refresh }),
   steamApp: (appId: number) => invoke<SteamApp | null>("steam_app", { appId }),
   steamMatch: (name: string) => invoke<SteamMatch | null>("steam_match", { name }),
   steamArtwork: (appIds: number[]) => invoke<Record<string, Artwork>>("steam_artwork", { appIds }),

@@ -34,6 +34,8 @@
   let isCurrentLoad: () => boolean = () => false;
   let error = $state<string | null>(null);
   let attempt = $state(0);
+  // Set by the Refresh button: the next load skips this topic's cached pages.
+  let forceRefresh = false;
   let previous = $state<Visit | null>(null);
 
   const releases = $derived([...recent, ...(first?.releases ?? [])]);
@@ -55,6 +57,8 @@
 
   function load(shown: TopicSummary, isCurrent: () => boolean) {
     const { id, replies, name } = shown;
+    const refresh = forceRefresh;
+    forceRefresh = false;
     first = null;
     steam = null;
     art = null;
@@ -70,7 +74,7 @@
     loading = true;
 
     (async () => {
-      const [page, visit] = await Promise.all([api.gameFirstPage(id, replies), previousVisit(id)]);
+      const [page, visit] = await Promise.all([api.gameFirstPage(id, replies, refresh), previousVisit(id)]);
       if (!isCurrent()) return;
       previous = visit;
       first = page;
@@ -84,7 +88,7 @@
       }
       pagesPlanned = 1 + starts.length;
       for (const start of starts) {
-        const found = await api.gameReleases(id, start, replies);
+        const found = await api.gameReleases(id, start, replies, refresh);
         if (!isCurrent()) return;
         recent.push(...found);
         pagesRead += 1;
@@ -92,13 +96,24 @@
       perPage = page.per_page;
       const lowest = starts.at(-1);
       olderStart = perPage && lowest && lowest - perPage > 0 ? lowest - perPage : null;
+      if (refresh) setStatus(`Refreshed ${name} from the forum`);
     })()
-      .catch((e) => isCurrent() && (error = errorMessage(e)))
+      .catch((e) => {
+        if (!isCurrent()) return;
+        error = errorMessage(e);
+        if (refresh) setStatus(`Couldn't refresh ${name}: ${error}`);
+      })
       .finally(() => {
         if (!isCurrent()) return;
         loading = false;
         if (first) recordVisit(shown, releases.map((r) => r.post_id));
       });
+  }
+
+  function reload() {
+    if (loading) return;
+    forceRefresh = true;
+    attempt++;
   }
 
   async function loadOlder() {
@@ -213,6 +228,8 @@
   onfollow={() => toggleFollow(listed.get(topic.id) ?? topic)}
   ontrailer={() => (trailerAt = 0)}
   onsnapshot={saveSnapshot}
+  onrefresh={reload}
+  refreshing={loading}
 />
 
 <nav class="tabs" aria-label="Game sections">
