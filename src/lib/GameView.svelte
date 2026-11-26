@@ -12,7 +12,7 @@
   import Requirements from "./Requirements.svelte";
   import Screenshots from "./Screenshots.svelte";
   import Skeleton from "./Skeleton.svelte";
-  import { topicSkeletons } from "./skeleton";
+  import { keepsShown, topicSkeletons } from "./skeleton";
   import TrailerPlayer from "./TrailerPlayer.svelte";
   import { setStatus } from "./status.svelte";
   import type { Artwork, GameFirstPage, Release, SteamApp, TopicSummary, Visit } from "./types";
@@ -39,6 +39,10 @@
   // Set by the Refresh button: the next load skips this topic's cached pages.
   let forceRefresh = false;
   let previous = $state<Visit | null>(null);
+  // The topic whose data is on screen, so a reload of it can keep that data while it loads.
+  let loadedId: number | null = null;
+  // True while a reload of the topic on screen runs: its content stays, so nothing shows as loading.
+  let refreshing = $state(false);
 
   const releases = $derived([...recent, ...(first?.releases ?? [])]);
   const newIds = $derived(
@@ -61,26 +65,35 @@
     const { id, replies, name } = shown;
     const refresh = forceRefresh;
     forceRefresh = false;
-    first = null;
-    steam = null;
-    art = null;
-    previous = null;
-    recent = [];
-    pagesRead = 0;
-    pagesPlanned = 1;
-    olderStart = null;
-    perPage = null;
+    // Reloading the topic already on screen, such as a Refresh, keeps its content up until the fresh
+    // data is in; only a first load or a switch to another topic starts from empty.
+    const keep = keepsShown(loadedId, id) && !!first;
+    loadedId = id;
+    if (!keep) {
+      first = null;
+      steam = null;
+      art = null;
+      previous = null;
+      recent = [];
+      pagesRead = 0;
+      pagesPlanned = 1;
+      olderStart = null;
+      perPage = null;
+    }
     loadingOlder = false;
     isCurrentLoad = isCurrent;
     error = null;
+    refreshing = keep;
     loading = true;
 
     (async () => {
       const [page, visit] = await Promise.all([api.gameFirstPage(id, replies, refresh), previousVisit(id)]);
       if (!isCurrent()) return;
-      previous = visit;
-      first = page;
-      pagesRead = 1;
+      if (!keep) {
+        previous = visit;
+        first = page;
+        pagesRead = 1;
+      }
 
       loadSteam(page, name, isCurrent);
 
@@ -88,12 +101,25 @@
       if (page.per_page) {
         for (let s = page.last_start; s > 0 && starts.length < RECENT_PAGES; s -= page.per_page) starts.push(s);
       }
-      pagesPlanned = 1 + starts.length;
+      if (!keep) pagesPlanned = 1 + starts.length;
+      // On a reload the pages are gathered here and swapped in together, so the releases on screen are
+      // never a mix of old and new pages.
+      const fresh: Release[] = [];
       for (const start of starts) {
         const found = await api.gameReleases(id, start, replies, refresh);
         if (!isCurrent()) return;
-        recent.push(...found);
-        pagesRead += 1;
+        if (keep) {
+          fresh.push(...found);
+        } else {
+          recent.push(...found);
+          pagesRead += 1;
+        }
+      }
+      if (keep) {
+        first = page;
+        recent = fresh;
+        pagesRead = 1 + starts.length;
+        pagesPlanned = 1 + starts.length;
       }
       perPage = page.per_page;
       const lowest = starts.at(-1);
@@ -108,6 +134,7 @@
       .finally(() => {
         if (!isCurrent()) return;
         loading = false;
+        refreshing = false;
         if (first) recordVisit(shown, releases.map((r) => r.post_id));
       });
   }
@@ -119,7 +146,8 @@
   }
 
   async function loadOlder() {
-    if (olderStart === null || !perPage || loadingOlder) return;
+    // A reload replaces the releases when it ends, which would drop pages read alongside it.
+    if (olderStart === null || !perPage || loadingOlder || loading) return;
     const check = isCurrentLoad;
     const step = perPage;
     loadingOlder = true;
@@ -191,7 +219,7 @@
   const movies = $derived(steam?.movies ?? []);
   const shots = $derived(steam?.screenshots ?? []);
   const requirements = $derived(first?.info?.system_requirements ?? []);
-  const skeletons = $derived(topicSkeletons(loading, !!first, !!steam));
+  const skeletons = $derived(topicSkeletons(loading, !!first, !!steam, refreshing));
   const appId = $derived(steam?.app_id ?? first?.info?.steam_app_id ?? null);
 
   const tabs = $derived(
@@ -211,7 +239,7 @@
     [
       ["Replies", topic.replies?.toLocaleString()],
       ["Views", topic.views?.toLocaleString()],
-      ["Releases", first ? `${releases.length}${loading ? "…" : ""}` : null],
+      ["Releases", first ? `${releases.length}${loading && !refreshing ? "…" : ""}` : null],
       ["Latest build", newestBuild?.build ?? newestBuild?.version ?? null, true],
     ].filter((s) => !!s[1]) as [string, string, boolean?][],
   );
@@ -259,7 +287,7 @@
       </header>
       {#if latest}
         <ReleaseCard release={latest} topicId={topic.id} isNew={newIds.has(latest.post_id)} featured />
-      {:else if loading}
+      {:else if skeletons.latest}
         <div class="placeholder"></div>
       {:else}
         <p class="muted">No posts with download links found on the pages read.</p>
@@ -307,10 +335,10 @@
       {pagesRead}
       {pagesPlanned}
       totalPages={first.total_pages}
-      {loading}
+      loading={loading && !refreshing}
       {error}
       onretry={() => attempt++}
-      canLoadOlder={olderStart !== null}
+      canLoadOlder={olderStart !== null && !loading}
       {loadingOlder}
       onloadolder={loadOlder}
     />
