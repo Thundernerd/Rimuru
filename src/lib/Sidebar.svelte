@@ -164,8 +164,7 @@
   }
   aside.mac .brand {
     height: 92px;
-    align-items: flex-end;
-    padding-bottom: 14px;
+    padding-top: 34px;
   }
   .logo {
     display: grid;
