@@ -374,6 +374,10 @@ fn sentence_with(text: &str, phrase: &str) -> Option<String> {
     )
 }
 
+pub fn topic_name(title: &str) -> String {
+    split_title(title).1
+}
+
 fn split_title(title: &str) -> (Vec<String>, String, Vec<String>) {
     let mut rest = title.trim();
     let mut prefixes = Vec::new();

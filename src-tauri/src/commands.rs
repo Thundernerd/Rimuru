@@ -126,10 +126,11 @@ pub async fn game_first_page(
 ) -> Result<GameFirstPage> {
     let key = topic_id.to_string();
     let version = replies.map(|r| r.to_string());
-    if let Some(hit) = cache.get("topic_first", &key, version.as_deref(), TOPIC_MAX_AGE) {
+    if let Some(hit) = cache.get("topic_first_v2", &key, version.as_deref(), TOPIC_MAX_AGE) {
         return Ok(hit);
     }
     let page = topic_page(&app, &client, topic_id, 0).await?;
+    let game = page.title.as_deref().map(phpbb::topic_name);
     let first = GameFirstPage {
         topic_id,
         title: page.title.clone(),
@@ -138,13 +139,13 @@ pub async fn game_first_page(
             .posts
             .iter()
             .rev()
-            .filter_map(game::parse_release)
+            .filter_map(|p| game::parse_release(p, game.as_deref()))
             .collect(),
         total_pages: page.pagination.total_pages,
         per_page: page.pagination.next_start.filter(|&n| n > 0),
         last_start: page.pagination.last_start,
     };
-    cache.put("topic_first", &key, version.as_deref(), &first);
+    cache.put("topic_first_v2", &key, version.as_deref(), &first);
     Ok(first)
 }
 
@@ -159,17 +160,18 @@ pub async fn game_releases(
 ) -> Result<Vec<Release>> {
     let key = format!("{topic_id}:{start}");
     let version = replies.map(|r| r.to_string());
-    if let Some(hit) = cache.get("topic_releases", &key, version.as_deref(), TOPIC_MAX_AGE) {
+    if let Some(hit) = cache.get("topic_releases_v2", &key, version.as_deref(), TOPIC_MAX_AGE) {
         return Ok(hit);
     }
     let page = topic_page(&app, &client, topic_id, start).await?;
+    let game = page.title.as_deref().map(phpbb::topic_name);
     let releases: Vec<Release> = page
         .posts
         .iter()
         .rev()
-        .filter_map(game::parse_release)
+        .filter_map(|p| game::parse_release(p, game.as_deref()))
         .collect();
-    cache.put("topic_releases", &key, version.as_deref(), &releases);
+    cache.put("topic_releases_v2", &key, version.as_deref(), &releases);
     Ok(releases)
 }
 

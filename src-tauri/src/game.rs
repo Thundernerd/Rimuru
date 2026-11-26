@@ -4,6 +4,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::phpbb::{LinkKind, Post, PostLink};
+use crate::steam;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct GameInfo {
@@ -248,7 +249,7 @@ static BUILD: LazyLock<Regex> =
 static VERSION_LINE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)^\s*version\s*:\s*([^\[|]+)").unwrap());
 static VERSION_V: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"(?i)\bv(\d+(?:\.\d+)+[a-z]?)\b").unwrap());
+    LazyLock::new(|| Regex::new(r"(?i)(?:^|[^a-z0-9])v(\d+(?:\.\d+)+[a-z]?)\.?(?:[^a-z0-9.]|$)").unwrap());
 static SIZE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)\b(\d+(?:[.,]\d+)?)\s*(KB|MB|GB|TB|KiB|MiB|GiB|TiB)\b").unwrap()
 });
@@ -256,6 +257,84 @@ static CSF: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)clean steam files|\bCSF\b").unwrap());
 static PRE_INSTALLED: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)pre-?installed").unwrap());
+static GOG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\bGOG\b").unwrap());
+static URL: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"https?://\S+").unwrap());
+static LEAD_IN: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?i)^(?:(?:hi|hello|hey|yo|greetings)(?:\s+(?:all|everyone|guys))?\b[\s,!.:-]*)?(?:(?:here(?:'s|\s+is|\s+are)?(?:\s+you\s+go)?|as\s+requested|uploaded)\b[\s,!.:-]*)?(?:(?:the|a|an|my)\s+)?",
+    )
+    .unwrap()
+});
+static SKIP_LINE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)^(?:thanks?\b|thank\s+you|enjoy\b|with\s+the\s+usual\s+password|the\s+password\b|password\s*:|have\s+fun|cheers\b)").unwrap()
+});
+static RELEASE_MARKER: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)clean steam files|\bCSF\b|pre-?installed|\bGOG\b|\brepack\b|\bportable\b|\bbuild\b|\bversion\b|(?:^|[^a-z0-9])v\d+(?:\.\d+)+|\bwin(?:32|64)\b|\bupdate\b|\bhotfix\b|\bdlcs?\b|\bcrack(?:ed)?\b|\bfix\b|\bbranch\b").unwrap()
+});
+static FILE_NAME: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)^\S+\.(?:exe|zip|rar|7z|iso|bin|tar|gz)$").unwrap());
+
+fn tidy_line(line: &str) -> String {
+    let without_urls = URL.replace_all(line, " ");
+    let trimmed = without_urls
+        .trim_start_matches(|c: char| !(c.is_alphanumeric() || c == '[' || c == '('))
+        .trim();
+    let rest = LEAD_IN.replace(trimmed, "");
+    rest.trim()
+        .trim_end_matches(|c: char| matches!(c, ':' | '-' | '|' | '~' | '⚠') || c.is_whitespace())
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn release_title(details: &[String], game: Option<&str>) -> Option<String> {
+    let game_key = game.map(steam::normalize_name).filter(|k| !k.is_empty());
+    let mut best: Option<(f32, String)> = None;
+    for (index, line) in details.iter().enumerate() {
+        if SKIP_LINE.is_match(line.trim()) {
+            continue;
+        }
+        let text = tidy_line(line);
+        if text.chars().filter(|c| c.is_alphanumeric()).count() < 3 {
+            continue;
+        }
+        let mentions_game = game_key
+            .as_ref()
+            .is_some_and(|k| steam::normalize_name(&text).contains(k.as_str()));
+        let mut score = -0.25 * index as f32;
+        if mentions_game {
+            score += 5.0;
+        }
+        if RELEASE_MARKER.is_match(&text) {
+            score += 3.0;
+        }
+        if FILE_NAME.is_match(&text) {
+            score -= 6.0;
+        }
+        if text.len() > 100 {
+            score -= 3.0;
+        }
+        if text.ends_with('?') {
+            score -= 3.0;
+        }
+        if score >= 1.0 && best.as_ref().is_none_or(|(s, _)| score > *s) {
+            best = Some((score, text));
+        }
+    }
+    let game = game.map(str::trim).filter(|g| !g.is_empty());
+    match (best, game) {
+        (Some((_, text)), Some(game)) => {
+            let has_game = steam::normalize_name(&text).contains(&steam::normalize_name(game));
+            Some(if has_game {
+                text
+            } else {
+                format!("{game} — {text}")
+            })
+        }
+        (Some((_, text)), None) => Some(text),
+        (None, game) => game.map(str::to_string),
+    }
+}
 
 fn is_download(link: &PostLink) -> bool {
     let host = link.host.as_str();
@@ -266,7 +345,7 @@ fn is_download(link: &PostLink) -> bool {
     link.kind == LinkKind::External && !link.in_quote && !listed && !forum
 }
 
-pub fn parse_release(post: &Post) -> Option<Release> {
+pub fn parse_release(post: &Post, game: Option<&str>) -> Option<Release> {
     let links: Vec<DownloadLink> = post
         .links
         .iter()
@@ -305,12 +384,15 @@ pub fn parse_release(post: &Post) -> Option<Release> {
     if details.iter().any(|l| PRE_INSTALLED.is_match(l)) {
         tags.push("Pre-installed".to_string());
     }
+    if details.iter().any(|l| GOG.is_match(l)) {
+        tags.push("GOG".to_string());
+    }
 
     Some(Release {
         post_id: post.id,
         author: post.author.clone(),
         posted: post.posted.clone(),
-        title: details.first().cloned(),
+        title: release_title(&details, game),
         version: find(&VERSION_LINE).or_else(|| find(&VERSION_V)),
         build: find(&BUILD),
         size: details
@@ -439,12 +521,87 @@ mod tests {
     }
 
     #[test]
+    fn release_titles() {
+        let titles = |t| {
+            let page = fixture(t);
+            let game = page.title.as_deref().map(crate::phpbb::topic_name);
+            page.posts
+                .iter()
+                .filter_map(|p| parse_release(p, game.as_deref()))
+                .map(|r| (r.author.unwrap_or_default(), r.title.unwrap_or_default()))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            titles(159639),
+            [
+                ("kektin.com".into(), "Slotbound".into()),
+                ("userunicode".into(), "Slotbound (Clean Steam Files)".into()),
+                ("pretendme".into(), "Slotbound (Clean Steam Files)".into()),
+                (
+                    "DicDale".into(),
+                    "Slotbound (v1.0.0.6 | Build 26665715) (149 MB)".into()
+                ),
+            ]
+        );
+        assert_eq!(
+            titles(135719),
+            [
+                ("SasKP".into(), "Wizordum".into()),
+                ("irukanjji".into(), "Wizordum — GOG version".into()),
+                ("irukanjji".into(), "Wizordum — GOG version".into()),
+                (
+                    "Dude Dude".into(),
+                    "Wizordum [Win64] [Branch: Public] (Clean Steam Files)".into()
+                ),
+            ]
+        );
+    }
+
+    #[test]
+    fn title_lines() {
+        let title = |lines: &[&str]| {
+            let lines: Vec<String> = lines.iter().map(|l| l.to_string()).collect();
+            release_title(&lines, Some("Nine Sols"))
+        };
+        assert_eq!(
+            title(&["Hi", "Nine Sols v1.2 repack"]).as_deref(),
+            Some("Nine Sols v1.2 repack")
+        );
+        assert_eq!(
+            title(&["Hello guys! Here is the update v1.3"]).as_deref(),
+            Some("Nine Sols — update v1.3")
+        );
+        assert_eq!(
+            title(&["Thanks to X for the crack", "https://gofile.io/d/abc"]).as_deref(),
+            Some("Nine Sols")
+        );
+        assert_eq!(
+            title(&["Does anyone have the DLC?", "Nine Sols + DLC"]).as_deref(),
+            Some("Nine Sols + DLC")
+        );
+    }
+
+    #[test]
+    fn gog_tag_and_file_versions() {
+        let page = fixture(135719);
+        let gog = page
+            .posts
+            .iter()
+            .filter_map(|p| parse_release(p, Some("Wizordum")))
+            .find(|r| r.author.as_deref() == Some("irukanjji"))
+            .unwrap();
+        assert_eq!(gog.tags, ["GOG"]);
+        assert_eq!(gog.version.as_deref(), Some("0.2.0.4"));
+    }
+
+    #[test]
     fn releases_across_topics() {
         let releases = |t| {
-            fixture(t)
-                .posts
+            let page = fixture(t);
+            let game = page.title.as_deref().map(crate::phpbb::topic_name);
+            page.posts
                 .iter()
-                .filter_map(parse_release)
+                .filter_map(|p| parse_release(p, game.as_deref()))
                 .collect::<Vec<_>>()
         };
 
@@ -509,7 +666,11 @@ mod tests {
     #[test]
     fn releases() {
         let page = topic();
-        let releases: Vec<_> = page.posts.iter().filter_map(parse_release).collect();
+        let releases: Vec<_> = page
+            .posts
+            .iter()
+            .filter_map(|p| parse_release(p, Some("Slotbound")))
+            .collect();
         let by_author = |a: &str| {
             releases
                 .iter()
