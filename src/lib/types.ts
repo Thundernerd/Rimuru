@@ -133,3 +133,12 @@ export type Visit = {
 export type CommandError = { kind: string; message: string };
 
 export type Follow = { topic: TopicSummary; followed_at: number };
+
+export type Owned = {
+  topic_id: number;
+  post_id: number;
+  build: string | null;
+  version: string | null;
+  title: string | null;
+  marked_at: number;
+};

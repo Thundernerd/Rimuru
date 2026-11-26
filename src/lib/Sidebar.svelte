@@ -2,6 +2,7 @@
   import { api, errorMessage } from "./api";
   import { artFor, requestArt } from "./cardArt.svelte";
   import { followedTopics, follows } from "./follows.svelte";
+  import { updateAvailable } from "./owned.svelte";
   import Icon from "./Icon.svelte";
   import { current, type View } from "./nav.svelte";
   import { session, signIn } from "./session.svelte";
@@ -113,18 +114,20 @@
     {#each topics as topic (topic.id)}
       {@const art = artFor(topic.name)}
       {@const fresh = newReplies(topic)}
+      {@const update = updateAvailable(topic.id)}
       <li>
         <button
           type="button"
           class:active={openGame === topic.id}
-          title={fresh ? `${topic.title}: ${fresh} new replies` : topic.title}
+          title={update ? `${topic.title}: update available` : fresh ? `${topic.title}: ${fresh} new replies` : topic.title}
           onclick={() => onnavigate({ kind: "game", topic })}
         >
           <span class="thumb" style:--hue={(topic.id * 47) % 360}>
             {#if art?.portrait || art?.capsule}<img src={art.portrait ?? art.capsule} alt="" />{/if}
           </span>
           <span class="title">{topic.name}</span>
-          {#if fresh}<span class="dot" aria-label={`${fresh} new replies`}></span>{/if}
+          {#if update}<span class="dot update" aria-label="Update available"></span>
+          {:else if fresh}<span class="dot" aria-label={`${fresh} new replies`}></span>{/if}
         </button>
       </li>
     {/each}
@@ -278,6 +281,9 @@
     height: 7px;
     border-radius: 50%;
     background: var(--warn);
+  }
+  .dot.update {
+    background: var(--good);
   }
   .empty {
     margin: 0;

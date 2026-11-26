@@ -4,6 +4,7 @@
   import { api, MAIN_FORUM_ID } from "./lib/api";
   import BrowseView from "./lib/BrowseView.svelte";
   import { loadFollows } from "./lib/follows.svelte";
+  import { loadOwned } from "./lib/owned.svelte";
   import FollowingView from "./lib/FollowingView.svelte";
   import { clearForumPages } from "./lib/forum";
   import GameGrid from "./lib/GameGrid.svelte";
@@ -94,6 +95,7 @@
     refreshSession();
     loadRecent();
     loadFollows();
+    loadOwned();
     const unlisten = api.onForumPageLoaded(() => refreshSession());
     return () => {
       unlisten.then((u) => u());

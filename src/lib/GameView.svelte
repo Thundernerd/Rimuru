@@ -1,6 +1,8 @@
 <script lang="ts">
   import { untrack } from "svelte";
 
+  import { isNewer, noteReleases, owned, updateAvailable } from "./owned.svelte";
+
   import { api, errorMessage } from "./api";
   import { rememberArt } from "./cardArt.svelte";
   import GameDetails from "./GameDetails.svelte";
@@ -126,6 +128,16 @@
   });
 
   const latest = $derived(releases[0] ?? null);
+  const newestBuild = $derived(releases.reduce<Release | null>((best, r) => (!best || isNewer(r, best) ? r : best), null));
+  const ownership = $derived(
+    owned.has(topic.id) ? (updateAvailable(topic.id) ? "update" : "current") : null,
+  ) as "update" | "current" | null;
+
+  $effect(() => {
+    const id = topic.id;
+    const found = releases;
+    untrack(() => noteReleases(id, found));
+  });
   const movies = $derived(steam?.movies ?? []);
   const shots = $derived(steam?.screenshots ?? []);
   const requirements = $derived(first?.info?.system_requirements ?? []);
@@ -149,7 +161,7 @@
       ["Replies", topic.replies?.toLocaleString()],
       ["Views", topic.views?.toLocaleString()],
       ["Releases", first ? `${releases.length}${loading ? "…" : ""}` : null],
-      ["Latest build", latest?.build ?? latest?.version ?? null, true],
+      ["Latest build", newestBuild?.build ?? newestBuild?.version ?? null, true],
     ].filter((s) => !!s[1]) as [string, string, boolean?][],
   );
 </script>
@@ -163,6 +175,7 @@
   {stats}
   hasTrailer={movies.length > 0}
   latestIsNew={!!latest && newIds.has(latest.post_id)}
+  {ownership}
   followed={isFollowed(topic.id)}
   onfollow={() => toggleFollow(listed.get(topic.id) ?? topic)}
   ontrailer={() => (trailerAt = 0)}
@@ -192,7 +205,7 @@
         {/if}
       </header>
       {#if latest}
-        <ReleaseCard release={latest} isNew={newIds.has(latest.post_id)} featured />
+        <ReleaseCard release={latest} topicId={topic.id} isNew={newIds.has(latest.post_id)} featured />
       {:else if loading}
         <div class="placeholder"></div>
       {:else}
@@ -211,6 +224,7 @@
   {:else if tab === "releases" && first}
     <ReleaseList
       {releases}
+      topicId={topic.id}
       {newIds}
       {pagesRead}
       {pagesPlanned}

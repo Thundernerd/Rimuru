@@ -7,6 +7,7 @@ use tauri::State;
 use super::unix_now;
 use crate::cache::Cache;
 use crate::error::Result;
+use crate::game::Release;
 use crate::phpbb::TopicSummary;
 
 pub const VISIT_MAX_AGE: Duration = Duration::from_secs(100 * 365 * 24 * 3600);
@@ -99,4 +100,39 @@ pub async fn followed_topics(cache: State<'_, Cache>) -> Result<Vec<Follow>> {
     let mut follows = cache.list::<Follow>("follow", VISIT_MAX_AGE);
     follows.sort_by_key(|f| std::cmp::Reverse(f.followed_at));
     Ok(follows)
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Owned {
+    pub topic_id: u64,
+    pub post_id: u64,
+    pub build: Option<String>,
+    pub version: Option<String>,
+    pub title: Option<String>,
+    pub marked_at: u64,
+}
+
+#[tauri::command]
+pub async fn mark_owned(cache: State<'_, Cache>, topic_id: u64, release: Release) -> Result<Owned> {
+    let owned = Owned {
+        topic_id,
+        post_id: release.post_id,
+        build: release.build,
+        version: release.version,
+        title: release.title,
+        marked_at: unix_now(),
+    };
+    cache.put("owned", &topic_id.to_string(), None, &owned);
+    Ok(owned)
+}
+
+#[tauri::command]
+pub async fn clear_owned(cache: State<'_, Cache>, topic_id: u64) -> Result<()> {
+    cache.delete("owned", &topic_id.to_string());
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn owned_releases(cache: State<'_, Cache>) -> Result<Vec<Owned>> {
+    Ok(cache.list::<Owned>("owned", VISIT_MAX_AGE))
 }

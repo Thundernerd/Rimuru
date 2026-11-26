@@ -1,12 +1,16 @@
 <script lang="ts">
   import LinkButton from "./LinkButton.svelte";
+  import { isOwned, toggleOwned } from "./owned.svelte";
   import type { Release } from "./types";
 
   let {
     release,
+    topicId,
     isNew = false,
     featured = false,
-  }: { release: Release; isNew?: boolean; featured?: boolean } = $props();
+  }: { release: Release; topicId: number; isNew?: boolean; featured?: boolean } = $props();
+
+  const have = $derived(isOwned(topicId, release.post_id));
 
   const facts = $derived(
     [
@@ -17,8 +21,18 @@
   );
 </script>
 
-<article class:new={isNew} class:featured>
+<article class:new={isNew} class:featured class:have>
   <header>
+    <button
+      type="button"
+      class="own"
+      class:on={have}
+      aria-pressed={have}
+      onclick={() => toggleOwned(topicId, release)}
+      title={have ? "You have this release. Click to unmark it." : "Mark this as the release you have, to see when an update is posted"}
+    >
+      {have ? "✓ Got it" : "Mark as got it"}
+    </button>
     <h4>
       {#if isNew}<span class="new-badge">New</span>{/if}
       {release.title ?? "Release"}
@@ -77,6 +91,28 @@
     border-left: 3px solid var(--border);
     border-radius: 10px;
     background: var(--surface);
+  }
+  article.have {
+    border-left-color: var(--good);
+  }
+  header {
+    position: relative;
+  }
+  .own {
+    float: right;
+    margin: 0 0 6px 10px;
+    padding: 3px 10px;
+    font-size: 12px;
+    color: var(--muted);
+    background: none;
+  }
+  .own:hover:not(:disabled) {
+    color: var(--text);
+  }
+  .own.on {
+    color: var(--good);
+    border-color: rgb(74 222 128 / 0.5);
+    background: rgb(74 222 128 / 0.1);
   }
   article.featured {
     padding: 18px 20px;

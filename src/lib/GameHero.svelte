@@ -12,6 +12,7 @@
     stats,
     hasTrailer,
     latestIsNew,
+    ownership,
     followed,
     onfollow,
     ontrailer,
@@ -25,6 +26,7 @@
     stats: [string, string, boolean?][];
     hasTrailer: boolean;
     latestIsNew: boolean;
+    ownership: "update" | "current" | null;
     followed: boolean;
     onfollow: () => void;
     ontrailer: () => void;
@@ -71,6 +73,8 @@
   <div class="bottom">
     <div class="identity">
       <div class="badges">
+        {#if ownership === "update"}<span class="badge update">Update available</span>
+        {:else if ownership === "current"}<span class="badge current">✓ Up to date</span>{/if}
         {#if latestIsNew}<span class="badge new">New release</span>{/if}
         {#each topic.labels as label (label)}<span class="badge">{label}</span>{/each}
         {#if topic.last_post_at}<span class="eyebrow">Updated {topic.last_post_at}</span>{/if}
@@ -208,6 +212,16 @@
     color: #ffd27a;
     background: rgb(255 190 60 / 0.14);
     border: 1px solid rgb(255 190 60 / 0.35);
+  }
+  .badge.update {
+    color: var(--accent-text);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .badge.current {
+    color: var(--good);
+    background: rgb(74 222 128 / 0.12);
+    border-color: rgb(74 222 128 / 0.4);
   }
   .badge.new {
     color: #052e16;

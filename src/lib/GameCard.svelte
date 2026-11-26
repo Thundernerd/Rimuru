@@ -2,6 +2,7 @@
   import { artFor, matches, requestArt } from "./cardArt.svelte";
   import type { TopicSummary } from "./types";
   import { isFollowed } from "./follows.svelte";
+  import { updateAvailable } from "./owned.svelte";
   import Icon from "./Icon.svelte";
   import { newReplies } from "./visits.svelte";
 
@@ -12,6 +13,7 @@
 
   const art = $derived(artFor(topic.name));
   const fresh = $derived(newReplies(topic));
+  const update = $derived(updateAvailable(topic.id));
   const portrait = $derived(art?.portrait ?? null);
   const fallback = $derived(portrait ? null : (art?.header ?? art?.capsule ?? null));
   let loaded = $state<string | null>(null);
@@ -96,7 +98,9 @@
     {/key}
   {/if}
 
-  {#if fresh}
+  {#if update}
+    <span class="fresh update" title={`A newer release than yours: ${update.title ?? "new build"}`}>Update available</span>
+  {:else if fresh}
     <span class="fresh" title="Replies since you last opened this game">
       {fresh} new {fresh === 1 ? "reply" : "replies"}
     </span>
@@ -255,6 +259,11 @@
     color: var(--accent-text);
     background: var(--accent);
     box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+  }
+
+  .fresh.update {
+    color: #052e16;
+    background: var(--good);
   }
 
   .followed {

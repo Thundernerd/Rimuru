@@ -55,6 +55,9 @@ pub fn run() {
             commands::library::follow_topic,
             commands::library::unfollow_topic,
             commands::library::followed_topics,
+            commands::library::mark_owned,
+            commands::library::clear_owned,
+            commands::library::owned_releases,
             commands::forum::save_snapshot,
         ])
         .run(tauri::generate_context!())

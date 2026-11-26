@@ -4,6 +4,7 @@
 
   let {
     releases,
+    topicId,
     newIds,
     pagesRead,
     pagesPlanned,
@@ -13,6 +14,7 @@
     onretry,
   }: {
     releases: Release[];
+    topicId: number;
     newIds: Set<number>;
     pagesRead: number;
     pagesPlanned: number;
@@ -39,7 +41,7 @@
   {/if}
 
   {#each releases as release (release.post_id)}
-    <ReleaseCard {release} isNew={newIds.has(release.post_id)} />
+    <ReleaseCard {release} {topicId} isNew={newIds.has(release.post_id)} />
   {:else}
     {#if !loading && !error}
       <p class="muted">No posts with download links on the pages read.</p>
