@@ -1,4 +1,4 @@
-import { SvelteMap } from "svelte/reactivity";
+import { SvelteMap, SvelteSet } from "svelte/reactivity";
 
 import { api } from "./api";
 import type { Artwork, SteamMatch } from "./types";
@@ -8,6 +8,11 @@ const BATCH_DELAY_MS = 150;
 
 export const matches = new SvelteMap<string, number | null>();
 export const artwork = new SvelteMap<number, Artwork>();
+
+// Names whose Steam match is still being looked up, and app ids whose artwork is
+// still being fetched, so views can tell art that is coming from art that never will.
+const lookingUp = new SvelteSet<string>();
+const fetching = new SvelteSet<number>();
 
 type Job = { name: string; wanted: () => boolean; done: (looked: boolean) => void };
 
@@ -51,7 +56,12 @@ export function requestArt(name: string, wanted: () => boolean): Promise<boolean
     if (appId != null) requestArtwork(appId);
     return Promise.resolve(true);
   }
-  return new Promise((done) => {
+  return new Promise((resolve) => {
+    lookingUp.add(name);
+    const done = (looked: boolean) => {
+      if (!queue.some((job) => job.name === name)) lookingUp.delete(name);
+      resolve(looked);
+    };
     queue.push({ name, wanted, done });
     pump();
   });
@@ -70,6 +80,7 @@ let timer: ReturnType<typeof setTimeout> | null = null;
 function requestArtwork(appId: number) {
   if (artwork.has(appId) || requested.has(appId)) return;
   pending.add(appId);
+  fetching.add(appId);
   timer ??= setTimeout(flush, BATCH_DELAY_MS);
 }
 
@@ -84,10 +95,22 @@ function flush() {
       for (const [id, art] of Object.entries(found)) artwork.set(Number(id), art);
     })
     .catch(() => {})
-    .finally(() => ids.forEach((id) => requested.delete(id)));
+    .finally(() =>
+      ids.forEach((id) => {
+        requested.delete(id);
+        if (!pending.has(id)) fetching.delete(id);
+      }),
+    );
 }
 
 export function artFor(name: string): Artwork | null {
   const appId = matches.get(name);
   return appId == null ? null : (artwork.get(appId) ?? null);
+}
+
+/** Whether art for `name` is still on its way: its match or its artwork is being fetched. */
+export function artLoading(name: string): boolean {
+  if (lookingUp.has(name)) return true;
+  const appId = matches.get(name);
+  return appId != null && fetching.has(appId);
 }
