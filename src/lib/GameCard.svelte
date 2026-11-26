@@ -14,10 +14,22 @@
   const fresh = $derived(newReplies(topic));
   const portrait = $derived(art?.portrait ?? null);
   const fallback = $derived(portrait ? null : (art?.header ?? art?.capsule ?? null));
-  const hasArt = $derived(!!(portrait || fallback));
-
   let loaded = $state<string | null>(null);
   let failed = $state<string | null>(null);
+  const hasArt = $derived(!!(portrait || fallback));
+  const artShown = $derived(hasArt && loaded === (portrait ?? fallback) && failed !== loaded);
+
+  const initial = $derived(topic.name.match(/[\p{L}\p{N}]/u)?.[0]?.toUpperCase() ?? "?");
+  const longestWord = $derived(Math.max(4, ...topic.name.split(/\s+/).map((w) => w.length)));
+  const titleSize = $derived.by(() => {
+    const length = topic.name.length;
+    if (length <= 10) return 28;
+    if (length <= 18) return 24;
+    if (length <= 30) return 20;
+    if (length <= 45) return 17;
+    return 15;
+  });
+
 
   let element = $state<HTMLElement>();
   let visible = false;
@@ -48,11 +60,17 @@
   bind:this={element}
   type="button"
   class="card"
-  class:has-art={hasArt && failed !== (portrait ?? fallback)}
+  class:art-shown={artShown}
   style:--hue={hue}
   title={topic.title}
   onclick={() => onselect(topic)}
 >
+  <div class="cover" aria-hidden="true">
+    <span class="monogram">{initial}</span>
+    <span class="cover-title" style:--size={`${titleSize}px`} style:--longest={longestWord}>{topic.name}</span>
+    {#if topic.labels.length}<span class="cover-label">{topic.labels[0]}</span>{/if}
+  </div>
+
   {#if portrait}
     {#key portrait}
       <img
@@ -89,7 +107,7 @@
   {/if}
 
   <div class="overlay">
-    <h3>{topic.name}</h3>
+    {#if artShown}<h3>{topic.name}</h3>{/if}
     {#if tags.length}
       <div class="tags">
         {#each tags as tag (tag)}
@@ -130,6 +148,77 @@
   .card:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
+  }
+
+  .cover {
+    container-type: inline-size;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 16px;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 80% at 15% 10%, hsl(var(--hue) 70% 45% / 0.55), transparent 60%),
+      radial-gradient(90% 60% at 100% 100%, hsl(calc(var(--hue) + 50) 70% 42% / 0.35), transparent 60%),
+      linear-gradient(165deg, hsl(var(--hue) 30% 17%), hsl(calc(var(--hue) + 30) 35% 8%));
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+  }
+  .cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(135deg, rgb(255 255 255 / 0.035) 0 2px, transparent 2px 14px);
+    pointer-events: none;
+  }
+  .monogram {
+    position: absolute;
+    right: -6%;
+    bottom: -10%;
+    font-size: 200px;
+    font-weight: 900;
+    line-height: 1;
+    color: rgb(255 255 255 / 0.07);
+    pointer-events: none;
+  }
+  .cover-title {
+    position: relative;
+    font-size: min(var(--size), calc((100cqi - 32px) / (var(--longest) * 0.62)));
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+    text-shadow: 0 2px 10px rgb(0 0 0 / 0.45);
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .cover-title::before {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 3px;
+    margin-bottom: 12px;
+    border-radius: 2px;
+    background: hsl(var(--hue) 85% 65%);
+  }
+  .cover-label {
+    position: relative;
+    align-self: flex-start;
+    margin-top: 12px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.85);
+    background: rgb(0 0 0 / 0.3);
+    border: 1px solid rgb(255 255 255 / 0.18);
   }
 
   img {
@@ -197,12 +286,12 @@
       opacity 150ms ease,
       transform 150ms ease;
   }
-  .has-art .overlay {
+  .overlay {
     opacity: 0;
     transform: translateY(8px);
   }
-  .has-art:hover .overlay,
-  .has-art:focus-visible .overlay {
+  .card:hover .overlay,
+  .card:focus-visible .overlay {
     opacity: 1;
     transform: none;
   }
