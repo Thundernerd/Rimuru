@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use std::sync::LazyLock;
 
 use scraper::{ElementRef, Html, Selector};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 macro_rules! selector {
@@ -45,7 +45,7 @@ pub struct ForumPage {
 
 /// The listing's section a topic appears in. Everything except `Normal` is
 /// repeated at the top of every page of the forum.
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum TopicKind {
     GlobalAnnouncement,
@@ -69,7 +69,7 @@ impl TopicKind {
     }
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TopicSummary {
     pub id: u64,
     pub kind: TopicKind,

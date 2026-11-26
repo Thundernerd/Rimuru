@@ -1,66 +1,66 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
 
-  import { api, errorMessage, MAIN_FORUM_ID } from "./lib/api";
+  import { api, MAIN_FORUM_ID } from "./lib/api";
   import GameGrid from "./lib/GameGrid.svelte";
   import GameView from "./lib/GameView.svelte";
-  import { refreshSession, session, signIn } from "./lib/session.svelte";
-  import { setStatus, status } from "./lib/status.svelte";
+  import { activeSearch, back, current, forward, go, nav, savedScroll, type View } from "./lib/nav.svelte";
+  import RecentView from "./lib/RecentView.svelte";
+  import { refreshSession, session } from "./lib/session.svelte";
+  import Sidebar from "./lib/Sidebar.svelte";
+  import { status } from "./lib/status.svelte";
+  import TitleBar from "./lib/TitleBar.svelte";
   import type { TopicSummary } from "./lib/types";
+  import { loadRecent } from "./lib/visits.svelte";
 
-  let selected = $state<TopicSummary | null>(null);
-  /** Bumped on sign-in so the grid reloads with the signed-in view. */
-  let gridKey = $state(0);
+  /** macOS draws its window buttons over our sidebar (overlay title bar). */
+  const mac = navigator.userAgent.includes("Mac");
+
   let main = $state<HTMLElement>();
-  let gridScroll = 0;
+  let searchInput = $state<HTMLInputElement>();
+  /** Bumped on sign-in so the home grid reloads with the signed-in view. */
+  let gridKey = $state(0);
 
-  /** The search being shown, if any; the forum listing stays loaded below it. */
-  let search = $state<{ query: string; allForums: boolean } | null>(null);
-  let searchText = $state("");
-  let allForums = $state(false);
-  /** Bumped per search, so the same query can be searched again. */
-  let searchRun = $state(0);
+  const view = $derived(current());
+  /** The search to keep loaded: the current one, or the one a game was opened from. */
+  const search = $derived(activeSearch());
+
+  const scrollTop = () => main?.scrollTop ?? 0;
+  const navigate = (to: View) => go(to, scrollTop());
+  const openGame = (topic: TopicSummary) => navigate({ kind: "game", topic });
+  const goBack = () => back(scrollTop());
+  const goForward = () => forward(scrollTop());
 
   const forumPage = (start: number) => api.forumPage(MAIN_FORUM_ID, start);
   const forumPath = (start: number) => `viewforum.php?f=${MAIN_FORUM_ID}&start=${start}`;
 
-  function submitSearch(e: SubmitEvent) {
-    e.preventDefault();
-    const query = searchText.trim();
-    if (!query) return clearSearch();
-    search = { query, allForums };
-    searchRun++;
-    selected = null;
-    main?.scrollTo({ top: 0 });
+  function searchPath(query: string, allForums: boolean) {
+    return (start: number) => {
+      const params = new URLSearchParams({ keywords: query });
+      if (!allForums) params.append("fid[]", String(MAIN_FORUM_ID));
+      params.append("sr", "topics");
+      params.append("sf", "titleonly");
+      params.append("start", String(start));
+      return `search.php?${params}`;
+    };
   }
 
-  function clearSearch() {
-    search = null;
-    searchText = "";
-    selected = null;
+  function focusSearch() {
+    searchInput?.focus();
+    searchInput?.select();
   }
 
-  function searchPath(start: number) {
-    const params = new URLSearchParams({ keywords: search?.query ?? "" });
-    if (!search?.allForums) params.append("fid[]", String(MAIN_FORUM_ID));
-    params.append("sr", "topics");
-    params.append("sf", "titleonly");
-    params.append("start", String(start));
-    return `search.php?${params}`;
-  }
+  // Restore each history entry's scroll position when it's shown again.
+  $effect(() => {
+    void nav.index;
+    void nav.entries;
+    untrack(() => {
+      const top = savedScroll();
+      tick().then(() => main?.scrollTo({ top }));
+    });
+  });
 
-  function select(topic: TopicSummary) {
-    gridScroll = main?.scrollTop ?? 0;
-    selected = topic;
-    main?.scrollTo({ top: 0 });
-  }
-
-  function back() {
-    selected = null;
-    // Restore the grid's position after it is shown again.
-    requestAnimationFrame(() => main?.scrollTo({ top: gridScroll }));
-  }
-
+  // Reload the home grid after signing in.
   let wasLoggedOut = false;
   $effect(() => {
     const state = session.current?.state;
@@ -71,8 +71,29 @@
     }
   });
 
+  function onkeydown(e: KeyboardEvent) {
+    const mod = mac ? e.metaKey : e.ctrlKey;
+    if (mod && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      focusSearch();
+    } else if ((mod && e.key === "[") || (e.altKey && e.key === "ArrowLeft")) {
+      e.preventDefault();
+      goBack();
+    } else if ((mod && e.key === "]") || (e.altKey && e.key === "ArrowRight")) {
+      e.preventDefault();
+      goForward();
+    }
+  }
+
+  // Mouse back/forward buttons.
+  function onmouseup(e: MouseEvent) {
+    if (e.button === 3) goBack();
+    else if (e.button === 4) goForward();
+  }
+
   onMount(() => {
     refreshSession();
+    loadRecent();
     // Each page the forum window finishes may change the session (security
     // check passed, signed in, signed out).
     const unlisten = api.onForumPageLoaded(() => refreshSession());
@@ -80,126 +101,82 @@
       unlisten.then((u) => u());
     };
   });
-
-  function showForum() {
-    api.showForumWindow("index.php").catch((e) => setStatus(errorMessage(e)));
-  }
 </script>
 
-<header>
-  <h1>RinRu Desktop</h1>
-  <form class="search" onsubmit={submitSearch}>
-    <input
-      type="search"
-      placeholder="Search games on the forum"
-      bind:value={searchText}
-      aria-label="Search games"
+<svelte:window {onkeydown} {onmouseup} />
+
+<div class="shell">
+  <Sidebar onnavigate={navigate} onsearch={focusSearch} {mac} />
+
+  <div class="column">
+    <TitleBar
+      onback={goBack}
+      onforward={goForward}
+      onsearch={(query, allForums) => navigate({ kind: "search", query, allForums, run: 0 })}
+      {mac}
+      bind:input={searchInput}
     />
-    <label class="scope" title="Search topic titles in all forums, not just the main game forum">
-      <input type="checkbox" bind:checked={allForums} /> All forums
-    </label>
-    <button type="submit">Search</button>
-  </form>
-  <div class="session">
-    {#if session.current?.state === "logged_in"}
-      <span>Signed in{session.current.username ? ` as ${session.current.username}` : ""}</span>
-    {:else if session.current?.state === "logged_out"}
-      <span>Not signed in</span>
-      <button type="button" class="primary" onclick={signIn}>Sign in</button>
-    {:else}
-      <span>Connecting…</span>
-    {/if}
-    <button type="button" class="subtle" onclick={showForum} title="Show the forum's browser window">
-      Forum window
-    </button>
-  </div>
-</header>
 
-<main bind:this={main}>
-  <!-- Kept mounted while a game is open, so its loaded pages and scroll survive. -->
-  <div hidden={selected !== null || search !== null}>
-    {#key gridKey}
-      <GameGrid onselect={select} fetchPage={forumPage} snapshotPath={forumPath} />
-    {/key}
-  </div>
-  {#if search}
-    <div hidden={selected !== null}>
-      {#key searchRun}
-        {@const { query, allForums: everywhere } = search}
-        <div class="search-bar">
-          <button type="button" onclick={clearSearch}>‹ All games</button>
+    <main bind:this={main}>
+      <!-- Kept mounted, so its loaded pages and scroll position survive. -->
+      <div hidden={view.kind !== "home"}>
+        {#key gridKey}
+          <GameGrid onselect={openGame} fetchPage={forumPage} snapshotPath={forumPath} heading="Latest games" />
+        {/key}
+      </div>
+
+      {#if search}
+        <div hidden={view.kind !== "search"}>
+          {#key search.run}
+            <GameGrid
+              onselect={openGame}
+              fetchPage={(start) => api.searchTopics(search.query, start, search.allForums)}
+              snapshotPath={searchPath(search.query, search.allForums)}
+              heading={`Results for “${search.query}”${search.allForums ? " in all forums" : ""}`}
+              emptyText="No topics with that in their title."
+              errorText="The search didn't go through"
+            />
+          {/key}
         </div>
-        <GameGrid
-          onselect={select}
-          fetchPage={(start) => api.searchTopics(query, start, everywhere)}
-          snapshotPath={searchPath}
-          heading={`Results for “${query}”${everywhere ? " in all forums" : ""}`}
-          emptyText="No topics with that in their title."
-          errorText="The search didn't go through"
-        />
-      {/key}
-    </div>
-  {/if}
-  {#if selected}
-    <GameView topic={selected} onback={back} />
-  {/if}
-</main>
+      {/if}
 
-<footer>{status.text}</footer>
+      {#if view.kind === "recent"}
+        <RecentView onselect={openGame} />
+      {:else if view.kind === "game"}
+        {#key view.topic.id}
+          <GameView topic={view.topic} />
+        {/key}
+      {/if}
+    </main>
+
+    {#if status.text}<div class="status">{status.text}</div>{/if}
+  </div>
+</div>
 
 <style>
-  header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
+  .shell {
+    display: grid;
+    grid-template-columns: 248px minmax(0, 1fr);
+    height: 100vh;
   }
-  h1 {
-    font-size: 16px;
-    margin: 0;
-    white-space: nowrap;
-  }
-  .search {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    max-width: 520px;
-    margin: 0 auto;
-  }
-  .search input[type="search"] {
-    flex: 1;
-    min-width: 120px;
-  }
-  .scope {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .search-bar {
-    margin-bottom: 12px;
-  }
-  .session {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--muted);
+  .column {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-width: 0;
+    min-height: 0;
   }
   main {
     overflow: auto;
-    padding: 20px;
+    padding: 20px 28px 28px;
     min-height: 0;
   }
-  footer {
-    padding: 6px 20px;
+  .status {
+    padding: 5px 20px;
     border-top: 1px solid var(--border);
     color: var(--muted);
     font-size: 12px;
-    min-height: 1.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>

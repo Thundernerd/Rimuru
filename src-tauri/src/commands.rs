@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use crate::cache::Cache;
 use crate::forum_window;
 use crate::game::{self, GameInfo, Release};
-use crate::phpbb::{self, ForumPage, SearchPage, Session, TopicPage};
+use crate::phpbb::{self, ForumPage, SearchPage, Session, TopicPage, TopicSummary};
 use crate::steam::{self, Artwork, SteamApp, SteamClient, SteamMatch};
 
 #[tauri::command]
@@ -294,6 +294,9 @@ pub struct Visit {
     pub release_ids: Vec<u64>,
     /// Unix seconds.
     pub visited_at: u64,
+    /// The topic as listed at the time, for "recently viewed".
+    #[serde(default)]
+    pub topic: Option<TopicSummary>,
 }
 
 /// Last visits for the given topics; unvisited topics are left out.
@@ -318,11 +321,10 @@ pub async fn topic_visits(
 #[tauri::command]
 pub async fn record_visit(
     cache: State<'_, Cache>,
-    topic_id: u64,
-    replies: Option<u32>,
+    topic: TopicSummary,
     release_ids: Vec<u64>,
 ) -> Result<Visit> {
-    let key = topic_id.to_string();
+    let key = topic.id.to_string();
     let mut ids: Vec<u64> = cache
         .get::<Visit>("visit", &key, None, VISIT_MAX_AGE)
         .map(|v| v.release_ids)
@@ -331,15 +333,28 @@ pub async fn record_visit(
     ids.sort_unstable();
     ids.dedup();
     let visit = Visit {
-        replies,
+        replies: topic.replies,
         release_ids: ids,
         visited_at: std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_secs())
             .unwrap_or(0),
+        topic: Some(topic),
     };
     cache.put("visit", &key, None, &visit);
     Ok(visit)
+}
+
+/// The most recently opened games, newest first (only visits recorded
+/// with their topic, i.e. not from before this was added).
+#[tauri::command]
+pub async fn recent_visits(cache: State<'_, Cache>, limit: Option<usize>) -> Result<Vec<Visit>> {
+    Ok(cache
+        .list::<Visit>("visit", VISIT_MAX_AGE)
+        .into_iter()
+        .filter(|v| v.topic.is_some())
+        .take(limit.unwrap_or(50))
+        .collect())
 }
 
 /// Saves the raw HTML of a forum page (e.g. `viewforum.php?f=10`) to the

@@ -46,6 +46,7 @@ pub fn run() {
             commands::steam_artwork,
             commands::topic_visits,
             commands::record_visit,
+            commands::recent_visits,
             commands::save_snapshot,
         ])
         .run(tauri::generate_context!())

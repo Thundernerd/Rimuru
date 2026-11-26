@@ -11,7 +11,7 @@
   import type { Artwork, GameFirstPage, Release, SteamApp, TopicSummary, Visit } from "./types";
   import { previousVisit, recordVisit } from "./visits.svelte";
 
-  let { topic, onback }: { topic: TopicSummary; onback: () => void } = $props();
+  let { topic }: { topic: TopicSummary } = $props();
 
   /** Pages read for releases: page 1 plus up to this many from the end. */
   const RECENT_PAGES = 4;
@@ -135,7 +135,6 @@
   latestIsNew={!!releases[0] && newIds.has(releases[0].post_id)}
   releaseCount={releases.length}
   loadingReleases={loading}
-  {onback}
   onsnapshot={saveSnapshot}
   onallreleases={() => releasesSection?.scrollIntoView({ behavior: "smooth", block: "start" })}
 />

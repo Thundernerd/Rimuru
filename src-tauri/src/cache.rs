@@ -85,6 +85,26 @@ impl Cache {
             .flatten()
     }
 
+    /// All entries of a kind stored within `max_age`, newest first.
+    pub fn list<T: DeserializeOwned>(&self, kind: &str, max_age: Duration) -> Vec<T> {
+        let Ok(conn) = self.conn.lock() else {
+            return Vec::new();
+        };
+        let Ok(mut stmt) = conn.prepare(
+            "SELECT value FROM entries WHERE kind = ?1 AND stored_at >= ?2 ORDER BY stored_at DESC",
+        ) else {
+            return Vec::new();
+        };
+        let oldest = now() - max_age.as_secs().min(i64::MAX as u64) as i64;
+        stmt.query_map(params![kind, oldest], |row| row.get::<_, String>(0))
+            .map(|rows| {
+                rows.filter_map(|r| r.ok())
+                    .filter_map(|json| serde_json::from_str(&json).ok())
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
     pub fn put<T: Serialize>(&self, kind: &str, key: &str, version: Option<&str>, value: &T) {
         let Ok(json) = serde_json::to_string(value) else {
             return;
@@ -124,6 +144,24 @@ mod tests {
             cache.get::<Vec<i32>>("topic", "1", Some("35"), DAY),
             Some(vec![4])
         );
+    }
+
+    #[test]
+    fn lists_a_kind_newest_first() {
+        let cache = Cache::in_memory();
+        cache.put("visit", "1", None, &1);
+        cache.put("visit", "2", None, &2);
+        cache.put("other", "3", None, &3);
+        cache
+            .conn
+            .lock()
+            .unwrap()
+            .execute(
+                "UPDATE entries SET stored_at = stored_at - 10 WHERE key = '1'",
+                [],
+            )
+            .unwrap();
+        assert_eq!(cache.list::<i32>("visit", DAY), vec![2, 1]);
     }
 
     #[test]

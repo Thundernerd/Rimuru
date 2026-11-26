@@ -16,7 +16,6 @@
     latestIsNew,
     releaseCount,
     loadingReleases,
-    onback,
     onsnapshot,
     onallreleases,
   }: {
@@ -29,7 +28,6 @@
     latestIsNew: boolean;
     releaseCount: number;
     loadingReleases: boolean;
-    onback: () => void;
     onsnapshot: () => void;
     onallreleases: () => void;
   } = $props();
@@ -98,7 +96,6 @@
 
   <div class="inner">
     <div class="topbar">
-      <button type="button" class="glass" onclick={onback}>‹ All games</button>
       <button type="button" class="glass subtle" onclick={onsnapshot}>Save HTML</button>
     </div>
 
@@ -204,7 +201,7 @@
   /* Always dark over the key art, whatever the app theme. */
   .hero {
     position: relative;
-    margin: -20px -20px 0;
+    margin: -20px -28px 0;
     padding: 16px 28px 32px;
     color: #f3f4f8;
     background: #0d1018;
@@ -240,8 +237,8 @@
 
   .topbar {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
+    justify-content: flex-end;
+    margin-bottom: 8px;
   }
   .glass,
   .hero :global(button) {

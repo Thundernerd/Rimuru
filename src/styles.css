@@ -1,32 +1,23 @@
-/* Global tokens and base elements. Component styles live in the .svelte files. */
+/* Global tokens and base elements. Component styles live in the .svelte files.
+ * Dark only: a launcher-style navy-black shell with one cyan accent. */
 
 :root {
-  --bg: #f2f2f5;
-  --surface: #ffffff;
-  --surface-2: #e9e9ee;
-  --text: #1d1d1f;
-  --muted: #6e6e73;
-  --border: #d9d9de;
-  --accent: #2f6fde;
-  --accent-text: #ffffff;
-  --warn: #c46a12;
-  color-scheme: light dark;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bg: #0b0e14;
+  --sidebar: #0e121a;
+  --surface: #151a25;
+  --surface-2: #1c2230;
+  --text: #e8ebf2;
+  --muted: #8b93a7;
+  --border: #222938;
+  --accent: #3fc8f0;
+  --accent-text: #03131b;
+  --accent-soft: rgb(63 200 240 / 0.12);
+  --good: #4ade80;
+  --warn: #f0a34a;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: dark;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 14px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #141416;
-    --surface: #222226;
-    --surface-2: #2e2e33;
-    --text: #f2f2f7;
-    --muted: #a1a1a6;
-    --border: #38383d;
-    --accent: #6ea0ff;
-    --accent-text: #0b1530;
-    --warn: #f0a34a;
-  }
 }
 
 * {
@@ -37,17 +28,17 @@ html,
 body {
   margin: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
 #app {
   height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
 }
 
 [hidden] {
@@ -58,7 +49,7 @@ button {
   font: inherit;
   padding: 5px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
@@ -67,27 +58,41 @@ button:hover:not(:disabled) {
   background: var(--surface-2);
 }
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: default;
 }
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) {
+  background: var(--accent);
+  filter: brightness(1.08);
 }
 button.subtle {
   border-color: transparent;
   background: none;
   color: var(--muted);
 }
+button.subtle:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--surface);
+}
 
 input {
   font: inherit;
   padding: 6px 10px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--surface);
   color: var(--text);
+}
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .tag {
@@ -100,6 +105,35 @@ input {
   white-space: nowrap;
 }
 .tag.accent {
-  border-color: var(--accent);
+  border-color: rgb(63 200 240 / 0.45);
   color: var(--accent);
+}
+
+/* Technical values: versions, builds, sizes. */
+.mono {
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
+
+/* Small uppercase labels, e.g. "RECENTLY VIEWED". */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #262d3d;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }

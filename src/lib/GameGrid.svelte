@@ -4,7 +4,7 @@
   import { api, errorMessage } from "./api";
   import GameCard from "./GameCard.svelte";
   import { setStatus } from "./status.svelte";
-  import { loadVisits } from "./visits.svelte";
+  import { loadVisits, rememberListed } from "./visits.svelte";
   import type { Listing, TopicSummary } from "./types";
 
   /**
@@ -19,6 +19,7 @@
     heading = null,
     emptyText = "No games here.",
     errorText = "Couldn't load the game list",
+    showSnapshot = true,
   }: {
     onselect: (topic: TopicSummary) => void;
     fetchPage: (start: number) => Promise<Listing>;
@@ -26,6 +27,8 @@
     heading?: string | null;
     emptyText?: string;
     errorText?: string;
+    /** Show "Save HTML" (not for lists that aren't a forum page). */
+    showSnapshot?: boolean;
   } = $props();
 
   let topics = $state<TopicSummary[]>([]);
@@ -52,6 +55,7 @@
       const seen = new Set(topics.map((t) => t.id));
       topics.push(...page.topics.filter((t) => !seen.has(t.id)));
       loadVisits(page.topics.map((t) => t.id));
+      rememberListed(page.topics);
       nextStart = page.pagination.next_start;
       lastStart = start;
       pagesLoaded += 1;
@@ -95,7 +99,9 @@
     {topics.length} games
     {#if totalPages}· {pagesLoaded} of {totalPages} pages{/if}
   </span>
-  <button type="button" class="subtle" onclick={saveSnapshot} disabled={!pagesLoaded}>Save HTML</button>
+  {#if showSnapshot}
+    <button type="button" class="subtle" onclick={saveSnapshot} disabled={!pagesLoaded}>Save HTML</button>
+  {/if}
 </div>
 
 <div class="grid">
