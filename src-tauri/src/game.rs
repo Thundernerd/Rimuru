@@ -248,8 +248,9 @@ static BUILD: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)\bbuild\b\s*:?\s*(\d{5,})").unwrap());
 static VERSION_LINE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)^\s*version\s*:\s*([^\[|]+)").unwrap());
-static VERSION_V: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"(?i)(?:^|[^a-z0-9])v(\d+(?:\.\d+)+[a-z]?)\.?(?:[^a-z0-9.]|$)").unwrap());
+static VERSION_V: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)(?:^|[^a-z0-9])v(\d+(?:\.\d+)+[a-z]?)\.?(?:[^a-z0-9.]|$)").unwrap()
+});
 static SIZE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)\b(\d+(?:[.,]\d+)?)\s*(KB|MB|GB|TB|KiB|MiB|GiB|TiB)\b").unwrap()
 });
