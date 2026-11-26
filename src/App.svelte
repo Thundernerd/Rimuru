@@ -5,6 +5,7 @@
   import BrowseView from "./lib/BrowseView.svelte";
   import { loadFollows } from "./lib/follows.svelte";
   import { loadOwned } from "./lib/owned.svelte";
+  import { startNotifications } from "./lib/notify.svelte";
   import { startRefresh, stopRefresh } from "./lib/refresh.svelte";
   import FollowingView from "./lib/FollowingView.svelte";
   import { clearForumPages } from "./lib/forum";
@@ -97,10 +98,12 @@
     loadRecent();
     loadFollows();
     loadOwned();
+    const stopNotifications = startNotifications();
     startRefresh();
     const unlisten = api.onForumPageLoaded(() => refreshSession());
     return () => {
       stopRefresh();
+      stopNotifications();
       unlisten.then((u) => u());
     };
   });

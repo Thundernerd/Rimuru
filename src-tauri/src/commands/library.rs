@@ -136,3 +136,23 @@ pub async fn clear_owned(cache: State<'_, Cache>, topic_id: u64) -> Result<()> {
 pub async fn owned_releases(cache: State<'_, Cache>) -> Result<Vec<Owned>> {
     Ok(cache.list::<Owned>("owned", VISIT_MAX_AGE))
 }
+
+#[tauri::command]
+pub async fn unnotified(cache: State<'_, Cache>, post_ids: Vec<u64>) -> Result<Vec<u64>> {
+    Ok(post_ids
+        .into_iter()
+        .filter(|id| {
+            cache
+                .get::<u64>("notified", &id.to_string(), None, VISIT_MAX_AGE)
+                .is_none()
+        })
+        .collect())
+}
+
+#[tauri::command]
+pub async fn mark_notified(cache: State<'_, Cache>, post_ids: Vec<u64>) -> Result<()> {
+    for id in post_ids {
+        cache.put("notified", &id.to_string(), None, &unix_now());
+    }
+    Ok(())
+}

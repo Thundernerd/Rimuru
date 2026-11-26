@@ -13,6 +13,7 @@ use tauri::{Manager, WindowEvent};
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
         .manage(client::ForumClient::new().expect("failed to build HTTP client"))
         .manage(steam::SteamClient::new().expect("failed to build Steam client"))
         .setup(|app| {
@@ -58,6 +59,8 @@ pub fn run() {
             commands::library::mark_owned,
             commands::library::clear_owned,
             commands::library::owned_releases,
+            commands::library::unnotified,
+            commands::library::mark_notified,
             commands::forum::save_snapshot,
         ])
         .run(tauri::generate_context!())
