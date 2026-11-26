@@ -50,6 +50,13 @@
     <button type="button" class:active={view.kind === "home"} onclick={() => onnavigate({ kind: "home" })}>
       <Icon name="home" /> Home
     </button>
+    <button
+      type="button"
+      class:active={view.kind === "browse"}
+      onclick={() => onnavigate({ kind: "browse", label: null })}
+    >
+      <Icon name="grid" /> Browse
+    </button>
     <button type="button" class:active={view.kind === "search"} onclick={onsearch}>
       <Icon name="search" /> Search
     </button>

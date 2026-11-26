@@ -2,9 +2,12 @@
   import { onMount, tick, untrack } from "svelte";
 
   import { api, MAIN_FORUM_ID } from "./lib/api";
+  import BrowseView from "./lib/BrowseView.svelte";
+  import { clearForumPages } from "./lib/forum";
   import GameGrid from "./lib/GameGrid.svelte";
   import GameView from "./lib/GameView.svelte";
-  import { activeSearch, back, current, forward, go, nav, savedScroll, type View } from "./lib/nav.svelte";
+  import HomeView from "./lib/HomeView.svelte";
+  import { back, current, forward, go, nav, replace, savedScroll, underlying, type View } from "./lib/nav.svelte";
   import RecentView from "./lib/RecentView.svelte";
   import { refreshSession, session } from "./lib/session.svelte";
   import Sidebar from "./lib/Sidebar.svelte";
@@ -18,12 +21,14 @@
 
   let main = $state<HTMLElement>();
   let searchInput = $state<HTMLInputElement>();
-  /** Bumped on sign-in so the home grid reloads with the signed-in view. */
+  /** Bumped on sign-in so the forum listings reload with the signed-in view. */
   let gridKey = $state(0);
 
   const view = $derived(current());
-  /** The search to keep loaded: the current one, or the one a game was opened from. */
-  const search = $derived(activeSearch());
+  /** The page under a game (or the current page): kept mounted, see `underlying`. */
+  const below = $derived(underlying());
+  const search = $derived(below.kind === "search" ? below : null);
+  const browse = $derived(below.kind === "browse" ? below : null);
 
   const scrollTop = () => main?.scrollTop ?? 0;
   const navigate = (to: View) => go(to, scrollTop());
@@ -31,8 +36,6 @@
   const goBack = () => back(scrollTop());
   const goForward = () => forward(scrollTop());
 
-  const forumPage = (start: number) => api.forumPage(MAIN_FORUM_ID, start);
-  const forumPath = (start: number) => `viewforum.php?f=${MAIN_FORUM_ID}&start=${start}`;
 
   function searchPath(query: string, allForums: boolean) {
     return (start: number) => {
@@ -67,6 +70,7 @@
     if (state === "logged_out") wasLoggedOut = true;
     if (state === "logged_in" && wasLoggedOut) {
       wasLoggedOut = false;
+      clearForumPages();
       gridKey++;
     }
   });
@@ -118,12 +122,22 @@
     />
 
     <main bind:this={main}>
-      <!-- Kept mounted, so its loaded pages and scroll position survive. -->
-      <div hidden={view.kind !== "home"}>
-        {#key gridKey}
-          <GameGrid onselect={openGame} fetchPage={forumPage} snapshotPath={forumPath} heading="Latest games" />
-        {/key}
-      </div>
+      {#key gridKey}
+        <!-- Kept mounted, so the carousel and shelves don't reload. -->
+        <div hidden={view.kind !== "home"}>
+          <HomeView onselect={openGame} onnavigate={navigate} />
+        </div>
+
+        {#if browse}
+          <div hidden={view.kind !== "browse"}>
+            <BrowseView
+              label={browse.label}
+              onselect={openGame}
+              onlabel={(label) => replace({ kind: "browse", label })}
+            />
+          </div>
+        {/if}
+      {/key}
 
       {#if search}
         <div hidden={view.kind !== "search"}>

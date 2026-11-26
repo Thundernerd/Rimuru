@@ -8,6 +8,8 @@ import type { TopicSummary } from "./types";
 
 export type View =
   | { kind: "home" }
+  /** The forum's full listing, optionally only topics with a title label. */
+  | { kind: "browse"; label: string | null }
   | { kind: "recent" }
   /** `run` makes a repeated search of the same text a new search. */
   | { kind: "search"; query: string; allForums: boolean; run: number }
@@ -44,6 +46,11 @@ export function go(view: View, scroll: number) {
   nav.index = nav.entries.length - 1;
 }
 
+/** Swaps the current entry for `view`, e.g. changing a filter. */
+export function replace(view: View) {
+  nav.entries[nav.index] = { view, scroll: 0 };
+}
+
 export function back(scroll: number) {
   if (!canGoBack()) return;
   nav.entries[nav.index].scroll = scroll;
@@ -61,18 +68,21 @@ export function savedScroll(): number {
   return nav.entries[nav.index].scroll;
 }
 
-/** The most recent search at or before the current entry, if any. */
-export function activeSearch(): Extract<View, { kind: "search" }> | null {
+/**
+ * The page under the current entry: the current view, or for a game, the
+ * page it was opened from. Kept mounted so going back finds it as it was.
+ */
+export function underlying(): Exclude<View, { kind: "game" }> {
   for (let i = nav.index; i >= 0; i--) {
     const view = nav.entries[i].view;
-    if (view.kind === "search") return view;
-    if (view.kind !== "game") return null;
+    if (view.kind !== "game") return view;
   }
-  return null;
+  return { kind: "home" };
 }
 
 function sameView(a: View, b: View): boolean {
   if (a.kind !== b.kind) return false;
   if (a.kind === "game" && b.kind === "game") return a.topic.id === b.topic.id;
+  if (a.kind === "browse" && b.kind === "browse") return a.label === b.label;
   return a.kind === "home" || a.kind === "recent";
 }

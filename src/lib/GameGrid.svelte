@@ -20,6 +20,7 @@
     emptyText = "No games here.",
     errorText = "Couldn't load the game list",
     showSnapshot = true,
+    filter = null,
   }: {
     onselect: (topic: TopicSummary) => void;
     fetchPage: (start: number) => Promise<Listing>;
@@ -29,7 +30,13 @@
     errorText?: string;
     /** Show "Save HTML" (not for lists that aren't a forum page). */
     showSnapshot?: boolean;
+    /** Only show topics this accepts (pages still load in full). */
+    filter?: ((topic: TopicSummary) => boolean) | null;
   } = $props();
+
+  /** Pages loaded in a row by themselves when a filter leaves the screen empty. */
+  const MAX_AUTO_LOADS = 5;
+  let autoLoads = 0;
 
   let topics = $state<TopicSummary[]>([]);
   /** `start=` of the next forum page to load; null once the last is loaded. */
@@ -42,6 +49,14 @@
   let error = $state<string | null>(null);
   let totalMatches = $state<number | null>(null);
   let sentinel = $state<HTMLElement>();
+
+  const shown = $derived(filter ? topics.filter(filter) : topics);
+
+  /** The end of the grid is (nearly) on screen. */
+  function nearEnd(): boolean {
+    const rect = sentinel?.getBoundingClientRect();
+    return !!rect && rect.top < window.innerHeight + 800;
+  }
 
   /** Loads the next page, one at a time. */
   async function loadMore() {
@@ -66,6 +81,17 @@
     } finally {
       loading = false;
     }
+    // A filter can hide most of a page, leaving the end of the grid in view
+    // without the observer firing again: keep loading, a few pages at most.
+    if (filter && !error && nextStart !== null && autoLoads < MAX_AUTO_LOADS) {
+      await Promise.resolve();
+      if (nearEnd()) {
+        autoLoads++;
+        loadMore();
+        return;
+      }
+    }
+    autoLoads = 0;
   }
 
   async function saveSnapshot() {
@@ -96,7 +122,7 @@
   {#if heading}<h2>{heading}</h2>{/if}
   <span class="count">
     {#if totalMatches !== null}{totalMatches} matches ·{/if}
-    {topics.length} games
+    {#if filter}{shown.length} of {topics.length} games{:else}{topics.length} games{/if}
     {#if totalPages}· {pagesLoaded} of {totalPages} pages{/if}
   </span>
   {#if showSnapshot}
@@ -105,7 +131,7 @@
 </div>
 
 <div class="grid">
-  {#each topics as topic (topic.id)}
+  {#each shown as topic (topic.id)}
     <GameCard {topic} {onselect} />
   {/each}
   {#if loading}
@@ -120,10 +146,11 @@
     <p>{errorText}: {error}</p>
     <button type="button" onclick={loadMore}>Try again</button>
   </div>
-{:else if !loading && pagesLoaded && !topics.length}
+{:else if !loading && pagesLoaded && !shown.length && nextStart === null}
   <div class="message"><p>{emptyText}</p></div>
 {:else if !loading && nextStart !== null}
   <div class="message">
+    {#if pagesLoaded && !shown.length}<p>{emptyText}</p>{/if}
     <button type="button" onclick={loadMore}>Load more</button>
   </div>
 {/if}
