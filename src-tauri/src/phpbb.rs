@@ -1,11 +1,8 @@
-//! Parsing of phpBB 3 pages.
+//! Parsing of cs.rin.ru's phpBB 3 pages.
 //!
-//! Written against the two stock phpBB 3 layouts (prosilver's `li.row` lists
-//! and subsilver2's tables) because cs.rin.ru's theme has not been checked
-//! yet. Selectors lean on things every phpBB theme keeps: `a.topictitle`,
-//! `viewtopic.php?...t=` links, `memberlist.php?mode=viewprofile` links and
-//! `start=` pagination. Verify against saved pages (see `save_snapshot`) and
-//! add those as test fixtures.
+//! The site runs phpBB 3 with "rinDark", a theme based on subsilver2: forum
+//! listings and posts are tables. Tests run against real pages saved with
+//! `save_snapshot` in `tests/fixtures/` (personal data replaced).
 
 use std::collections::HashSet;
 use std::sync::LazyLock;
@@ -20,27 +17,23 @@ macro_rules! selector {
     };
 }
 
+selector!(TR, "tr");
+selector!(SECTION_HEADER, "td.row3");
 selector!(TOPIC_TITLE, "a.topictitle");
 selector!(PROFILE_LINK, r#"a[href*="mode=viewprofile"]"#);
-selector!(DD_POSTS, "dd.posts");
-selector!(DD_VIEWS, "dd.views");
-selector!(TD, "td");
-selector!(HEADING, "h2");
+selector!(TOPIC_DETAILS, "p.topicdetails");
 selector!(HEADING_LINK, "h2 a");
 selector!(TITLE, "title");
+selector!(NAV, "td.nav");
 selector!(START_LINK, r#"a[href*="start="]"#);
 selector!(LOGOUT_LINK, r#"a[href*="mode=logout"]"#);
-selector!(
-    LOGGED_IN_USERNAME,
-    "#username_logged_in .username, #username_logged_in .username-coloured"
-);
-selector!(POST_CONTENT, "div.content, div.postbody");
-selector!(PRO_CONTENT, "div.content");
-selector!(SUB_CONTENT, "div.postbody");
-selector!(POST_ANCHOR, r#"a[name^="p"], a[id^="p"]"#);
-selector!(PRO_AUTHOR, "p.author");
-selector!(SUB_AUTHOR, "b.postauthor, .postauthor");
-selector!(TIME, "time[datetime]");
+selector!(POST_TABLE, "table.tablebg");
+selector!(POST_ANCHOR, r#"a[name^="p"]"#);
+selector!(POST_AUTHOR, "b.postauthor");
+selector!(POST_HEADER, "td.gensmall");
+selector!(POST_BODY, "div.postbody");
+
+// ---------------------------------------------------------------- types
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct ForumPage {
@@ -50,15 +43,53 @@ pub struct ForumPage {
     pub pagination: Pagination,
 }
 
+/// The listing's section a topic appears in. Everything except `Normal` is
+/// repeated at the top of every page of the forum.
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TopicKind {
+    GlobalAnnouncement,
+    Announcement,
+    Sticky,
+    Normal,
+}
+
+impl TopicKind {
+    pub fn is_pinned(self) -> bool {
+        self != TopicKind::Normal
+    }
+
+    fn from_section(header: &str) -> Self {
+        match header.trim().to_ascii_lowercase().as_str() {
+            "global announcements" => TopicKind::GlobalAnnouncement,
+            "announcements" => TopicKind::Announcement,
+            "stickies" => TopicKind::Sticky,
+            _ => TopicKind::Normal,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct TopicSummary {
     pub id: u64,
+    pub kind: TopicKind,
+    /// The full title as shown, e.g. `[Info] Nine Sols [Early Access]`.
     pub title: String,
+    /// The title without leading and trailing `[...]` tags, e.g. `Nine Sols`.
+    pub name: String,
+    /// Leading tags, e.g. `["Info"]`.
+    pub prefixes: Vec<String>,
+    /// Trailing tags, e.g. `["Early Access"]`.
+    pub labels: Vec<String>,
     pub url: String,
     pub author: Option<String>,
-    pub last_poster: Option<String>,
+    /// As displayed by the forum, e.g. `Monday, 29 Jun 2026, 01:18`.
+    pub created: Option<String>,
     pub replies: Option<u32>,
     pub views: Option<u32>,
+    /// As displayed by the forum, e.g. `Today, 12:21`.
+    pub last_post_at: Option<String>,
+    pub last_poster: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -71,13 +102,62 @@ pub struct TopicPage {
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct Post {
-    pub id: Option<u64>,
+    pub id: u64,
     pub author: Option<String>,
-    /// ISO timestamp when the theme provides `<time datetime>`, otherwise the
-    /// date text as displayed.
+    pub subject: Option<String>,
+    /// As displayed by the forum, e.g. `Friday, 13 Nov 2026, 13:57`.
     pub posted: Option<String>,
+    /// The post body as untrusted forum HTML. Sanitise before rendering.
     pub content_html: String,
+    /// The post body as text, one line per line break or block.
     pub content_text: String,
+    /// The same text as `content_text`, line by line.
+    pub lines: Vec<PostLine>,
+    pub links: Vec<PostLink>,
+    pub images: Vec<PostImage>,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct PostLine {
+    pub text: String,
+    /// Every word on the line is inside a quote of another post.
+    pub quoted: bool,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct PostImage {
+    pub src: String,
+    pub in_quote: bool,
+    /// Index into `Post::lines` of the line the image sits on (or before).
+    pub line: usize,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct PostLink {
+    pub url: String,
+    /// Host without `www.`, e.g. `gofile.io`.
+    pub host: String,
+    pub kind: LinkKind,
+    pub text: String,
+    /// The full line of the post the link sits on, e.g.
+    /// `Gofile | VikingFile` or `Store Page: https://store.steampowered.com/...`.
+    pub context: String,
+    /// Index into `Post::lines` of the line the link sits on.
+    pub line: usize,
+    /// Inside a quote of another post, so usually a repeat.
+    pub in_quote: bool,
+    /// Wrapped in the forum's "Unsafe filehosts" warning.
+    pub flagged_unsafe: bool,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum LinkKind {
+    SteamStore,
+    SteamDb,
+    /// Another page on cs.rin.ru.
+    Forum,
+    External,
 }
 
 /// phpBB pages by `start=` offset (items, not page numbers).
@@ -87,6 +167,8 @@ pub struct Pagination {
     pub next_start: Option<u32>,
     pub previous_start: Option<u32>,
     pub last_start: u32,
+    pub page: Option<u32>,
+    pub total_pages: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -96,44 +178,48 @@ pub enum Session {
     LoggedOut,
 }
 
+// ---------------------------------------------------------------- session
+
 /// True for the site's JavaScript "Security check" interstitial.
 pub fn is_security_check(html: &str) -> bool {
     html.contains("Security check") && html.contains("securitytoken")
 }
 
+/// Signed in when the page has a logout link: `Logout [ name ]`.
 pub fn parse_session(html: &str) -> Session {
     let doc = Html::parse_document(html);
     let Some(logout) = doc.select(&LOGOUT_LINK).next() else {
         return Session::LoggedOut;
     };
-    // phpBB 3.1+: <li id="username_logged_in"> ... <span class="username">name</span>
-    // phpBB 3.0:  "Logout [ name ]"
-    let username = doc
-        .select(&LOGGED_IN_USERNAME)
-        .next()
-        .map(text_of)
-        .or_else(|| {
-            let text = text_of(logout);
-            let inner = text
-                .split_once('[')?
-                .1
-                .rsplit_once(']')?
-                .0
-                .trim()
-                .to_string();
-            (!inner.is_empty()).then_some(inner)
-        })
+    let text = text_of(logout);
+    let username = text
+        .split_once('[')
+        .and_then(|(_, rest)| rest.rsplit_once(']'))
+        .map(|(name, _)| name.trim().to_string())
         .filter(|name| !name.is_empty());
     Session::LoggedIn { username }
 }
 
+// ---------------------------------------------------------------- forum
+
 /// Parses `viewforum.php?f=<forum_id>&start=<start>`.
+///
+/// Topic rows have six cells: icon, title, replies, author, views, last post.
+/// Section header rows (`td.row3`) set the [`TopicKind`] of the rows below.
 pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> ForumPage {
     let doc = Html::parse_document(html);
+    let mut kind = TopicKind::Normal;
     let mut seen = HashSet::new();
     let mut topics = Vec::new();
 
-    for link in doc.select(&TOPIC_TITLE) {
+    for row in doc.select(&TR) {
+        if let Some(header) = row.select(&SECTION_HEADER).next() {
+            kind = TopicKind::from_section(&text_of(header));
+            continue;
+        }
+        let Some(link) = row.select(&TOPIC_TITLE).next() else {
+            continue;
+        };
         let Some(url) = link
             .value()
             .attr("href")
@@ -145,27 +231,45 @@ pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> For
             continue;
         };
         if !seen.insert(id) {
-            continue; // announcements can be listed twice
+            continue;
         }
 
-        let row = topic_row(link);
-        let profiles: Vec<String> = row
-            .map(|r| r.select(&PROFILE_LINK).map(text_of).collect())
-            .unwrap_or_default();
-        let (replies, views) = row.map(row_counts).unwrap_or((None, None));
+        let cells: Vec<ElementRef> = row
+            .children()
+            .filter_map(ElementRef::wrap)
+            .filter(|el| el.value().name() == "td")
+            .collect();
+        let cell_number = |i: usize| cells.get(i).and_then(|c| parse_count(&text_of(*c)));
+        let last_post = cells.get(5);
 
+        let title = text_of(link);
+        let (prefixes, name, labels) = split_title(&title);
         topics.push(TopicSummary {
             id,
-            title: text_of(link),
+            kind,
+            name,
+            prefixes,
+            labels,
+            title,
             url: clean_url(url),
-            author: profiles.first().cloned(),
-            last_poster: if profiles.len() > 1 {
-                profiles.last().cloned()
-            } else {
-                None
-            },
-            replies,
-            views,
+            author: cells
+                .get(3)
+                .and_then(|c| c.select(&PROFILE_LINK).next())
+                .map(text_of),
+            created: link
+                .value()
+                .attr("title")
+                .and_then(|t| t.strip_prefix("Posted:"))
+                .map(|t| t.trim().to_string()),
+            replies: cell_number(2),
+            views: cell_number(4),
+            last_post_at: last_post
+                .and_then(|c| c.select(&TOPIC_DETAILS).next())
+                .map(text_of)
+                .filter(|t| !t.is_empty()),
+            last_poster: last_post
+                .and_then(|c| c.select(&PROFILE_LINK).next())
+                .map(text_of),
         });
     }
 
@@ -177,60 +281,87 @@ pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> For
     }
 }
 
+/// Splits `[Info] Name [VR] [Early Access]` into prefixes, name and labels.
+fn split_title(title: &str) -> (Vec<String>, String, Vec<String>) {
+    let mut rest = title.trim();
+    let mut prefixes = Vec::new();
+    while let Some(after) = rest.strip_prefix('[') {
+        let Some((tag, tail)) = after.split_once(']') else {
+            break;
+        };
+        if tail.trim().is_empty() {
+            break; // keep a name that is only a bracketed tag
+        }
+        prefixes.push(tag.trim().to_string());
+        rest = tail.trim_start();
+    }
+    let mut labels = Vec::new();
+    while let Some(before) = rest.strip_suffix(']') {
+        let Some((head, tag)) = before.rsplit_once('[') else {
+            break;
+        };
+        if head.trim().is_empty() {
+            break; // keep a name that is only a bracketed tag
+        }
+        labels.insert(0, tag.trim().to_string());
+        rest = head.trim_end();
+    }
+    (prefixes, rest.to_string(), labels)
+}
+
+// ---------------------------------------------------------------- topic
+
 /// Parses `viewtopic.php?t=<topic_id>&start=<start>`.
+///
+/// Each post is its own `table.tablebg` holding an `<a name="p123">` anchor,
+/// `b.postauthor`, a `td.gensmall` header with subject and date, and
+/// `div.postbody` blocks: the first is the post, a second is the signature.
 pub fn parse_topic(html: &str, page_url: &Url, topic_id: u64, start: u32) -> TopicPage {
     let doc = Html::parse_document(html);
-    let mut seen_containers = HashSet::new();
     let mut posts = Vec::new();
 
-    for found in doc.select(&POST_CONTENT) {
-        // A post's container is the nearest div.post (prosilver) or table
-        // (subsilver2). Its body is the first div.content (prosilver, where
-        // div.postbody wraps the whole post) or else the first div.postbody
-        // (subsilver2, where later ones are signatures).
-        let container = post_container(found).unwrap_or(found);
-        if !seen_containers.insert(container.id()) {
+    for table in doc.select(&POST_TABLE) {
+        let Some(id) = table
+            .select(&POST_ANCHOR)
+            .find_map(|a| a.value().attr("name")?.strip_prefix('p')?.parse().ok())
+        else {
             continue;
-        }
-        let content = container
-            .select(&PRO_CONTENT)
-            .next()
-            .or_else(|| container.select(&SUB_CONTENT).next())
-            .unwrap_or(found);
+        };
+        let Some(body) = table.select(&POST_BODY).next() else {
+            continue;
+        };
 
-        let id = container.value().id().and_then(post_id).or_else(|| {
-            container.select(&POST_ANCHOR).find_map(|a| {
-                a.value()
-                    .attr("name")
-                    .or(a.value().attr("id"))
-                    .and_then(post_id)
-            })
-        });
-
-        let author = container
-            .select(&SUB_AUTHOR)
-            .next()
+        let header = table
+            .select(&POST_HEADER)
             .map(text_of)
-            .or_else(|| container.select(&PROFILE_LINK).next().map(text_of))
-            .filter(|s| !s.is_empty());
-
-        let posted = container
-            .select(&TIME)
-            .next()
-            .and_then(|t| t.value().attr("datetime").map(str::to_string))
-            .or_else(|| {
-                // phpBB 3.0 prosilver: "by name » Mon Jan 01, 2024 12:00 pm"
-                let text = text_of(container.select(&PRO_AUTHOR).next()?);
-                Some(text.rsplit_once('»')?.1.trim().to_string())
+            .find(|t| t.contains("Posted:"))
+            .unwrap_or_default();
+        let posted = header
+            .split_once("Posted:")
+            .map(|(_, rest)| rest.trim().to_string())
+            .filter(|t| !t.is_empty());
+        let subject = header
+            .split_once("Post subject:")
+            .map(|(_, rest)| {
+                rest.split("Posted:")
+                    .next()
+                    .unwrap_or("")
+                    .trim()
+                    .to_string()
             })
-            .filter(|s| !s.is_empty());
+            .filter(|t| !t.is_empty());
 
+        let walked = Walker::run(body, page_url);
         posts.push(Post {
             id,
-            author,
+            author: table.select(&POST_AUTHOR).next().map(text_of),
+            subject,
             posted,
-            content_html: content.inner_html().trim().to_string(),
-            content_text: text_of(content),
+            content_html: body.inner_html().trim().to_string(),
+            content_text: walked.text,
+            lines: walked.lines,
+            links: walked.links,
+            images: walked.images,
         });
     }
 
@@ -241,6 +372,179 @@ pub fn parse_topic(html: &str, page_url: &Url, topic_id: u64, start: u32) -> Top
         pagination: parse_pagination(&doc, page_url, start, "t", topic_id),
     }
 }
+
+/// Turns a post body into lines of text and collects its links and images,
+/// each tied to the line it sits on.
+struct Walker<'a> {
+    base: &'a Url,
+    lines: Vec<PostLine>,
+    current: String,
+    current_quoted: bool,
+    links: Vec<(PostLink, usize)>,
+    images: Vec<PostImage>,
+}
+
+#[derive(Clone, Copy, Default)]
+struct Scope {
+    in_quote: bool,
+    flagged_unsafe: bool,
+}
+
+struct Walked {
+    text: String,
+    lines: Vec<PostLine>,
+    links: Vec<PostLink>,
+    images: Vec<PostImage>,
+}
+
+impl<'a> Walker<'a> {
+    fn run(body: ElementRef, base: &'a Url) -> Walked {
+        let mut walker = Walker {
+            base,
+            lines: Vec::new(),
+            current: String::new(),
+            current_quoted: true,
+            links: Vec::new(),
+            images: Vec::new(),
+        };
+        walker.walk(body, Scope::default());
+        walker.break_line();
+
+        let lines = walker.lines;
+        let links = walker
+            .links
+            .into_iter()
+            .map(|(mut link, line)| {
+                link.context = lines.get(line).map(|l| l.text.clone()).unwrap_or_default();
+                link
+            })
+            .collect();
+        Walked {
+            text: lines
+                .iter()
+                .map(|l| l.text.as_str())
+                .collect::<Vec<_>>()
+                .join("\n"),
+            lines,
+            links,
+            images: walker.images,
+        }
+    }
+
+    fn break_line(&mut self) {
+        let text = self
+            .current
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ");
+        if !text.is_empty() {
+            self.lines.push(PostLine {
+                text,
+                quoted: self.current_quoted,
+            });
+        }
+        self.current.clear();
+        self.current_quoted = true;
+    }
+
+    fn push_text(&mut self, text: &str, scope: Scope) {
+        if !text.trim().is_empty() && !scope.in_quote {
+            self.current_quoted = false;
+        }
+        self.current.push_str(text);
+    }
+
+    fn walk(&mut self, el: ElementRef, scope: Scope) {
+        let name = el.value().name();
+        let has_class = |c: &str| el.value().classes().any(|x| x == c);
+        if matches!(name, "script" | "style" | "video" | "audio") || has_class("link_unsafe_reveal")
+        {
+            return;
+        }
+        let scope = Scope {
+            in_quote: scope.in_quote || has_class("quotecontent") || has_class("quotetitle"),
+            flagged_unsafe: scope.flagged_unsafe || has_class("link_unsafe"),
+        };
+        let block = matches!(
+            name,
+            "br" | "div"
+                | "p"
+                | "li"
+                | "ul"
+                | "ol"
+                | "tr"
+                | "table"
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+        );
+        if block {
+            self.break_line();
+        }
+
+        if name == "img"
+            && let Some(src) = el.value().attr("src").and_then(|s| self.base.join(s).ok())
+        {
+            self.images.push(PostImage {
+                src: src.to_string(),
+                in_quote: scope.in_quote,
+                line: self.lines.len(),
+            });
+        }
+
+        let link = (name == "a")
+            .then(|| el.value().attr("href"))
+            .flatten()
+            .and_then(|href| self.base.join(href).ok())
+            .filter(|url| matches!(url.scheme(), "http" | "https"));
+
+        for child in el.children() {
+            if let Some(text) = child.value().as_text() {
+                self.push_text(text, scope);
+            } else if let Some(child) = ElementRef::wrap(child) {
+                self.walk(child, scope);
+            }
+        }
+
+        if let Some(url) = link {
+            let host = url
+                .host_str()
+                .unwrap_or("")
+                .trim_start_matches("www.")
+                .to_string();
+            let kind = match host.as_str() {
+                "store.steampowered.com" => LinkKind::SteamStore,
+                "steamdb.info" => LinkKind::SteamDb,
+                "cs.rin.ru" => LinkKind::Forum,
+                _ => LinkKind::External,
+            };
+            // The line isn't finished yet; its index is where it will land.
+            let line = self.lines.len();
+            self.links.push((
+                PostLink {
+                    url: url.to_string(),
+                    host,
+                    kind,
+                    text: text_of(el),
+                    context: String::new(),
+                    line,
+                    in_quote: scope.in_quote,
+                    flagged_unsafe: scope.flagged_unsafe,
+                },
+                line,
+            ));
+        }
+        if block {
+            self.break_line();
+        }
+    }
+}
+
+// ---------------------------------------------------------------- shared
 
 fn text_of(el: ElementRef) -> String {
     el.text()
@@ -256,6 +560,11 @@ fn query_u64(url: &Url, key: &str) -> Option<u64> {
         .and_then(|(_, v)| v.parse().ok())
 }
 
+fn parse_count(text: &str) -> Option<u32> {
+    let plain = text.replace(',', "");
+    plain.trim().parse().ok()
+}
+
 /// Drops the `sid` parameter phpBB adds to links when cookies are missing.
 fn clean_url(mut url: Url) -> String {
     let pairs: Vec<(String, String)> = url
@@ -267,70 +576,24 @@ fn clean_url(mut url: Url) -> String {
     url.to_string()
 }
 
-fn has_class(el: &ElementRef, class: &str) -> bool {
-    el.value().classes().any(|c| c == class)
-}
-
-/// prosilver: `<li class="row">`, subsilver2: `<tr>`.
-fn topic_row(link: ElementRef) -> Option<ElementRef> {
-    link.ancestors().filter_map(ElementRef::wrap).find(|el| {
-        let name = el.value().name();
-        name == "tr" || (name == "li" && has_class(el, "row"))
-    })
-}
-
-fn post_container(content: ElementRef) -> Option<ElementRef> {
-    content.ancestors().filter_map(ElementRef::wrap).find(|el| {
-        let name = el.value().name();
-        (name == "div" && has_class(el, "post")) || name == "table"
-    })
-}
-
-fn post_id(raw: &str) -> Option<u64> {
-    raw.strip_prefix('p')?.parse().ok()
-}
-
-fn first_number(text: &str) -> Option<u32> {
-    let digits: String = text
-        .chars()
-        .skip_while(|c| !c.is_ascii_digit())
-        .take_while(|c| c.is_ascii_digit() || *c == ',')
-        .filter(char::is_ascii_digit)
-        .collect();
-    digits.parse().ok()
-}
-
-/// (replies, views) from `dd.posts`/`dd.views`, or from the first two
-/// purely numeric table cells.
-fn row_counts(row: ElementRef) -> (Option<u32>, Option<u32>) {
-    let dd = |sel: &Selector| {
-        row.select(sel)
-            .next()
-            .map(text_of)
-            .and_then(|t| first_number(&t))
-    };
-    if let (Some(r), v) = (dd(&DD_POSTS), dd(&DD_VIEWS)) {
-        return (Some(r), v);
-    }
-    let mut numbers = row.select(&TD).map(text_of).filter_map(|t| {
-        let plain = t.replace(',', "");
-        (!plain.is_empty() && plain.chars().all(|c| c.is_ascii_digit()))
-            .then(|| plain.parse().ok())
-            .flatten()
-    });
-    (numbers.next(), numbers.next())
-}
-
 fn page_title(doc: &Html) -> Option<String> {
     doc.select(&HEADING_LINK)
         .next()
-        .or_else(|| doc.select(&HEADING).next())
-        .or_else(|| doc.select(&TITLE).next())
         .map(text_of)
+        .or_else(|| {
+            // "CS RIN - Steam Underground • View forum - Main Forum"
+            let title = text_of(doc.select(&TITLE).next()?);
+            Some(
+                title
+                    .rsplit_once(" - ")
+                    .map_or(title.clone(), |(_, t)| t.to_string()),
+            )
+        })
         .filter(|s| !s.is_empty())
 }
 
-/// Collects `start=` offsets from links that point at the same forum/topic.
+/// `start=` offsets from links to the same forum/topic, plus the
+/// "Page X of Y" label.
 fn parse_pagination(doc: &Html, page_url: &Url, start: u32, key: &str, id: u64) -> Pagination {
     let mut offsets: Vec<u32> = doc
         .select(&START_LINK)
@@ -342,17 +605,34 @@ fn parse_pagination(doc: &Html, page_url: &Url, start: u32, key: &str, id: u64) 
     offsets.sort_unstable();
     offsets.dedup();
 
+    // "Page 1 of 630"
+    let (page, total_pages) = doc
+        .select(&NAV)
+        .map(text_of)
+        .find_map(|t| {
+            let rest = t.split_once("Page ")?.1;
+            let (page, total) = rest.split_once(" of ")?;
+            let total: String = total.chars().take_while(char::is_ascii_digit).collect();
+            Some((page.trim().parse().ok()?, total.parse().ok()?))
+        })
+        .map_or((None, None), |(p, t)| (Some(p), Some(t)));
+
     Pagination {
         start,
         next_start: offsets.iter().copied().find(|&s| s > start),
         previous_start: offsets.iter().rev().copied().find(|&s| s < start),
         last_start: offsets.last().copied().unwrap_or(0).max(start),
+        page,
+        total_pages,
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const FORUM: &str = include_str!("../tests/fixtures/viewforum_php_f_10.html");
+    const TOPIC: &str = include_str!("../tests/fixtures/viewtopic_php_t_159639.html");
 
     fn url(path: &str) -> Url {
         Url::parse("https://cs.rin.ru/forum/")
@@ -361,154 +641,160 @@ mod tests {
             .unwrap()
     }
 
-    const PROSILVER_FORUM: &str = r#"
-      <h2 class="forum-title"><a href="./viewforum.php?f=10">Main Forum</a></h2>
-      <div class="pagination">
-        <a href="./viewforum.php?f=10&amp;start=50">2</a>
-        <a href="./viewforum.php?f=10&amp;start=100">3</a>
-      </div>
-      <ul class="topiclist topics">
-        <li class="row bg1">
-          <dl>
-            <dt><a href="./viewtopic.php?f=10&amp;t=111&amp;sid=abc" class="topictitle">Game One</a>
-              <br />by <a href="./memberlist.php?mode=viewprofile&amp;u=5" class="username">alice</a></dt>
-            <dd class="posts">1,234 <dfn>Replies</dfn></dd>
-            <dd class="views">56,789 <dfn>Views</dfn></dd>
-            <dd class="lastpost"><span>by <a href="./memberlist.php?mode=viewprofile&amp;u=6">bob</a></span></dd>
-          </dl>
-        </li>
-        <li class="row bg2">
-          <dl><dt><a href="./viewtopic.php?f=10&amp;t=222" class="topictitle">Game Two</a></dt></dl>
-        </li>
-      </ul>"#;
+    fn forum() -> ForumPage {
+        parse_forum(FORUM, &url("viewforum.php?f=10&start=0"), 10, 0)
+    }
+
+    fn topic() -> TopicPage {
+        parse_topic(TOPIC, &url("viewtopic.php?t=159639&start=0"), 159639, 0)
+    }
+
+    fn post(page: &TopicPage, id: u64) -> &Post {
+        page.posts.iter().find(|p| p.id == id).unwrap()
+    }
 
     #[test]
-    fn prosilver_forum() {
-        let page = parse_forum(PROSILVER_FORUM, &url("viewforum.php?f=10"), 10, 0);
+    fn forum_sections() {
+        let page = forum();
         assert_eq!(page.title.as_deref(), Some("Main Forum"));
-        assert_eq!(page.topics.len(), 2);
-        let t = &page.topics[0];
-        assert_eq!(t.id, 111);
-        assert_eq!(t.title, "Game One");
-        assert_eq!(t.url, "https://cs.rin.ru/forum/viewtopic.php?f=10&t=111");
-        assert_eq!(t.author.as_deref(), Some("alice"));
-        assert_eq!(t.last_poster.as_deref(), Some("bob"));
-        assert_eq!((t.replies, t.views), (Some(1234), Some(56789)));
-        assert_eq!(page.topics[1].author, None);
-        assert_eq!(
-            page.pagination,
-            Pagination {
-                start: 0,
-                next_start: Some(50),
-                previous_start: None,
-                last_start: 100
-            }
-        );
-    }
-
-    const SUBSILVER_FORUM: &str = r#"
-      <h2><a href="./viewforum.php?f=10">Main Forum</a></h2>
-      <table class="tablebg">
-        <tr>
-          <td class="row1"><img src="icon.gif" /></td>
-          <td class="row1"><a href="./viewtopic.php?f=10&amp;t=333" class="topictitle">Game Three</a></td>
-          <td class="row2"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=7">carol</a></p></td>
-          <td class="row1"><p class="topicdetails">12</p></td>
-          <td class="row2"><p class="topicdetails">3400</p></td>
-          <td class="row1"><p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=8">dave</a></p></td>
-        </tr>
-      </table>
-      <a href="./viewforum.php?f=10&amp;start=0">1</a>
-      <a href="./viewforum.php?f=10&amp;start=100">3</a>"#;
-
-    #[test]
-    fn subsilver_forum() {
-        let page = parse_forum(SUBSILVER_FORUM, &url("viewforum.php?f=10&start=50"), 10, 50);
-        let t = &page.topics[0];
-        assert_eq!((t.id, t.title.as_str()), (333, "Game Three"));
-        assert_eq!(t.author.as_deref(), Some("carol"));
-        assert_eq!(t.last_poster.as_deref(), Some("dave"));
-        assert_eq!((t.replies, t.views), (Some(12), Some(3400)));
-        assert_eq!(page.pagination.previous_start, Some(0));
-        assert_eq!(page.pagination.next_start, Some(100));
+        let count = |k| page.topics.iter().filter(|t| t.kind == k).count();
+        assert_eq!(page.topics.len(), 108);
+        assert_eq!(count(TopicKind::Normal), 91);
+        assert!(count(TopicKind::GlobalAnnouncement) > 0);
+        assert!(count(TopicKind::Sticky) > 0);
+        // Pinned rows come first, then the normal topics.
+        assert!(page.topics[..17].iter().all(|t| t.kind.is_pinned()));
     }
 
     #[test]
-    fn prosilver_topic() {
-        let html = r#"
-          <h2 class="topic-title"><a href="./viewtopic.php?t=111">Game One</a></h2>
-          <div id="p900" class="post bg2"><div class="inner">
-            <div class="postbody">
-              <p class="author">by <strong><a href="./memberlist.php?mode=viewprofile&amp;u=5">alice</a></strong>
-                 » <time datetime="2024-01-02T03:04:05+00:00">Tue Jan 02</time></p>
-              <div class="content">Download <b>here</b></div>
-              <div class="signature">sig</div>
-            </div>
-          </div></div>
-          <div id="p901" class="post bg1"><div class="inner"><div class="postbody">
-            <p class="author">by <a href="./memberlist.php?mode=viewprofile&amp;u=6">bob</a> » Wed Jan 03, 2024 1:00 pm</p>
-            <div class="content">Thanks</div>
-          </div></div></div>"#;
-        let page = parse_topic(html, &url("viewtopic.php?t=111"), 111, 0);
-        assert_eq!(page.title.as_deref(), Some("Game One"));
-        assert_eq!(page.posts.len(), 2);
-        let p = &page.posts[0];
-        assert_eq!(p.id, Some(900));
-        assert_eq!(p.author.as_deref(), Some("alice"));
-        assert_eq!(p.posted.as_deref(), Some("2024-01-02T03:04:05+00:00"));
-        assert_eq!(p.content_text, "Download here");
-        assert_eq!(p.content_html, "Download <b>here</b>");
-        assert_eq!(
-            page.posts[1].posted.as_deref(),
-            Some("Wed Jan 03, 2024 1:00 pm")
-        );
+    fn forum_pinned_row() {
+        let t = &forum().topics[0];
+        assert_eq!(t.id, 159345);
+        assert_eq!(t.kind, TopicKind::GlobalAnnouncement);
+        assert_eq!(t.prefixes, ["Important"]);
+        assert_eq!(t.name, "How to protect against malicious filehosters");
+        assert_eq!(t.labels, ["26.11.26"]);
+        assert_eq!(t.url, "https://cs.rin.ru/forum/viewtopic.php?f=10&t=159345");
+        assert_eq!(t.author.as_deref(), Some("RessourectoR"));
+        assert_eq!(t.created.as_deref(), Some("Wednesday, 17 Jun 2026, 18:44"));
+        assert_eq!((t.replies, t.views), (Some(0), Some(256672)));
+        assert_eq!(t.last_post_at.as_deref(), Some("Today, 12:21"));
+        assert_eq!(t.last_poster.as_deref(), Some("RessourectoR"));
     }
 
     #[test]
-    fn subsilver_topic() {
-        let html = r#"
-          <table class="tablebg">
-            <tr><td><a name="p42"></a><b class="postauthor">carol</b></td></tr>
-            <tr><td><div class="postbody">First post</div><div class="postbody">signature</div></td></tr>
-          </table>
-          <table class="tablebg">
-            <tr><td><a name="p43"></a><b class="postauthor">dave</b></td></tr>
-            <tr><td><div class="postbody">Reply</div></td></tr>
-          </table>"#;
-        let page = parse_topic(html, &url("viewtopic.php?t=5"), 5, 0);
-        let got: Vec<_> = page
-            .posts
+    fn forum_normal_rows() {
+        let page = forum();
+        let normal: Vec<_> = page.topics.iter().filter(|t| !t.kind.is_pinned()).collect();
+        assert_eq!(normal[0].title, "[Info] Slotbound");
+        assert_eq!(normal[0].prefixes, ["Info"]);
+        assert_eq!(normal[0].name, "Slotbound");
+        let sm2 = normal
             .iter()
-            .map(|p| (p.id, p.author.clone().unwrap(), p.content_text.clone()))
-            .collect();
+            .find(|t| t.name.starts_with("Warhammer"))
+            .unwrap();
+        assert_eq!(sm2.name, "Warhammer 40,000: Space Marine 2");
+        assert_eq!(sm2.labels, ["Offline Only Cracked"]);
+        for t in &normal {
+            assert!(t.author.is_some(), "no author for {}", t.title);
+            assert!(
+                t.replies.is_some() && t.views.is_some(),
+                "no counts for {}",
+                t.title
+            );
+            assert!(
+                t.created.is_some() && t.last_post_at.is_some(),
+                "no dates for {}",
+                t.title
+            );
+        }
+    }
+
+    #[test]
+    fn forum_pagination() {
+        let p = forum().pagination;
+        assert_eq!((p.page, p.total_pages), (Some(1), Some(630)));
         assert_eq!(
-            got,
-            vec![
-                (Some(42), "carol".into(), "First post".into()),
-                (Some(43), "dave".into(), "Reply".into())
-            ]
+            (p.previous_start, p.next_start, p.last_start),
+            (None, Some(100), 62900)
         );
+    }
+
+    #[test]
+    fn split_titles() {
+        assert_eq!(split_title("Plain"), (vec![], "Plain".into(), vec![]));
+        assert_eq!(
+            split_title("[Info] [Old] Game [VR] [Early Access]"),
+            (
+                vec!["Info".into(), "Old".into()],
+                "Game".into(),
+                vec!["VR".into(), "Early Access".into()]
+            )
+        );
+        assert_eq!(
+            split_title("[Info] [Only Tag]"),
+            (vec!["Info".into()], "[Only Tag]".into(), vec![])
+        );
+    }
+
+    #[test]
+    fn topic_posts() {
+        let page = topic();
+        assert_eq!(page.title.as_deref(), Some("[Info] Slotbound"));
+        assert_eq!(page.posts.len(), 15);
+        let first = &page.posts[0];
+        assert_eq!(first.id, 3540229);
+        assert_eq!(first.author.as_deref(), Some("pixieflitter"));
+        assert_eq!(first.subject.as_deref(), Some("Slotbound"));
+        assert_eq!(first.posted.as_deref(), Some("Monday, 29 Jun 2026, 01:18"));
+        assert!(first.content_text.contains("\nGenre(s): Indie, Strategy\n"));
+        // The signature is a second div.postbody and must not be included.
+        assert!(!first.content_text.contains("_________________"));
+        let p = &page.pagination;
+        assert_eq!(
+            (p.page, p.total_pages, p.next_start),
+            (Some(1), Some(3), Some(15))
+        );
+    }
+
+    #[test]
+    fn topic_links() {
+        let page = topic();
+
+        let store = &post(&page, 3540229).links;
+        assert_eq!(store[0].kind, LinkKind::SteamStore);
+        assert!(store[0].context.starts_with("Store Page:"));
+        assert_eq!(store[1].kind, LinkKind::SteamDb);
+
+        let csf = &post(&page, 3626548).links;
+        assert_eq!(csf[0].url, "https://gofile.io/d/GROz2x3u");
+        assert_eq!(
+            (csf[0].host.as_str(), csf[0].text.as_str()),
+            ("gofile.io", "Gofile")
+        );
+        assert_eq!(csf[0].context, "Gofile | VikingFile");
+        assert_eq!(csf[1].host, "vikingfile.com");
+        assert!(csf.iter().all(|l| !l.in_quote));
+        // "Make your own cracks with ... RAC | SAC | CAC" is this author's
+        // signature, a second div.postbody, so its links are not included.
+        assert_eq!(csf.len(), 2);
+
+        let zei = &post(&page, 3627087).links;
+        let all = zei.iter().find(|l| l.host == "zeigames.com").unwrap();
+        assert!(all.flagged_unsafe);
+        assert!(all.context.starts_with("Download:"));
+        let filesyard = zei.iter().find(|l| l.host == "filesyard.com").unwrap();
+        assert!(!filesyard.flagged_unsafe);
     }
 
     #[test]
     fn session_states() {
-        let new = r#"<li id="username_logged_in"><span class="username">alice</span></li>
-                     <a href="./ucp.php?mode=logout&amp;sid=x">Logout</a>"#;
         assert_eq!(
-            parse_session(new),
+            parse_session(FORUM),
             Session::LoggedIn {
-                username: Some("alice".into())
+                username: Some("TestUser".into())
             }
         );
-
-        let old = r#"<a href="./ucp.php?mode=logout&amp;sid=x">Logout [ bob ]</a>"#;
-        assert_eq!(
-            parse_session(old),
-            Session::LoggedIn {
-                username: Some("bob".into())
-            }
-        );
-
         let out = r#"<a href="./ucp.php?mode=login">Login</a>"#;
         assert_eq!(parse_session(out), Session::LoggedOut);
     }
@@ -518,8 +804,6 @@ mod tests {
         let page = r#"<title>CS RIN - Security check</title>
           <script>document.cookie = "securitytoken=abc; path=/; secure";</script>"#;
         assert!(is_security_check(page));
-        assert!(!is_security_check(
-            "<title>CS RIN - Steam Underground</title>"
-        ));
+        assert!(!is_security_check(FORUM));
     }
 }

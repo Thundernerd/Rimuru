@@ -1,35 +1,88 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
-// Mirrors the Rust types in src-tauri/src/phpbb.rs.
+// Mirrors the Rust types in src-tauri/src/phpbb.rs, game.rs and commands.rs.
 type Session = { state: "logged_in"; username: string | null } | { state: "logged_out" };
 type Pagination = {
   start: number;
   next_start: number | null;
   previous_start: number | null;
   last_start: number;
+  page: number | null;
+  total_pages: number | null;
 };
 type TopicSummary = {
   id: number;
+  kind: "global_announcement" | "announcement" | "sticky" | "normal";
   title: string;
+  name: string;
+  prefixes: string[];
+  labels: string[];
   url: string;
   author: string | null;
-  last_poster: string | null;
+  created: string | null;
   replies: number | null;
   views: number | null;
+  last_post_at: string | null;
+  last_poster: string | null;
 };
 type ForumPage = { forum_id: number; title: string | null; topics: TopicSummary[]; pagination: Pagination };
-type Post = {
-  id: number | null;
+type Field = { key: string; value: string };
+type GameInfo = {
+  title: string | null;
+  header_image: string | null;
+  store_url: string | null;
+  steamdb_url: string | null;
+  steam_app_id: number | null;
+  genres: string[];
+  developer: string | null;
+  publisher: string | null;
+  release_date: string | null;
+  languages: string[];
+  platforms: string[];
+  features: string[];
+  description: string | null;
+  system_requirements: { label: string; items: Field[] }[];
+  fields: Field[];
+  images: string[];
+};
+type DownloadLink = { url: string; host: string; label: string; flagged_unsafe: boolean };
+type Release = {
+  post_id: number;
   author: string | null;
   posted: string | null;
-  content_html: string;
-  content_text: string;
+  title: string | null;
+  details: string[];
+  version: string | null;
+  build: string | null;
+  size: string | null;
+  tags: string[];
+  links: DownloadLink[];
 };
-type TopicPage = { topic_id: number; title: string | null; posts: Post[]; pagination: Pagination };
+type GameDetail = {
+  topic_id: number;
+  title: string | null;
+  info: GameInfo | null;
+  releases: Release[];
+  pages_read: number[];
+  total_pages: number | null;
+};
 type CommandError = { kind: string; message: string };
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+function el<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  props: { className?: string; text?: string } = {},
+  ...children: (Node | null | false)[]
+): HTMLElementTagNameMap[K] {
+  const node = document.createElement(tag);
+  if (props.className) node.className = props.className;
+  if (props.text !== undefined) node.textContent = props.text;
+  node.append(...children.filter((c): c is Node => !!c));
+  return node;
+}
 
 /** Resolves on the forum window's next finished page load. */
 function nextForumPageLoad(timeoutMs = 20000): Promise<void> {
@@ -71,6 +124,8 @@ function showError(e: unknown) {
   setStatus(`Error: ${err?.message ?? String(e)}`);
 }
 
+// ---------------------------------------------------------------- session
+
 let signingIn = false;
 
 async function refreshSession() {
@@ -94,7 +149,10 @@ async function refreshSession() {
   }
 }
 
+// ---------------------------------------------------------------- forum list
+
 let forumPage: ForumPage | null = null;
+let forumStart = 0;
 let currentTopic: number | null = null;
 
 async function loadForum(start = 0) {
@@ -102,6 +160,7 @@ async function loadForum(start = 0) {
   setStatus(`Loading forum ${forumId}…`);
   try {
     forumPage = await forum<ForumPage>("fetch_forum", { forumId, start });
+    forumStart = start;
     renderForum(forumPage);
     setStatus(`Loaded ${forumPage.topics.length} topics.`);
   } catch (e) {
@@ -109,63 +168,168 @@ async function loadForum(start = 0) {
   }
 }
 
-function renderForum(page: ForumPage) {
-  $("forum-title").textContent = page.title ?? `Forum ${page.forum_id}`;
-  $<HTMLButtonElement>("prev").disabled = page.pagination.previous_start === null;
-  $<HTMLButtonElement>("next").disabled = page.pagination.next_start === null;
+function pageLabel(p: Pagination): string {
+  return p.page && p.total_pages ? ` — page ${p.page} of ${p.total_pages}` : "";
+}
 
-  const list = $("topics");
-  list.replaceChildren(
+function renderForum(page: ForumPage) {
+  const { pagination: p } = page;
+  $("forum-title").textContent = (page.title ?? `Forum ${page.forum_id}`) + pageLabel(p);
+  $<HTMLButtonElement>("prev").disabled = p.previous_start === null;
+  $<HTMLButtonElement>("next").disabled = p.next_start === null;
+
+  $("topics").replaceChildren(
     ...page.topics.map((topic) => {
-      const li = document.createElement("li");
-      const title = document.createElement("button");
+      const title = el("button", { className: "topic", text: topic.name });
       title.type = "button";
-      title.className = "topic";
-      title.textContent = topic.title;
-      title.addEventListener("click", () => loadTopic(topic.id));
-      const meta = document.createElement("small");
-      meta.textContent = [
+      title.title = topic.title;
+      title.addEventListener("click", () => loadGame(topic.id));
+      const tags = [...topic.prefixes, ...topic.labels].map((t) => el("span", { className: "tag", text: t }));
+      const meta = [
         topic.author && `by ${topic.author}`,
+        topic.created,
         topic.replies !== null && `${topic.replies} replies`,
-        topic.views !== null && `${topic.views} views`,
+        topic.last_post_at && `last post ${topic.last_post_at}`,
       ]
         .filter(Boolean)
         .join(" · ");
-      li.append(title, meta);
-      return li;
+      return el("li", {}, title, ...tags, el("small", { text: meta }));
     }),
   );
 }
 
-async function loadTopic(topicId: number, start = 0) {
+// ---------------------------------------------------------------- game view
+
+async function loadGame(topicId: number) {
   setStatus(`Loading topic ${topicId}…`);
   try {
-    const page = await forum<TopicPage>("fetch_topic", { topicId, start });
+    const game = await forum<GameDetail>("fetch_game", { topicId });
     currentTopic = topicId;
     $<HTMLButtonElement>("snapshot-topic").disabled = false;
-    renderTopic(page);
-    setStatus(`Loaded ${page.posts.length} posts.`);
+    renderGame(game);
+    const pages = game.total_pages ? ` (read ${game.pages_read.length} of ${game.total_pages} pages)` : "";
+    setStatus(`Found ${game.releases.length} releases${pages}.`);
   } catch (e) {
     showError(e);
   }
 }
 
-function renderTopic(page: TopicPage) {
-  $("topic-title").textContent = page.title ?? `Topic ${page.topic_id}`;
-  // Plain text only for now: the forum's HTML is untrusted and must be
-  // sanitised before it is ever rendered as markup.
-  $("posts").replaceChildren(
-    ...page.posts.map((post) => {
-      const article = document.createElement("article");
-      const header = document.createElement("header");
-      header.textContent = [post.author ?? "Unknown", post.posted].filter(Boolean).join(" · ");
-      const body = document.createElement("p");
-      body.textContent = post.content_text;
-      article.append(header, body);
-      return article;
-    }),
+function renderGame(game: GameDetail) {
+  $("topic-title").textContent = game.info?.title ?? game.title ?? `Topic ${game.topic_id}`;
+  const releases = el(
+    "section",
+    { className: "releases" },
+    el("h3", { text: `Releases (${game.releases.length})` }),
+    ...(game.releases.length
+      ? game.releases.map(renderRelease)
+      : [el("p", { className: "muted", text: "No posts with download links on the pages read." })]),
   );
+  $("game").replaceChildren(...[game.info && renderInfo(game.info), releases].filter((n): n is HTMLElement => !!n));
 }
+
+function row(label: string, value: string | null | undefined | string[]): HTMLElement | null {
+  const text = Array.isArray(value) ? value.join(", ") : value;
+  if (!text) return null;
+  return el("div", { className: "row" }, el("dt", { text: label }), el("dd", { text }));
+}
+
+function renderInfo(info: GameInfo): HTMLElement {
+  const header = info.header_image ? Object.assign(el("img", { className: "header-image" }), { src: info.header_image, alt: "" }) : null;
+
+  const links = el("p", { className: "info-links" });
+  if (info.store_url) links.append(linkButton("Steam store", info.store_url));
+  if (info.steamdb_url) links.append(linkButton("SteamDB", info.steamdb_url));
+
+  const details = el(
+    "dl",
+    { className: "details" },
+    row("Developer", info.developer),
+    row("Publisher", info.publisher),
+    row("Release date", info.release_date),
+    row("Genres", info.genres),
+    row("Platforms", info.platforms),
+    row("Languages", info.languages),
+    row("Steam app id", info.steam_app_id?.toString()),
+    ...info.fields.map((f) => row(f.key, f.value)),
+  );
+
+  const extra = el("details", {}, el("summary", { text: "More" }));
+  if (info.features.length) {
+    extra.append(el("h4", { text: "Features" }), el("ul", {}, ...info.features.map((f) => el("li", { text: f }))));
+  }
+  if (info.description) extra.append(el("h4", { text: "About" }), el("p", { className: "prewrap", text: info.description }));
+  for (const set of info.system_requirements) {
+    extra.append(
+      el("h4", { text: `System requirements${set.label ? ` — ${set.label}` : ""}` }),
+      el("dl", { className: "details" }, ...set.items.map((f) => row(f.key, f.value))),
+    );
+  }
+
+  return el("section", { className: "info card" }, header, links, details, extra.childElementCount > 1 && extra);
+}
+
+function renderRelease(release: Release): HTMLElement {
+  const facts = [
+    release.version && `v${release.version.replace(/^v/i, "")}`,
+    release.build && `build ${release.build}`,
+    release.size,
+  ].filter(Boolean) as string[];
+  const header = el(
+    "header",
+    {},
+    el("strong", { text: release.title ?? "Release" }),
+    ...release.tags.map((t) => el("span", { className: "tag", text: t })),
+    ...facts.map((f) => el("span", { className: "fact", text: f })),
+  );
+  const byline = el("small", {
+    text: [release.author && `by ${release.author}`, release.posted].filter(Boolean).join(" · "),
+  });
+
+  const links = el(
+    "ul",
+    { className: "links" },
+    ...release.links.map((link) =>
+      el(
+        "li",
+        {},
+        el("span", { className: "host", text: link.host }),
+        link.label !== link.host && el("span", { text: link.label }),
+        link.flagged_unsafe && el("span", { className: "unsafe", text: "⚠ flagged unsafe by the forum" }),
+        linkButton("Open", link.url, link.flagged_unsafe),
+      ),
+    ),
+  );
+
+  const details = el(
+    "details",
+    {},
+    el("summary", { text: "Post text" }),
+    el("p", { className: "prewrap", text: release.details.join("\n") }),
+  );
+  return el("article", { className: "card" }, header, byline, links, details);
+}
+
+/**
+ * Opens a URL in the system browser. Links the forum flags as unsafe need a
+ * second click.
+ */
+function linkButton(label: string, url: string, needsConfirm = false): HTMLButtonElement {
+  const button = el("button", { className: "open", text: label });
+  button.type = "button";
+  button.title = url;
+  let armed = false;
+  button.addEventListener("click", () => {
+    if (needsConfirm && !armed) {
+      armed = true;
+      button.textContent = "Click again to open";
+      return;
+    }
+    openUrl(url).catch(showError);
+  });
+  return button;
+}
+
+// ---------------------------------------------------------------- snapshots
 
 async function snapshot(path: string) {
   try {
@@ -191,10 +355,10 @@ window.addEventListener("DOMContentLoaded", () => {
   $("prev").addEventListener("click", () => loadForum(forumPage?.pagination.previous_start ?? 0));
   $("next").addEventListener("click", () => loadForum(forumPage?.pagination.next_start ?? 0));
   $("snapshot-forum").addEventListener("click", () =>
-    snapshot(`viewforum.php?f=${$<HTMLInputElement>("forum-id").value}`),
+    snapshot(`viewforum.php?f=${$<HTMLInputElement>("forum-id").value}&start=${forumStart}`),
   );
   $("snapshot-topic").addEventListener("click", () => {
-    if (currentTopic !== null) snapshot(`viewtopic.php?t=${currentTopic}`);
+    if (currentTopic !== null) snapshot(`viewtopic.php?t=${currentTopic}&start=0`);
   });
 
   // Every page the forum window finishes loading may have changed the

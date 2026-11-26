@@ -2,6 +2,7 @@ mod client;
 mod commands;
 mod error;
 mod forum_window;
+mod game;
 mod phpbb;
 
 use tauri::{Manager, WindowEvent};
@@ -31,6 +32,7 @@ pub fn run() {
             commands::hide_forum_window,
             commands::fetch_forum,
             commands::fetch_topic,
+            commands::fetch_game,
             commands::save_snapshot,
         ])
         .run(tauri::generate_context!())
