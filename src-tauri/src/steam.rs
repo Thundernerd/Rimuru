@@ -72,6 +72,8 @@ pub struct Artwork {
     pub header: Option<String>,
     /// 231×87 small capsule.
     pub capsule: Option<String>,
+    /// 3840×1240 "library hero": wide key art without a logo, for backdrops.
+    pub hero: Option<String>,
 }
 
 /// Most app ids per `GetItems` request.
@@ -312,6 +314,7 @@ pub fn parse_artwork(json: &Value) -> HashMap<u64, Artwork> {
                     portrait: url("library_capsule"),
                     header: url("header"),
                     capsule: url("small_capsule"),
+                    hero: url("library_hero"),
                 },
             ))
         })
@@ -451,7 +454,8 @@ mod tests {
                 "asset_url_format": "steam/apps/4459590/${FILENAME}?t=1795587406",
                 "library_capsule": "192507d5/library_capsule.jpg",
                 "header": "560f439f/header.jpg",
-                "small_capsule": "d64e41eb/capsule_231x87.jpg"
+                "small_capsule": "d64e41eb/capsule_231x87.jpg",
+                "library_hero": "a1b2c3d4/library_hero.jpg"
             }},
             { "appid": 2124490, "assets": {
                 "asset_url_format": "steam/apps/2124490/${FILENAME}?t=1744248682",
@@ -476,6 +480,14 @@ mod tests {
                 .ends_with("/2124490/library_600x900.jpg?t=1744248682")
         );
         assert_eq!(art[&2124490].capsule, None);
+        assert!(
+            art[&4459590]
+                .hero
+                .as_deref()
+                .unwrap()
+                .ends_with("/a1b2c3d4/library_hero.jpg?t=1795587406")
+        );
+        assert_eq!(art[&2124490].hero, None);
         assert_eq!(art[&10].portrait, None);
         assert!(art[&10].header.is_some());
         assert!(!art.contains_key(&11));

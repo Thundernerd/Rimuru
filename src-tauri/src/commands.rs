@@ -82,6 +82,8 @@ async fn topic_page(
 const TOPIC_MAX_AGE: Duration = Duration::from_secs(24 * 3600);
 const STEAM_APP_MAX_AGE: Duration = Duration::from_secs(3 * 24 * 3600);
 const STEAM_MATCH_MAX_AGE: Duration = Duration::from_secs(30 * 24 * 3600);
+/// Bumped when `Artwork` gains fields, so older entries are fetched again.
+const ARTWORK_CACHE: &str = "steam_artwork_v2";
 const STEAM_ARTWORK_MAX_AGE: Duration = Duration::from_secs(14 * 24 * 3600);
 const STEAM_NO_MATCH_MAX_AGE: Duration = Duration::from_secs(7 * 24 * 3600);
 
@@ -216,12 +218,7 @@ pub async fn steam_artwork(
     let mut found = HashMap::new();
     let mut missing = Vec::new();
     for id in app_ids {
-        match cache.get::<Artwork>(
-            "steam_artwork",
-            &id.to_string(),
-            None,
-            STEAM_ARTWORK_MAX_AGE,
-        ) {
+        match cache.get::<Artwork>(ARTWORK_CACHE, &id.to_string(), None, STEAM_ARTWORK_MAX_AGE) {
             Some(art) => {
                 found.insert(id, art);
             }
@@ -232,7 +229,7 @@ pub async fn steam_artwork(
         let mut fetched = steam.artwork(batch).await?;
         for &id in batch {
             let art = fetched.remove(&id).unwrap_or_default();
-            cache.put("steam_artwork", &id.to_string(), None, &art);
+            cache.put(ARTWORK_CACHE, &id.to_string(), None, &art);
             found.insert(id, art);
         }
     }

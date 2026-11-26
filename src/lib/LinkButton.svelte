@@ -3,7 +3,12 @@
   import { setStatus } from "./status.svelte";
 
   /** Opens `url` in the system browser; with `confirm`, only on a second click. */
-  let { url, label, confirm = false }: { url: string; label: string; confirm?: boolean } = $props();
+  let {
+    url,
+    label,
+    confirm = false,
+    primary = false,
+  }: { url: string; label: string; confirm?: boolean; primary?: boolean } = $props();
 
   let armed = $state(false);
 
@@ -17,14 +22,19 @@
   }
 </script>
 
-<button type="button" class:armed title={url} onclick={open} onblur={() => (armed = false)}>
+<button type="button" class:armed class:primary title={url} onclick={open} onblur={() => (armed = false)}>
   {armed ? "Click again to open" : label}
 </button>
 
 <style>
   button {
-    padding: 2px 10px;
+    padding: 3px 10px;
     font-size: 12px;
+  }
+  .primary {
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
   }
   .armed {
     border-color: var(--warn);

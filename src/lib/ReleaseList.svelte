@@ -22,7 +22,7 @@
 </script>
 
 <section>
-  <h3>Releases <span class="muted">({releases.length})</span></h3>
+  <h3>All releases <span class="muted">({releases.length})</span></h3>
   {#if totalPages && totalPages > 1}
     <p class="muted small">
       {#if loading}

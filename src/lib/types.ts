@@ -84,7 +84,13 @@ export type GameFirstPage = {
 };
 
 /** Image URLs for a Steam app; any can be missing. */
-export type Artwork = { portrait: string | null; header: string | null; capsule: string | null };
+export type Artwork = {
+  portrait: string | null;
+  header: string | null;
+  capsule: string | null;
+  /** Wide key art without a logo, for backdrops. */
+  hero: string | null;
+};
 
 export type SteamMatch = { app_id: number; name: string; capsule_image: string | null };
 

@@ -1,10 +1,12 @@
 <script lang="ts">
   import { api, errorMessage } from "./api";
   import { rememberArt } from "./cardArt.svelte";
-  import GameInfoPanel from "./GameInfoPanel.svelte";
+  import GameDetails from "./GameDetails.svelte";
+  import GameHero from "./GameHero.svelte";
   import ReleaseList from "./ReleaseList.svelte";
+  import Screenshots from "./Screenshots.svelte";
   import { setStatus } from "./status.svelte";
-  import type { GameFirstPage, Release, SteamApp, TopicSummary } from "./types";
+  import type { Artwork, GameFirstPage, Release, SteamApp, TopicSummary } from "./types";
 
   let { topic, onback }: { topic: TopicSummary; onback: () => void } = $props();
 
@@ -13,7 +15,7 @@
 
   let first = $state<GameFirstPage | null>(null);
   let steam = $state<SteamApp | null>(null);
-  let steamLoading = $state(false);
+  let art = $state<Artwork | null>(null);
   /** Releases from the most recent pages, newest first; page 1's come after. */
   let recent = $state<Release[]>([]);
   let pagesRead = $state(0);
@@ -21,6 +23,7 @@
   let loading = $state(false);
   let error = $state<string | null>(null);
   let attempt = $state(0);
+  let releasesSection = $state<HTMLElement>();
 
   const releases = $derived([...recent, ...(first?.releases ?? [])]);
 
@@ -35,6 +38,7 @@
 
     first = null;
     steam = null;
+    art = null;
     recent = [];
     pagesRead = 0;
     pagesPlanned = 1;
@@ -71,22 +75,24 @@
   });
 
   async function loadSteam(page: GameFirstPage, name: string, isCurrent: () => boolean) {
-    steamLoading = true;
     try {
       const appId = page.info?.steam_app_id ?? (await api.steamMatch(name))?.app_id;
-      if (appId && isCurrent()) {
-        const app = await api.steamApp(appId);
-        if (isCurrent()) steam = app;
-        // The topic links this Steam app itself: use its artwork for the
-        // card, which fills in or corrects a match by name.
-        if (app?.capsule_image && page.info?.steam_app_id === app.app_id) {
-          rememberArt(name, { app_id: app.app_id, name: app.name, capsule_image: app.capsule_image });
-        }
+      if (!appId || !isCurrent()) return;
+      // Artwork (cover, backdrop) and details in parallel.
+      api
+        .steamArtwork([appId])
+        .then((found) => isCurrent() && (art = found[appId] ?? null))
+        .catch(() => {});
+      const app = await api.steamApp(appId);
+      if (!isCurrent()) return;
+      steam = app;
+      // The topic links this Steam app itself: use its artwork for the
+      // card, which fills in or corrects a match by name.
+      if (app?.capsule_image && page.info?.steam_app_id === app.app_id) {
+        rememberArt(name, { app_id: app.app_id, name: app.name, capsule_image: app.capsule_image });
       }
     } catch (e) {
       if (isCurrent()) setStatus(`Steam details unavailable: ${errorMessage(e)}`);
-    } finally {
-      if (isCurrent()) steamLoading = false;
     }
   }
 
@@ -99,56 +105,72 @@
   }
 </script>
 
-<div class="toolbar">
-  <button type="button" onclick={onback}>‹ All games</button>
-  <button type="button" class="subtle" onclick={saveSnapshot}>Save HTML</button>
-</div>
+<GameHero
+  {topic}
+  forum={first?.info ?? null}
+  {steam}
+  {art}
+  latest={releases[0] ?? null}
+  releaseCount={releases.length}
+  loadingReleases={loading}
+  {onback}
+  onsnapshot={saveSnapshot}
+  onallreleases={() => releasesSection?.scrollIntoView({ behavior: "smooth", block: "start" })}
+/>
 
-<div class="layout">
-  <GameInfoPanel {topic} forum={first?.info ?? null} {steam} loading={!first || steamLoading} />
-  {#if first}
-    <ReleaseList
-      {releases}
-      {pagesRead}
-      {pagesPlanned}
-      totalPages={first.total_pages}
-      {loading}
-      {error}
-      onretry={() => attempt++}
-    />
-  {:else if error}
-    <div class="message">
-      <p>Couldn't load this topic: {error}</p>
-      <button type="button" onclick={() => attempt++}>Try again</button>
-    </div>
-  {:else}
-    <p class="muted">Loading releases…</p>
+<div class="page">
+  {#if steam?.screenshots.length}
+    <Screenshots shots={steam.screenshots} />
   {/if}
+
+  <div class="columns">
+    <div bind:this={releasesSection} class="releases">
+      {#if first}
+        <ReleaseList
+          {releases}
+          {pagesRead}
+          {pagesPlanned}
+          totalPages={first.total_pages}
+          {loading}
+          {error}
+          onretry={() => attempt++}
+        />
+      {:else if error}
+        <div class="message">
+          <p>Couldn't load this topic: {error}</p>
+          <button type="button" onclick={() => attempt++}>Try again</button>
+        </div>
+      {:else}
+        <p class="muted">Loading the topic…</p>
+      {/if}
+    </div>
+    <aside>
+      <GameDetails forum={first?.info ?? null} {steam} />
+    </aside>
+  </div>
 </div>
 
 <style>
-  .toolbar {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .layout {
+  .page {
     display: grid;
-    grid-template-columns: minmax(280px, 400px) 1fr;
+    /* minmax(0, …): don't let the screenshot strip widen the page. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding-top: 24px;
+  }
+  .columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
     gap: 24px;
     align-items: start;
   }
-  .layout > :global(.panel) {
-    position: sticky;
-    top: 0;
-  }
-  @media (max-width: 800px) {
-    .layout {
+  @media (max-width: 900px) {
+    .columns {
       grid-template-columns: 1fr;
     }
-    .layout > :global(.panel) {
-      position: static;
-    }
+  }
+  .releases {
+    scroll-margin-top: 12px;
   }
   .muted {
     color: var(--muted);
