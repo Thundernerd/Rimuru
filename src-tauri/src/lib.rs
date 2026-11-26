@@ -17,7 +17,9 @@ pub fn run() {
         .manage(client::ForumClient::new().expect("failed to build HTTP client"))
         .manage(steam::SteamClient::new().expect("failed to build Steam client"))
         .setup(|app| {
-            let cache_path = app.path().app_data_dir()?.join("cache.sqlite");
+            let data_dir = app.path().app_data_dir()?;
+            migrate_data(&data_dir);
+            let cache_path = data_dir.join("cache.sqlite");
             app.manage(cache::Cache::open(&cache_path));
             let handle = app.handle().clone();
             std::thread::spawn(move || {
@@ -69,4 +71,70 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+const OLD_IDENTIFIER: &str = "com.rinru.desktop";
+
+fn migrate_data(data_dir: &std::path::Path) {
+    let Some(old_dir) = data_dir.parent().map(|p| p.join(OLD_IDENTIFIER)) else {
+        return;
+    };
+    if data_dir.join("cache.sqlite").exists() || !old_dir.join("cache.sqlite").exists() {
+        return;
+    }
+    if std::fs::create_dir_all(data_dir).is_err() {
+        return;
+    }
+    for name in ["cache.sqlite", "cache.sqlite-wal", "cache.sqlite-shm"] {
+        let from = old_dir.join(name);
+        if from.exists()
+            && let Err(e) = std::fs::copy(&from, data_dir.join(name))
+        {
+            log::warn!("couldn't copy {name} from the old data folder: {e}");
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn temp_root(name: &str) -> std::path::PathBuf {
+        let root =
+            std::env::temp_dir().join(format!("rimuru-migrate-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join(OLD_IDENTIFIER)).unwrap();
+        root
+    }
+
+    #[test]
+    fn copies_old_data_into_an_empty_folder() {
+        let root = temp_root("copy");
+        std::fs::write(root.join(OLD_IDENTIFIER).join("cache.sqlite"), b"old").unwrap();
+        let new_dir = root.join("net.tnrd.rimuru");
+        migrate_data(&new_dir);
+        assert_eq!(std::fs::read(new_dir.join("cache.sqlite")).unwrap(), b"old");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn never_overwrites_existing_data() {
+        let root = temp_root("keep");
+        std::fs::write(root.join(OLD_IDENTIFIER).join("cache.sqlite"), b"old").unwrap();
+        let new_dir = root.join("net.tnrd.rimuru");
+        std::fs::create_dir_all(&new_dir).unwrap();
+        std::fs::write(new_dir.join("cache.sqlite"), b"new").unwrap();
+        migrate_data(&new_dir);
+        assert_eq!(std::fs::read(new_dir.join("cache.sqlite")).unwrap(), b"new");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn does_nothing_without_old_data() {
+        let root = temp_root("none");
+        let new_dir = root.join("net.tnrd.rimuru");
+        migrate_data(&new_dir);
+        assert!(!new_dir.exists());
+        let _ = std::fs::remove_dir_all(&root);
+    }
 }

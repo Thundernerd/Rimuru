@@ -1,5 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    rinru_desktop_lib::run()
+    rimuru_lib::run()
 }

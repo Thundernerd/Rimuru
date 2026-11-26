@@ -1,1 +1,1 @@
-# RinRuDesktop
+# Rimuru

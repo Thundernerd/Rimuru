@@ -40,7 +40,7 @@
 <aside class:mac>
   <div class="brand" data-tauri-drag-region>
     <span class="logo"><Icon name="layers" size={18} /></span>
-    <span class="name">RinRu<span class="dim">Desktop</span></span>
+    <span class="name">Rimuru</span>
   </div>
 
   <nav>
@@ -180,11 +180,6 @@
     font-weight: 800;
     letter-spacing: 0.02em;
     pointer-events: none;
-  }
-  .dim {
-    margin-left: 4px;
-    font-weight: 500;
-    color: var(--muted);
   }
 
   nav {
