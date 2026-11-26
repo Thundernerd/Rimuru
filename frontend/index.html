@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CsRinRu Desktop - Game Browser</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <header class="app-header">
+            <h1>CsRinRu Desktop</h1>
+            <p class="subtitle">Browse and install games from cs.rin.ru forum</p>
+        </header>
+
+        <main class="app-main">
+            <section class="game-feed-section">
+                <div class="section-header">
+                    <h2>Game Feed</h2>
+                    <div class="controls">
+                        <button id="refresh-btn" class="btn btn-primary">
+                            <span class="btn-icon">↻</span> Refresh
+                        </button>
+                        <span class="status-indicator" id="status-indicator">
+                            <span class="status-dot"></span> Ready
+                        </span>
+                    </div>
+                </div>
+
+                <div class="game-list" id="game-list">
+                    <!-- Games will be populated here -->
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading games from cs.rin.ru...</p>
+                    </div>
+                </div>
+
+                <div class="pagination-controls" id="pagination-controls">
+                    <button class="btn btn-secondary btn-prev" id="prev-page" disabled>Previous</button>
+                    <span class="page-info" id="page-info">Page 1</span>
+                    <button class="btn btn-secondary btn-next" id="next-page">Next</button>
+                </div>
+            </section>
+
+            <aside class="game-detail-panel" id="game-detail-panel">
+                <div class="panel-header">
+                    <h3>Game Details</h3>
+                    <button class="btn btn-icon-btn" id="close-detail">✕</button>
+                </div>
+                <div class="panel-content" id="panel-content">
+                    <p class="placeholder-text">Select a game to view details</p>
+                </div>
+            </aside>
+        </main>
+
+        <footer class="app-footer">
+            <p>Forum source: <a href="https://cs.rin.ru/forum/viewforum.php?f=10" target="_blank">cs.rin.ru Forum - Games</a></p>
+        </footer>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
