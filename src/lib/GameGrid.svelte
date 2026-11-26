@@ -121,12 +121,12 @@
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
     gap: 16px;
   }
 
   .placeholder {
-    aspect-ratio: 220 / 190;
+    aspect-ratio: 2 / 3;
     border-radius: 10px;
     background: var(--surface);
     animation: pulse 1.2s ease-in-out infinite alternate;

@@ -3,13 +3,17 @@
 //! - `appdetails?appids=<id>`: full details for one app.
 //! - `storesearch?term=<name>`: search by name, used to match forum topics
 //!   to Steam apps for card images.
+//! - `IStoreBrowseService/GetItems`: image paths (portrait "library
+//!   capsule", header, small capsule) for many apps in one request. Newer
+//!   apps keep images under hashed paths, so URLs can't be guessed from the
+//!   app id alone.
 //!
 //! These endpoints are unofficial and rate limited (commonly ~200 requests
 //! per 5 minutes), so requests are made one at a time, spaced out, capped
 //! below that, and paused after a 429/403. Results are cached by the caller.
 //! This client never sends the forum's cookies.
 
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
@@ -57,6 +61,21 @@ pub struct SteamApp {
     pub metacritic: Option<u32>,
     pub website: Option<String>,
 }
+
+/// Image URLs for an app. Any can be missing, e.g. older apps without a
+/// portrait image.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub struct Artwork {
+    /// 600×900 "library capsule".
+    pub portrait: Option<String>,
+    /// 460×215 header.
+    pub header: Option<String>,
+    /// 231×87 small capsule.
+    pub capsule: Option<String>,
+}
+
+/// Most app ids per `GetItems` request.
+pub const ARTWORK_BATCH: usize = 50;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Screenshot {
@@ -140,6 +159,24 @@ impl SteamClient {
             .append_pair("l", "english")
             .append_pair("cc", "us");
         Ok(parse_app_details(&self.get_json(url).await?, app_id))
+    }
+
+    /// Artwork for up to [`ARTWORK_BATCH`] apps in one request. Apps Steam
+    /// doesn't return are left out.
+    pub async fn artwork(&self, app_ids: &[u64]) -> Result<HashMap<u64, Artwork>> {
+        let ids: Vec<Value> = app_ids
+            .iter()
+            .map(|id| serde_json::json!({ "appid": id }))
+            .collect();
+        let input = serde_json::json!({
+            "ids": ids,
+            "context": { "language": "english", "country_code": "US" },
+            "data_request": { "include_assets": true },
+        });
+        let mut url = Url::parse("https://api.steampowered.com/IStoreBrowseService/GetItems/v1")?;
+        url.query_pairs_mut()
+            .append_pair("input_json", &input.to_string());
+        Ok(parse_artwork(&self.get_json(url).await?))
     }
 
     /// The Steam app whose name matches `name`, if any.
@@ -248,6 +285,37 @@ pub fn parse_app_details(json: &Value, app_id: u64) -> Option<SteamApp> {
         metacritic: d["metacritic"]["score"].as_u64().map(|s| s as u32),
         website: string(d, "website"),
     })
+}
+
+pub fn parse_artwork(json: &Value) -> HashMap<u64, Artwork> {
+    const ASSET_BASE: &str = "https://shared.akamai.steamstatic.com/store_item_assets/";
+    let Some(items) = json["response"]["store_items"].as_array() else {
+        return HashMap::new();
+    };
+    items
+        .iter()
+        .filter_map(|item| {
+            let app_id = item["appid"].as_u64()?;
+            let assets = &item["assets"];
+            // e.g. "steam/apps/4459590/${FILENAME}?t=1795587406"
+            let format = assets["asset_url_format"].as_str()?;
+            let url = |key: &str| {
+                let file = assets[key].as_str().filter(|f| !f.is_empty())?;
+                Some(format!(
+                    "{ASSET_BASE}{}",
+                    format.replace("${FILENAME}", file)
+                ))
+            };
+            Some((
+                app_id,
+                Artwork {
+                    portrait: url("library_capsule"),
+                    header: url("header"),
+                    capsule: url("small_capsule"),
+                },
+            ))
+        })
+        .collect()
 }
 
 /// Lowercase letters and digits only, with `&` as "and" and trademark
@@ -372,6 +440,45 @@ mod tests {
             pick_match(&json!({ "total": 0, "items": [] }), "Nothing"),
             None
         );
+    }
+
+    #[test]
+    fn artwork() {
+        // Shape of a real GetItems response: a hashed path (new app) and a
+        // plain one (older app), and an app without a portrait image.
+        let body = json!({ "response": { "store_items": [
+            { "appid": 4459590, "assets": {
+                "asset_url_format": "steam/apps/4459590/${FILENAME}?t=1795587406",
+                "library_capsule": "192507d5/library_capsule.jpg",
+                "header": "560f439f/header.jpg",
+                "small_capsule": "d64e41eb/capsule_231x87.jpg"
+            }},
+            { "appid": 2124490, "assets": {
+                "asset_url_format": "steam/apps/2124490/${FILENAME}?t=1744248682",
+                "library_capsule": "library_600x900.jpg",
+                "header": "header.jpg"
+            }},
+            { "appid": 10, "assets": { "asset_url_format": "steam/apps/10/${FILENAME}", "header": "header.jpg" } },
+            { "appid": 11 }
+        ]}});
+        let art = parse_artwork(&body);
+        assert_eq!(
+            art[&4459590].portrait.as_deref(),
+            Some(
+                "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4459590/192507d5/library_capsule.jpg?t=1795587406"
+            )
+        );
+        assert!(
+            art[&2124490]
+                .portrait
+                .as_deref()
+                .unwrap()
+                .ends_with("/2124490/library_600x900.jpg?t=1744248682")
+        );
+        assert_eq!(art[&2124490].capsule, None);
+        assert_eq!(art[&10].portrait, None);
+        assert!(art[&10].header.is_some());
+        assert!(!art.contains_key(&11));
     }
 
     #[tokio::test(start_paused = true)]

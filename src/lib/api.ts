@@ -2,7 +2,16 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-import type { CommandError, ForumPage, GameFirstPage, Release, Session, SteamApp, SteamMatch } from "./types";
+import type {
+  Artwork,
+  CommandError,
+  ForumPage,
+  GameFirstPage,
+  Release,
+  Session,
+  SteamApp,
+  SteamMatch,
+} from "./types";
 
 /** The forum's main game listing ("Main Forum"). */
 export const MAIN_FORUM_ID = 10;
@@ -52,6 +61,7 @@ export const api = {
     forum<Release[]>("game_releases", { topicId, start, replies }),
   steamApp: (appId: number) => invoke<SteamApp | null>("steam_app", { appId }),
   steamMatch: (name: string) => invoke<SteamMatch | null>("steam_match", { name }),
+  steamArtwork: (appIds: number[]) => invoke<Record<string, Artwork>>("steam_artwork", { appIds }),
   rememberSteamMatch: (name: string, found: SteamMatch) => invoke<void>("remember_steam_match", { name, found }),
   saveSnapshot: (path: string) => forum<string>("save_snapshot", { path }),
   showForumWindow: (path?: string) => invoke<void>("show_forum_window", { path }),

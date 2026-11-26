@@ -1,29 +1,27 @@
 <script lang="ts">
-  import { art, requestArt } from "./cardArt.svelte";
+  import { artFor, matches, requestArt } from "./cardArt.svelte";
   import type { TopicSummary } from "./types";
 
   let { topic, onselect }: { topic: TopicSummary; onselect: (topic: TopicSummary) => void } = $props();
 
-  // Placeholder until (or unless) Steam has artwork: a colour and initials.
+  // Placeholder until (or unless) Steam has artwork: a colour per topic.
   const hue = $derived((topic.id * 47) % 360);
-  const initials = $derived(
-    topic.name
-      .split(/\s+/)
-      .filter((w) => /^[\p{L}\p{N}]/u.test(w))
-      .slice(0, 2)
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase(),
-  );
   // "[Info]" is on nearly every game topic, so it says nothing.
   const tags = $derived([...topic.prefixes.filter((p) => p.toLowerCase() !== "info"), ...topic.labels]);
+
+  const art = $derived(artFor(topic.name));
+  /** Portrait art fills the card; otherwise the header sits on a blurred copy of itself. */
+  const portrait = $derived(art?.portrait ?? null);
+  const fallback = $derived(portrait ? null : (art?.header ?? art?.capsule ?? null));
+  const hasArt = $derived(!!(portrait || fallback));
+
+  /** The image that finished loading, so a replaced image fades in too. */
+  let loaded = $state<string | null>(null);
+  let failed = $state<string | null>(null);
 
   let element = $state<HTMLElement>();
   let visible = false;
   let requested = false;
-  const image = $derived(art.get(topic.name)?.capsule_image ?? null);
-  /** The image that finished loading, so a replaced image fades in too. */
-  let loaded = $state<string | null>(null);
 
   // Look the game up on Steam once the card is (nearly) on screen.
   $effect(() => {
@@ -31,29 +29,57 @@
     const observer = new IntersectionObserver(
       ([entry]) => {
         visible = entry.isIntersecting;
-        if (!visible || requested || art.has(topic.name)) return;
+        if (!visible || requested || matches.has(topic.name)) {
+          if (visible && matches.has(topic.name)) requestArt(topic.name, () => true);
+          return;
+        }
         requested = true;
         requestArt(topic.name, () => visible).then((looked) => {
           if (!looked) requested = false; // skipped or failed; ask again when visible
         });
       },
-      { rootMargin: "200px" },
+      { rootMargin: "300px" },
     );
     observer.observe(element);
     return () => observer.disconnect();
   });
 </script>
 
-<button bind:this={element} type="button" class="card" title={topic.title} onclick={() => onselect(topic)}>
-  <div class="art" style:--hue={hue}>
-    <span>{initials}</span>
-    {#if image}
-      {#key image}
-        <img src={image} alt="" class:loaded={loaded === image} onload={() => (loaded = image)} />
-      {/key}
-    {/if}
-  </div>
-  <div class="body">
+<button
+  bind:this={element}
+  type="button"
+  class="card"
+  class:has-art={hasArt && failed !== (portrait ?? fallback)}
+  style:--hue={hue}
+  title={topic.title}
+  onclick={() => onselect(topic)}
+>
+  {#if portrait}
+    {#key portrait}
+      <img
+        class="portrait"
+        src={portrait}
+        alt=""
+        class:loaded={loaded === portrait}
+        onload={() => (loaded = portrait)}
+        onerror={() => (failed = portrait)}
+      />
+    {/key}
+  {:else if fallback}
+    {#key fallback}
+      <img class="backdrop" src={fallback} alt="" class:loaded={loaded === fallback} />
+      <img
+        class="landscape"
+        src={fallback}
+        alt=""
+        class:loaded={loaded === fallback}
+        onload={() => (loaded = fallback)}
+        onerror={() => (failed = fallback)}
+      />
+    {/key}
+  {/if}
+
+  <div class="overlay">
     <h3>{topic.name}</h3>
     {#if tags.length}
       <div class="tags">
@@ -70,68 +96,88 @@
 </button>
 
 <style>
+  /* Steam's portrait "library capsule" is 600×900. */
   .card {
-    display: flex;
-    flex-direction: column;
+    position: relative;
+    aspect-ratio: 2 / 3;
     padding: 0;
     overflow: hidden;
-    text-align: left;
+    border: none;
     border-radius: 10px;
-    background: var(--surface);
+    text-align: left;
+    color: #fff;
+    background: linear-gradient(160deg, hsl(var(--hue) 45% 34%), hsl(calc(var(--hue) + 40) 50% 14%));
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
     transition:
-      transform 120ms ease,
-      box-shadow 120ms ease;
+      transform 150ms ease,
+      box-shadow 150ms ease;
   }
   .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 24px rgb(0 0 0 / 0.3);
+  }
+  .card:hover:not(:disabled) {
+    background: linear-gradient(160deg, hsl(var(--hue) 45% 34%), hsl(calc(var(--hue) + 40) 50% 14%));
   }
   .card:focus-visible {
     outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 
-  /* Steam's capsule image is 231×87; keeping its shape avoids cropping. */
-  .art {
-    position: relative;
-    aspect-ratio: 231 / 87;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(135deg, hsl(var(--hue) 45% 32%), hsl(calc(var(--hue) + 40) 50% 18%));
-  }
-  .art span {
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: rgb(255 255 255 / 0.85);
-  }
-  .art img {
+  img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
     opacity: 0;
-    transition: opacity 250ms ease;
+    transition: opacity 300ms ease;
   }
-  .art img.loaded {
+  img.loaded {
     opacity: 1;
   }
+  .portrait {
+    object-fit: cover;
+  }
+  .backdrop {
+    object-fit: cover;
+    filter: blur(18px) brightness(0.55);
+    transform: scale(1.2);
+  }
+  .landscape {
+    object-fit: contain;
+  }
 
-  .body {
+  /* Title and details: always shown on placeholders, on hover/focus over art. */
+  .overlay {
+    position: absolute;
+    inset: auto 0 0 0;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding: 10px 12px 12px;
-    flex: 1;
+    padding: 40px 12px 12px;
+    background: linear-gradient(to top, rgb(0 0 0 / 0.9) 0%, rgb(0 0 0 / 0.65) 55%, transparent 100%);
+    transition:
+      opacity 150ms ease,
+      transform 150ms ease;
   }
+  .has-art .overlay {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .has-art:hover .overlay,
+  .has-art:focus-visible .overlay {
+    opacity: 1;
+    transform: none;
+  }
+
   h3 {
     margin: 0;
     font-size: 14px;
     line-height: 1.3;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -140,9 +186,13 @@
     flex-wrap: wrap;
     gap: 4px;
   }
+  .tags .tag {
+    color: rgb(255 255 255 / 0.85);
+    border-color: rgb(255 255 255 / 0.35);
+  }
   .meta {
-    margin: auto 0 0;
-    font-size: 12px;
-    color: var(--muted);
+    margin: 0;
+    font-size: 11px;
+    color: rgb(255 255 255 / 0.75);
   }
 </style>

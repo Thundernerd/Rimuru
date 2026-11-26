@@ -1,6 +1,7 @@
 //! Commands for the main window. All are `async`: reading the forum window's
 //! cookies from a synchronous command deadlocks on Windows.
 
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use tauri::{AppHandle, Manager, State};
@@ -15,7 +16,7 @@ use crate::cache::Cache;
 use crate::forum_window;
 use crate::game::{self, GameInfo, Release};
 use crate::phpbb::{self, ForumPage, Session, TopicPage};
-use crate::steam::{self, SteamApp, SteamClient, SteamMatch};
+use crate::steam::{self, Artwork, SteamApp, SteamClient, SteamMatch};
 
 #[tauri::command]
 pub async fn forum_session(app: AppHandle, client: State<'_, ForumClient>) -> Result<Session> {
@@ -81,6 +82,7 @@ async fn topic_page(
 const TOPIC_MAX_AGE: Duration = Duration::from_secs(24 * 3600);
 const STEAM_APP_MAX_AGE: Duration = Duration::from_secs(3 * 24 * 3600);
 const STEAM_MATCH_MAX_AGE: Duration = Duration::from_secs(30 * 24 * 3600);
+const STEAM_ARTWORK_MAX_AGE: Duration = Duration::from_secs(14 * 24 * 3600);
 const STEAM_NO_MATCH_MAX_AGE: Duration = Duration::from_secs(7 * 24 * 3600);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -198,6 +200,41 @@ pub async fn steam_match(
     match &found {
         Some(m) => cache.put("steam_match", &key, None, m),
         None => cache.put("steam_no_match", &key, None, &()),
+    }
+    Ok(found)
+}
+
+/// Card artwork for many apps at once, from cache where possible and one
+/// Steam request per [`steam::ARTWORK_BATCH`] uncached apps. Apps Steam
+/// has no artwork for come back without images.
+#[tauri::command]
+pub async fn steam_artwork(
+    steam: State<'_, SteamClient>,
+    cache: State<'_, Cache>,
+    app_ids: Vec<u64>,
+) -> Result<HashMap<u64, Artwork>> {
+    let mut found = HashMap::new();
+    let mut missing = Vec::new();
+    for id in app_ids {
+        match cache.get::<Artwork>(
+            "steam_artwork",
+            &id.to_string(),
+            None,
+            STEAM_ARTWORK_MAX_AGE,
+        ) {
+            Some(art) => {
+                found.insert(id, art);
+            }
+            None => missing.push(id),
+        }
+    }
+    for batch in missing.chunks(steam::ARTWORK_BATCH) {
+        let mut fetched = steam.artwork(batch).await?;
+        for &id in batch {
+            let art = fetched.remove(&id).unwrap_or_default();
+            cache.put("steam_artwork", &id.to_string(), None, &art);
+            found.insert(id, art);
+        }
     }
     Ok(found)
 }
