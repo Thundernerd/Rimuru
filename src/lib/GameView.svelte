@@ -28,6 +28,10 @@
   let pagesRead = $state(0);
   let pagesPlanned = $state(1);
   let loading = $state(false);
+  let olderStart = $state<number | null>(null);
+  let perPage: number | null = null;
+  let loadingOlder = $state(false);
+  let isCurrentLoad: () => boolean = () => false;
   let error = $state<string | null>(null);
   let attempt = $state(0);
   let previous = $state<Visit | null>(null);
@@ -58,6 +62,10 @@
     recent = [];
     pagesRead = 0;
     pagesPlanned = 1;
+    olderStart = null;
+    perPage = null;
+    loadingOlder = false;
+    isCurrentLoad = isCurrent;
     error = null;
     loading = true;
 
@@ -81,6 +89,9 @@
         recent.push(...found);
         pagesRead += 1;
       }
+      perPage = page.per_page;
+      const lowest = starts.at(-1);
+      olderStart = perPage && lowest && lowest - perPage > 0 ? lowest - perPage : null;
     })()
       .catch((e) => isCurrent() && (error = errorMessage(e)))
       .finally(() => {
@@ -88,6 +99,28 @@
         loading = false;
         if (first) recordVisit(shown, releases.map((r) => r.post_id));
       });
+  }
+
+  async function loadOlder() {
+    if (olderStart === null || !perPage || loadingOlder) return;
+    const check = isCurrentLoad;
+    const step = perPage;
+    loadingOlder = true;
+    try {
+      let start = olderStart;
+      for (let read = 0; start > 0 && read < RECENT_PAGES; read++, start -= step) {
+        const found = await api.gameReleases(topic.id, start, topic.replies);
+        if (!check()) return;
+        recent.push(...found);
+        pagesRead += 1;
+      }
+      olderStart = start > 0 ? start : null;
+      recordVisit(topic, releases.map((r) => r.post_id));
+    } catch (e) {
+      if (check()) setStatus(`Couldn't load older releases: ${errorMessage(e)}`);
+    } finally {
+      if (check()) loadingOlder = false;
+    }
   }
 
   async function loadSteam(page: GameFirstPage, name: string, isCurrent: () => boolean) {
@@ -232,6 +265,9 @@
       {loading}
       {error}
       onretry={() => attempt++}
+      canLoadOlder={olderStart !== null}
+      {loadingOlder}
+      onloadolder={loadOlder}
     />
   {:else if tab === "media"}
     {#if movies.length}

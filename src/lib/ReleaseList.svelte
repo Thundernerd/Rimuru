@@ -12,6 +12,9 @@
     loading,
     error,
     onretry,
+    canLoadOlder = false,
+    loadingOlder = false,
+    onloadolder = () => {},
   }: {
     releases: Release[];
     topicId: number;
@@ -22,6 +25,9 @@
     loading: boolean;
     error: string | null;
     onretry: () => void;
+    canLoadOlder?: boolean;
+    loadingOlder?: boolean;
+    onloadolder?: () => void;
   } = $props();
 </script>
 
@@ -35,7 +41,7 @@
       {#if loading}
         Reading the most recent pages… {pagesRead} of {pagesPlanned}
       {:else}
-        Read {pagesRead} of {totalPages} pages: the first and the most recent.
+        Read {pagesRead} of {totalPages} pages.
       {/if}
     </p>
   {/if}
@@ -48,8 +54,15 @@
     {/if}
   {/each}
 
-  {#if loading}
+  {#if loading || loadingOlder}
     <div class="placeholder"></div>
+  {/if}
+  {#if canLoadOlder && !loading}
+    <div class="older">
+      <button type="button" onclick={onloadolder} disabled={loadingOlder}>
+        {loadingOlder ? "Loading older releases…" : "Load older releases"}
+      </button>
+    </div>
   {/if}
   {#if error}
     <div class="message">
@@ -80,6 +93,11 @@
   .small {
     margin: -6px 0 0;
     font-size: 12px;
+  }
+  .older {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0;
   }
   .placeholder {
     height: 120px;
