@@ -1,10 +1,6 @@
 <script lang="ts">
   import type { GameInfo, SteamApp } from "./types";
 
-  /**
-   * The game's details for the Overview tab: a facts card, then about,
-   * features and languages. `part` picks the column.
-   */
   let { forum, steam, part }: { forum: GameInfo | null; steam: SteamApp | null; part: "main" | "side" } = $props();
 
   const PLATFORM_NAMES: Record<string, string> = { windows: "Windows", macos: "macOS", linux: "Linux" };

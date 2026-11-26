@@ -23,7 +23,6 @@ export async function refreshSession() {
   }
 }
 
-/** Shows the forum window on its login page; hides it again once signed in. */
 export function signIn() {
   signingIn = true;
   api.showForumWindow().catch((e) => setStatus(errorMessage(e)));

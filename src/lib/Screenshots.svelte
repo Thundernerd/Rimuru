@@ -1,8 +1,4 @@
 <script lang="ts">
-  /**
-   * Screenshots as a strip (or a grid); click one to view it large, ← → to
-   * browse.
-   */
   let {
     shots,
     grid = false,

@@ -2,7 +2,6 @@
   import LinkButton from "./LinkButton.svelte";
   import type { Release } from "./types";
 
-  /** A release post; `featured` shows it larger, with a download button per host. */
   let {
     release,
     isNew = false,
@@ -11,7 +10,6 @@
 
   const facts = $derived(
     [
-      // "1.0.0.6" reads as a version number, "16 November 2026 - ..." doesn't.
       release.version && (/^v?\d+(\.\d+)+/i.test(release.version) ? `v${release.version.replace(/^v/i, "")}` : release.version),
       release.build && `Build ${release.build}`,
       release.size,

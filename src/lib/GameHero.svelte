@@ -3,10 +3,6 @@
   import LinkButton from "./LinkButton.svelte";
   import type { Artwork, GameInfo, SteamApp, TopicSummary } from "./types";
 
-  /**
-   * The top of a game's page, launcher style: key art, the game's logo
-   * (or its name), labels and facts, actions, and a strip of stats.
-   */
   let {
     topic,
     forum,
@@ -26,7 +22,6 @@
     steam: SteamApp | null;
     art: Artwork | null;
     appId: number | null;
-    /** [label, value, monospace?] */
     stats: [string, string, boolean?][];
     hasTrailer: boolean;
     latestIsNew: boolean;
@@ -42,8 +37,6 @@
   const backdrop = $derived(
     art?.hero ?? steam?.screenshots[0]?.full ?? steam?.header_image ?? forum?.header_image ?? null,
   );
-  // Steam keeps a transparent logo at a plain path for most older games;
-  // newer ones use a hashed path we can't look up, so fall back to the name.
   const logo = $derived(
     appId ? `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/logo.png` : null,
   );
@@ -93,7 +86,6 @@
           onerror={() => (logoFailed = logo)}
         />
       {/if}
-      <!-- The name stays for screen readers, and shows until a logo loads. -->
       <h1 class:hidden-by-logo={showLogo && logoLoaded === logo}>{title}</h1>
 
       {#if facts.length}<p class="facts">{facts.join("  ·  ")}</p>{/if}
@@ -246,7 +238,6 @@
     letter-spacing: -0.015em;
     text-shadow: 0 2px 14px rgb(0 0 0 / 0.55);
   }
-  /* Visually hidden while the logo stands in for it. */
   h1.hidden-by-logo {
     position: absolute;
     width: 1px;

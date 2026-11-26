@@ -9,10 +9,6 @@
   import type { TopicSummary } from "./types";
   import { latest, newReplies, recent } from "./visits.svelte";
 
-  /**
-   * Navigation, followed and recently viewed games (with a dot for new
-   * replies), and the forum account.
-   */
   let {
     onnavigate,
     onsearch,
@@ -20,7 +16,6 @@
   }: { onnavigate: (view: View) => void; onsearch: () => void; mac: boolean } = $props();
 
   const following = $derived(followedTopics());
-  // Fewer recent games when the followed list takes room too.
   const shown = $derived(
     recent.visits
       .map((v) => v.topic && (latest.get(v.topic.id) ?? v.topic))
@@ -30,7 +25,6 @@
   const view = $derived(current());
   const openGame = $derived(view.kind === "game" ? view.topic.id : null);
 
-  // Thumbnails for the list.
   $effect(() => {
     for (const topic of [...following, ...shown]) requestArt(topic.name, () => true);
   });
@@ -81,7 +75,6 @@
         {@render games(following)}
       </section>
     {/if}
-    <!-- Followed games aren't repeated here; hide the heading if that leaves nothing. -->
     {#if shown.length || !following.length}
       <section>
         <div class="eyebrow">
@@ -155,7 +148,6 @@
     padding: 0 18px;
     flex-shrink: 0;
   }
-  /* Room for the window buttons on macOS. */
   aside.mac .brand {
     height: 92px;
     align-items: flex-end;

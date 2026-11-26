@@ -9,7 +9,6 @@
   import type { TopicSummary } from "./types";
   import { latest, loadVisits, newReplies, recent, rememberListed } from "./visits.svelte";
 
-  /** Featured games, label chips and shelves, from page 1 of the forum. */
   let {
     onselect,
     onnavigate,
@@ -40,7 +39,6 @@
       .filter((t): t is TopicSummary => !!t),
   );
   const following = $derived(followedTopics());
-  // Followed games have their own shelf, so leave them out of this one.
   const withNewReplies = $derived(viewed.filter((t) => newReplies(t) > 0 && !following.some((f) => f.id === t.id)));
 </script>
 

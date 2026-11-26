@@ -13,7 +13,6 @@
     onretry,
   }: {
     releases: Release[];
-    /** Post ids of releases not seen on the previous visit. */
     newIds: Set<number>;
     pagesRead: number;
     pagesPlanned: number;

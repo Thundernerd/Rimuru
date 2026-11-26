@@ -1,10 +1,3 @@
-//! A small key-value cache in SQLite, in the app's data folder.
-//!
-//! Entries are JSON, grouped by `kind` and keyed by `key`. An entry can
-//! carry a `version` (e.g. a topic's reply count): a lookup with a different
-//! version misses, which is how forum data is invalidated when new replies
-//! arrive. Cache failures never fail a command; they just miss.
-
 use std::path::Path;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -25,7 +18,6 @@ fn now() -> i64 {
 }
 
 impl Cache {
-    /// Opens the cache at `path`, or an in-memory one if that fails.
     pub fn open(path: &Path) -> Self {
         let conn = path
             .parent()
@@ -62,7 +54,6 @@ impl Cache {
         }
     }
 
-    /// The entry, if stored with the same `version` within `max_age`.
     pub fn get<T: DeserializeOwned>(
         &self,
         kind: &str,
@@ -85,7 +76,6 @@ impl Cache {
             .flatten()
     }
 
-    /// All entries of a kind stored within `max_age`, newest first.
     pub fn list<T: DeserializeOwned>(&self, kind: &str, max_age: Duration) -> Vec<T> {
         let Ok(conn) = self.conn.lock() else {
             return Vec::new();
@@ -144,11 +134,9 @@ mod tests {
             cache.get::<Vec<i32>>("topic", "1", Some("34"), DAY),
             Some(vec![1, 2, 3])
         );
-        // New replies: a different version misses.
         assert_eq!(cache.get::<Vec<i32>>("topic", "1", Some("35"), DAY), None);
         assert_eq!(cache.get::<Vec<i32>>("topic", "1", None, DAY), None);
         assert_eq!(cache.get::<Vec<i32>>("other", "1", Some("34"), DAY), None);
-        // Replacing an entry.
         cache.put("topic", "1", Some("35"), &vec![4]);
         assert_eq!(
             cache.get::<Vec<i32>>("topic", "1", Some("35"), DAY),

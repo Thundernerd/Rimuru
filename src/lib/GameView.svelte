@@ -17,20 +17,17 @@
 
   let { topic }: { topic: TopicSummary } = $props();
 
-  /** Pages read for releases: page 1 plus up to this many from the end. */
   const RECENT_PAGES = 4;
 
   let first = $state<GameFirstPage | null>(null);
   let steam = $state<SteamApp | null>(null);
   let art = $state<Artwork | null>(null);
-  /** Releases from the most recent pages, newest first; page 1's come after. */
   let recent = $state<Release[]>([]);
   let pagesRead = $state(0);
   let pagesPlanned = $state(1);
   let loading = $state(false);
   let error = $state<string | null>(null);
   let attempt = $state(0);
-  /** The visit before this one; null on a first visit (nothing is "new" then). */
   let previous = $state<Visit | null>(null);
 
   const releases = $derived([...recent, ...(first?.releases ?? [])]);
@@ -40,11 +37,6 @@
       : new Set<number>(),
   );
 
-  // Load whenever the topic changes (or on retry); responses for a topic
-  // that's no longer shown are dropped. Only the topic and the retry
-  // counter are dependencies: loading runs untracked, since it reads
-  // stores it later writes (recording the visit would otherwise re-run
-  // this effect and reload the topic in a loop).
   $effect(() => {
     const shown = topic;
     void attempt;
@@ -76,7 +68,6 @@
 
       loadSteam(page, name, isCurrent);
 
-      // Then the most recent pages, newest first, one at a time.
       const starts: number[] = [];
       if (page.per_page) {
         for (let s = page.last_start; s > 0 && starts.length < RECENT_PAGES; s -= page.per_page) starts.push(s);
@@ -93,7 +84,6 @@
       .finally(() => {
         if (!isCurrent()) return;
         loading = false;
-        // Remember what was seen, so the next visit can tell what's new.
         if (first) recordVisit(shown, releases.map((r) => r.post_id));
       });
   }
@@ -102,7 +92,6 @@
     try {
       const appId = page.info?.steam_app_id ?? (await api.steamMatch(name))?.app_id;
       if (!appId || !isCurrent()) return;
-      // Artwork (cover, backdrop) and details in parallel.
       api
         .steamArtwork([appId])
         .then((found) => isCurrent() && (art = found[appId] ?? null))
@@ -110,8 +99,6 @@
       const app = await api.steamApp(appId);
       if (!isCurrent()) return;
       steam = app;
-      // The topic links this Steam app itself: use its artwork for the
-      // card, which fills in or corrects a match by name.
       if (app?.capsule_image && page.info?.steam_app_id === app.app_id) {
         rememberArt(name, { app_id: app.app_id, name: app.name, capsule_image: app.capsule_image });
       }
@@ -128,13 +115,10 @@
     }
   }
 
-  // ---------------------------------------------------------------- layout
-
   type Tab = "overview" | "releases" | "media" | "requirements";
   let tab = $state<Tab>("overview");
   let trailerAt = $state<number | null>(null);
 
-  // Each game opens on its overview.
   $effect(() => {
     void topic.id;
     tab = "overview";
@@ -298,7 +282,6 @@
 
   .page {
     display: grid;
-    /* minmax(0, …): don't let the screenshot strip widen the page. */
     grid-template-columns: minmax(0, 1fr);
     gap: 28px;
     padding-top: 24px;

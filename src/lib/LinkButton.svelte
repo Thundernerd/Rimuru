@@ -2,7 +2,6 @@
   import { api, errorMessage } from "./api";
   import { setStatus } from "./status.svelte";
 
-  /** Opens `url` in the system browser; with `confirm`, only on a second click. */
   let {
     url,
     label,

@@ -3,7 +3,6 @@
   import Icon from "./Icon.svelte";
   import type { TopicSummary } from "./types";
 
-  /** A titled row of game cards that scrolls sideways. */
   let {
     title,
     subtitle = null,
@@ -84,7 +83,6 @@
   .row::-webkit-scrollbar {
     display: none;
   }
-  /* A grid, so the card stretches to the slot's width (its height follows). */
   .slot {
     display: grid;
     scroll-snap-align: start;

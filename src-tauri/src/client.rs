@@ -1,5 +1,3 @@
-//! Fetches forum pages over HTTP using the forum window's session.
-
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
@@ -9,9 +7,6 @@ use tauri::AppHandle;
 use crate::error::{Error, Result};
 use crate::{forum_window, phpbb};
 
-/// Minimum time between forum-window reloads triggered by the security check.
-/// Every reload makes the frontend re-check the session, so without this a
-/// check the copied cookies can't pass would reload the window forever.
 const REFRESH_INTERVAL: Duration = Duration::from_secs(30);
 
 pub struct ForumClient {
@@ -39,11 +34,6 @@ impl ForumClient {
         forum_window::refresh(app)
     }
 
-    /// GETs `path` (relative to `/forum/`) and returns the HTML.
-    ///
-    /// Cookies are read fresh from the forum window on every request, so a
-    /// login in that window takes effect immediately. Cookies the server sets
-    /// on these responses are not written back to the webview.
     pub async fn get(&self, app: &AppHandle, path: &str) -> Result<String> {
         let url = forum_window::forum_url(path)?;
         let cookies = forum_window::cookie_header(app, &url)?;

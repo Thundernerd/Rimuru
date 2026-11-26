@@ -3,11 +3,6 @@
 
   import type { Movie } from "./types";
 
-  /**
-   * Plays Steam trailers in an overlay. Steam serves them as HLS streams:
-   * WebKit (macOS) plays those natively; other webviews use hls.js, loaded
-   * only when needed. Older entries may have a plain MP4 instead.
-   */
   let { movies, start = 0, onclose }: { movies: Movie[]; start?: number; onclose: () => void } = $props();
 
   // svelte-ignore state_referenced_locally

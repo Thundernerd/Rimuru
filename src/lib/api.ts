@@ -17,12 +17,10 @@ import type {
   Visit,
 } from "./types";
 
-/** The forum's main game listing ("Main Forum"). */
 export const MAIN_FORUM_ID = 10;
 
 export const FORUM_PAGE_LOADED = "forum-page-loaded";
 
-/** Resolves on the forum window's next finished page load. */
 function nextForumPageLoad(timeoutMs = 20000): Promise<void> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -37,11 +35,6 @@ function nextForumPageLoad(timeoutMs = 20000): Promise<void> {
   });
 }
 
-/**
- * Invokes a forum command. If the site's security check is in the way, the
- * backend has already told the forum window to reload; wait for that and
- * retry once.
- */
 async function forum<T>(cmd: string, args: Record<string, unknown> = {}): Promise<T> {
   try {
     return await invoke<T>(cmd, args);

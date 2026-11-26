@@ -1,9 +1,3 @@
-//! Parsing of cs.rin.ru's phpBB 3 pages.
-//!
-//! The site runs phpBB 3 with "rinDark", a theme based on subsilver2: forum
-//! listings and posts are tables. Tests run against real pages saved with
-//! `save_snapshot` in `tests/fixtures/` (personal data replaced).
-
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
@@ -33,8 +27,6 @@ selector!(POST_AUTHOR, "b.postauthor");
 selector!(POST_HEADER, "td.gensmall");
 selector!(POST_BODY, "div.postbody");
 
-// ---------------------------------------------------------------- types
-
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct ForumPage {
     pub forum_id: u64,
@@ -43,8 +35,6 @@ pub struct ForumPage {
     pub pagination: Pagination,
 }
 
-/// The listing's section a topic appears in. Everything except `Normal` is
-/// repeated at the top of every page of the forum.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum TopicKind {
@@ -73,21 +63,15 @@ impl TopicKind {
 pub struct TopicSummary {
     pub id: u64,
     pub kind: TopicKind,
-    /// The full title as shown, e.g. `[Info] Nine Sols [Early Access]`.
     pub title: String,
-    /// The title without leading and trailing `[...]` tags, e.g. `Nine Sols`.
     pub name: String,
-    /// Leading tags, e.g. `["Info"]`.
     pub prefixes: Vec<String>,
-    /// Trailing tags, e.g. `["Early Access"]`.
     pub labels: Vec<String>,
     pub url: String,
     pub author: Option<String>,
-    /// As displayed by the forum, e.g. `Monday, 29 Jun 2026, 01:18`.
     pub created: Option<String>,
     pub replies: Option<u32>,
     pub views: Option<u32>,
-    /// As displayed by the forum, e.g. `Today, 12:21`.
     pub last_post_at: Option<String>,
     pub last_poster: Option<String>,
 }
@@ -105,13 +89,9 @@ pub struct Post {
     pub id: u64,
     pub author: Option<String>,
     pub subject: Option<String>,
-    /// As displayed by the forum, e.g. `Friday, 13 Nov 2026, 13:57`.
     pub posted: Option<String>,
-    /// The post body as untrusted forum HTML. Sanitise before rendering.
     pub content_html: String,
-    /// The post body as text, one line per line break or block.
     pub content_text: String,
-    /// The same text as `content_text`, line by line.
     pub lines: Vec<PostLine>,
     pub links: Vec<PostLink>,
     pub images: Vec<PostImage>,
@@ -120,7 +100,6 @@ pub struct Post {
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct PostLine {
     pub text: String,
-    /// Every word on the line is inside a quote of another post.
     pub quoted: bool,
 }
 
@@ -128,25 +107,18 @@ pub struct PostLine {
 pub struct PostImage {
     pub src: String,
     pub in_quote: bool,
-    /// Index into `Post::lines` of the line the image sits on (or before).
     pub line: usize,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct PostLink {
     pub url: String,
-    /// Host without `www.`, e.g. `gofile.io`.
     pub host: String,
     pub kind: LinkKind,
     pub text: String,
-    /// The full line of the post the link sits on, e.g.
-    /// `Gofile | VikingFile` or `Store Page: https://store.steampowered.com/...`.
     pub context: String,
-    /// Index into `Post::lines` of the line the link sits on.
     pub line: usize,
-    /// Inside a quote of another post, so usually a repeat.
     pub in_quote: bool,
-    /// Wrapped in the forum's "Unsafe filehosts" warning.
     pub flagged_unsafe: bool,
 }
 
@@ -155,12 +127,10 @@ pub struct PostLink {
 pub enum LinkKind {
     SteamStore,
     SteamDb,
-    /// Another page on cs.rin.ru.
     Forum,
     External,
 }
 
-/// phpBB pages by `start=` offset (items, not page numbers).
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct Pagination {
     pub start: u32,
@@ -178,14 +148,10 @@ pub enum Session {
     LoggedOut,
 }
 
-// ---------------------------------------------------------------- session
-
-/// True for the site's JavaScript "Security check" interstitial.
 pub fn is_security_check(html: &str) -> bool {
     html.contains("Security check") && html.contains("securitytoken")
 }
 
-/// Signed in when the page has a logout link: `Logout [ name ]`.
 pub fn parse_session(html: &str) -> Session {
     let doc = Html::parse_document(html);
     let Some(logout) = doc.select(&LOGOUT_LINK).next() else {
@@ -200,11 +166,6 @@ pub fn parse_session(html: &str) -> Session {
     Session::LoggedIn { username }
 }
 
-// ---------------------------------------------------------------- forum
-
-/// Parses `viewforum.php?f=<forum_id>&start=<start>`.
-///
-/// Section header rows (`td.row3`) set the [`TopicKind`] of the rows below.
 pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> ForumPage {
     let doc = Html::parse_document(html);
     ForumPage {
@@ -217,9 +178,6 @@ pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> For
     }
 }
 
-/// Where each column is in a topic listing, read from its header row
-/// (`<th>Topics</th><th>Replies</th>...`), so listings that order their
-/// columns differently (forum pages, search results) parse alike.
 #[derive(Debug, Default, Clone)]
 struct Columns {
     replies: Option<usize>,
@@ -229,7 +187,6 @@ struct Columns {
 }
 
 impl Columns {
-    /// The forum page's layout: icon, title, replies, author, views, last post.
     fn forum_default() -> Self {
         Self {
             replies: Some(2),
@@ -239,7 +196,6 @@ impl Columns {
         }
     }
 
-    /// From a row of `<th>`s, counting `colspan`; `None` if it isn't one.
     fn from_header(row: ElementRef) -> Option<Self> {
         let cells: Vec<ElementRef> = row.children().filter_map(ElementRef::wrap).collect();
         if cells.is_empty() || cells.iter().any(|c| c.value().name() != "th") {
@@ -270,8 +226,6 @@ impl Columns {
     }
 }
 
-/// Topic rows (`tr`s with an `a.topictitle`) of a forum page or search
-/// results, in order, without duplicates.
 fn parse_topic_rows(doc: &Html, page_url: &Url) -> Vec<TopicSummary> {
     let mut kind = TopicKind::Normal;
     let mut columns = Columns::forum_default();
@@ -304,7 +258,6 @@ fn parse_topic_rows(doc: &Html, page_url: &Url) -> Vec<TopicSummary> {
             continue;
         }
 
-        // Cell positions, counting colspan, to match the header.
         let mut cells: Vec<Option<ElementRef>> = Vec::new();
         for cell in row
             .children()
@@ -355,19 +308,14 @@ fn parse_topic_rows(doc: &Html, page_url: &Url) -> Vec<TopicSummary> {
     topics
 }
 
-// ---------------------------------------------------------------- search
-
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct SearchPage {
     pub query: String,
     pub topics: Vec<TopicSummary>,
-    /// From "Search found N matches".
     pub total_matches: Option<u32>,
     pub pagination: Pagination,
 }
 
-/// Messages phpBB shows instead of results that mean "try again", rather
-/// than "nothing found".
 const SEARCH_REFUSALS: &[&str] = &[
     "cannot use search at this time",
     "You must specify at least one word",
@@ -376,9 +324,6 @@ const SEARCH_REFUSALS: &[&str] = &[
     "Sorry but you are not permitted to use the search",
 ];
 
-/// Parses `search.php?keywords=...&sr=topics` results. Returns the forum's
-/// message instead when it refused the search (e.g. searching again too
-/// soon after the last search).
 pub fn parse_search(
     html: &str,
     page_url: &Url,
@@ -415,7 +360,6 @@ pub fn parse_search(
     })
 }
 
-/// The sentence of `text` that contains `phrase`, tidied up.
 fn sentence_with(text: &str, phrase: &str) -> Option<String> {
     let at = text.find(phrase)?;
     let begin = text[..at].rfind(['.', '!', '?', '\n']).map_or(0, |i| i + 1);
@@ -430,7 +374,6 @@ fn sentence_with(text: &str, phrase: &str) -> Option<String> {
     )
 }
 
-/// Splits `[Info] Name [VR] [Early Access]` into prefixes, name and labels.
 fn split_title(title: &str) -> (Vec<String>, String, Vec<String>) {
     let mut rest = title.trim();
     let mut prefixes = Vec::new();
@@ -439,7 +382,7 @@ fn split_title(title: &str) -> (Vec<String>, String, Vec<String>) {
             break;
         };
         if tail.trim().is_empty() {
-            break; // keep a name that is only a bracketed tag
+            break;
         }
         prefixes.push(tag.trim().to_string());
         rest = tail.trim_start();
@@ -450,7 +393,7 @@ fn split_title(title: &str) -> (Vec<String>, String, Vec<String>) {
             break;
         };
         if head.trim().is_empty() {
-            break; // keep a name that is only a bracketed tag
+            break;
         }
         labels.insert(0, tag.trim().to_string());
         rest = head.trim_end();
@@ -458,13 +401,6 @@ fn split_title(title: &str) -> (Vec<String>, String, Vec<String>) {
     (prefixes, rest.to_string(), labels)
 }
 
-// ---------------------------------------------------------------- topic
-
-/// Parses `viewtopic.php?t=<topic_id>&start=<start>`.
-///
-/// Each post is its own `table.tablebg` holding an `<a name="p123">` anchor,
-/// `b.postauthor`, a `td.gensmall` header with subject and date, and
-/// `div.postbody` blocks: the first is the post, a second is the signature.
 pub fn parse_topic(html: &str, page_url: &Url, topic_id: u64, start: u32) -> TopicPage {
     let doc = Html::parse_document(html);
     let mut posts = Vec::new();
@@ -524,8 +460,6 @@ pub fn parse_topic(html: &str, page_url: &Url, topic_id: u64, start: u32) -> Top
     }
 }
 
-/// Turns a post body into lines of text and collects its links and images,
-/// each tied to the line it sits on.
 struct Walker<'a> {
     base: &'a Url,
     lines: Vec<PostLine>,
@@ -608,9 +542,8 @@ impl<'a> Walker<'a> {
     fn walk(&mut self, el: ElementRef, scope: Scope) {
         let name = el.value().name();
         let has_class = |c: &str| el.value().classes().any(|x| x == c);
-        if matches!(name, "script" | "style" | "video" | "audio") || has_class("link_unsafe_reveal")
-            // The "Unsafe filehosts - [READ ME] ..." note next to flagged
-            // links; the flag itself is kept on the link.
+        if matches!(name, "script" | "style" | "video" | "audio")
+            || has_class("link_unsafe_reveal")
             || has_class("link_unsafe_note")
         {
             return;
@@ -676,7 +609,6 @@ impl<'a> Walker<'a> {
                 "cs.rin.ru" => LinkKind::Forum,
                 _ => LinkKind::External,
             };
-            // The line isn't finished yet; its index is where it will land.
             let line = self.lines.len();
             self.links.push((
                 PostLink {
@@ -698,8 +630,6 @@ impl<'a> Walker<'a> {
     }
 }
 
-// ---------------------------------------------------------------- shared
-
 fn text_of(el: ElementRef) -> String {
     el.text()
         .collect::<String>()
@@ -719,7 +649,6 @@ fn parse_count(text: &str) -> Option<u32> {
     plain.trim().parse().ok()
 }
 
-/// Drops the `sid` parameter phpBB adds to links when cookies are missing.
 fn clean_url(mut url: Url) -> String {
     let pairs: Vec<(String, String)> = url
         .query_pairs()
@@ -735,7 +664,6 @@ fn page_title(doc: &Html) -> Option<String> {
         .next()
         .map(text_of)
         .or_else(|| {
-            // "CS RIN - Steam Underground • View forum - Main Forum"
             let title = text_of(doc.select(&TITLE).next()?);
             Some(
                 title
@@ -746,8 +674,6 @@ fn page_title(doc: &Html) -> Option<String> {
         .filter(|s| !s.is_empty())
 }
 
-/// `start=` offsets from links to the same listing (same script, and
-/// `same_listing` holds), plus the "Page X of Y" label.
 fn parse_pagination(
     doc: &Html,
     page_url: &Url,
@@ -764,7 +690,6 @@ fn parse_pagination(
     offsets.sort_unstable();
     offsets.dedup();
 
-    // "Page 1 of 630"
     let (page, total_pages) = doc
         .select(&NAV)
         .map(text_of)
@@ -821,7 +746,6 @@ mod tests {
         assert_eq!(count(TopicKind::Normal), 91);
         assert!(count(TopicKind::GlobalAnnouncement) > 0);
         assert!(count(TopicKind::Sticky) > 0);
-        // Pinned rows come first, then the normal topics.
         assert!(page.topics[..17].iter().all(|t| t.kind.is_pinned()));
     }
 
@@ -879,9 +803,6 @@ mod tests {
         );
     }
 
-    /// The layout of subsilver2's search results: a forum column, and
-    /// author before replies (unlike forum pages). Not yet checked against
-    /// cs.rin.ru's own search page.
     const SEARCH: &str = r#"
       <table class="tablebg">
         <tr><td class="cat" colspan="7"><span class="nav">Search found 27 matches</span></td></tr>
@@ -916,7 +837,6 @@ mod tests {
         assert_eq!(page.topics.len(), 1);
         let t = &page.topics[0];
         assert_eq!((t.id, t.name.as_str()), (159639, "Slotbound"));
-        // Columns come from the header row, not fixed positions.
         assert_eq!(t.author.as_deref(), Some("pixieflitter"));
         assert_eq!((t.replies, t.views), (Some(34), Some(5120)));
         assert_eq!(t.last_post_at.as_deref(), Some("Today, 10:00"));
@@ -969,7 +889,6 @@ mod tests {
         assert_eq!(first.subject.as_deref(), Some("Slotbound"));
         assert_eq!(first.posted.as_deref(), Some("Monday, 29 Jun 2026, 01:18"));
         assert!(first.content_text.contains("\nGenre(s): Indie, Strategy\n"));
-        // The signature is a second div.postbody and must not be included.
         assert!(!first.content_text.contains("_________________"));
         let p = &page.pagination;
         assert_eq!(
@@ -996,8 +915,6 @@ mod tests {
         assert_eq!(csf[0].context, "Gofile | VikingFile");
         assert_eq!(csf[1].host, "vikingfile.com");
         assert!(csf.iter().all(|l| !l.in_quote));
-        // "Make your own cracks with ... RAC | SAC | CAC" is this author's
-        // signature, a second div.postbody, so its links are not included.
         assert_eq!(csf.len(), 2);
 
         let zei = &post(&page, 3627087).links;

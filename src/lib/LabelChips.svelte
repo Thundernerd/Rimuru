@@ -1,5 +1,4 @@
 <script lang="ts">
-  /** Title labels as chips with counts; clicking one picks it (again: clears). */
   let {
     labels,
     selected = null,

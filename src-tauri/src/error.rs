@@ -4,9 +4,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    /// The forum answered with its JavaScript security-check page. The forum
-    /// window has been told to reload so it can pass the check; retry once it
-    /// has finished loading.
     #[error("the forum's security check has not been passed yet")]
     SecurityCheck,
 
@@ -16,15 +13,12 @@ pub enum Error {
     #[error("the forum answered with HTTP {0}")]
     Status(u16),
 
-    /// Steam refused requests for a while (HTTP 429/403); try again later.
     #[error("Steam is rate limiting requests; try again in a minute")]
     SteamRateLimited,
 
     #[error("Steam: {0}")]
     Steam(String),
 
-    /// The forum showed a message instead of the page, e.g. refusing a
-    /// search made too soon after the previous one.
     #[error("{0}")]
     ForumMessage(String),
 
@@ -58,7 +52,6 @@ impl Error {
     }
 }
 
-/// Commands return errors to the frontend as `{ kind, message }`.
 impl Serialize for Error {
     fn serialize<S: Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
         use serde::ser::SerializeStruct;

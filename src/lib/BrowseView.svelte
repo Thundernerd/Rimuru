@@ -6,7 +6,6 @@
   import type { TopicSummary } from "./types";
   import { latest } from "./visits.svelte";
 
-  /** The main forum's full listing, filterable by title label. */
   let {
     label,
     onselect,
@@ -17,7 +16,6 @@
     onlabel: (label: string | null) => void;
   } = $props();
 
-  // Labels across every listed game seen so far (grows as pages load).
   const labels = $derived(labelCounts([...latest.values()].filter((t) => t.kind === "normal")).slice(0, 14));
 </script>
 

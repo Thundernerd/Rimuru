@@ -7,11 +7,6 @@
   import { loadVisits, rememberListed } from "./visits.svelte";
   import type { Listing, TopicSummary } from "./types";
 
-  /**
-   * A grid of game cards that loads its listing a page at a time as you
-   * scroll. `fetchPage` gets a page by `start=` offset; `snapshotPath`
-   * gives the forum path of a page, for "Save HTML".
-   */
   let {
     onselect,
     fetchPage,
@@ -28,20 +23,15 @@
     heading?: string | null;
     emptyText?: string;
     errorText?: string;
-    /** Show "Save HTML" (not for lists that aren't a forum page). */
     showSnapshot?: boolean;
-    /** Only show topics this accepts (pages still load in full). */
     filter?: ((topic: TopicSummary) => boolean) | null;
   } = $props();
 
-  /** Pages loaded in a row by themselves when a filter leaves the screen empty. */
   const MAX_AUTO_LOADS = 5;
   let autoLoads = 0;
 
   let topics = $state<TopicSummary[]>([]);
-  /** `start=` of the next forum page to load; null once the last is loaded. */
   let nextStart = $state<number | null>(0);
-  /** `start=` of the most recently loaded page, for saving snapshots. */
   let lastStart = $state(0);
   let pagesLoaded = $state(0);
   let totalPages = $state<number | null>(null);
@@ -52,13 +42,11 @@
 
   const shown = $derived(filter ? topics.filter(filter) : topics);
 
-  /** The end of the grid is (nearly) on screen. */
   function nearEnd(): boolean {
     const rect = sentinel?.getBoundingClientRect();
     return !!rect && rect.top < window.innerHeight + 800;
   }
 
-  /** Loads the next page, one at a time. */
   async function loadMore() {
     if (loading || nextStart === null) return;
     loading = true;
@@ -66,7 +54,6 @@
     const start = nextStart;
     try {
       const page = await fetchPage(start);
-      // New posts move topics between pages, so a later page can repeat some.
       const seen = new Set(topics.map((t) => t.id));
       topics.push(...page.topics.filter((t) => !seen.has(t.id)));
       loadVisits(page.topics.map((t) => t.id));
@@ -81,8 +68,6 @@
     } finally {
       loading = false;
     }
-    // A filter can hide most of a page, leaving the end of the grid in view
-    // without the observer firing again: keep loading, a few pages at most.
     if (filter && !error && nextStart !== null && autoLoads < MAX_AUTO_LOADS) {
       await Promise.resolve();
       if (nearEnd()) {
@@ -104,7 +89,6 @@
 
   onMount(loadMore);
 
-  // Load the next page as the end of the grid scrolls into view.
   $effect(() => {
     if (!sentinel) return;
     const observer = new IntersectionObserver(

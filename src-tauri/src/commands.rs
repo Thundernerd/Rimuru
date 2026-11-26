@@ -1,6 +1,3 @@
-//! Commands for the main window. All are `async`: reading the forum window's
-//! cookies from a synchronous command deadlocks on Windows.
-
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -24,7 +21,6 @@ pub async fn forum_session(app: AppHandle, client: State<'_, ForumClient>) -> Re
     Ok(phpbb::parse_session(&html))
 }
 
-/// Shows the forum window, on the login page by default.
 #[tauri::command]
 pub async fn show_forum_window(app: AppHandle, path: Option<String>) -> Result<()> {
     forum_window::show(&app, path.as_deref().unwrap_or("ucp.php?mode=login"))
@@ -35,8 +31,6 @@ pub async fn hide_forum_window(app: AppHandle) -> Result<()> {
     forum_window::hide(&app)
 }
 
-/// Lists a page of a forum. Announcements and stickies repeat on every page,
-/// so they are left out unless `include_pinned` is true.
 #[tauri::command]
 pub async fn fetch_forum(
     app: AppHandle,
@@ -55,9 +49,6 @@ pub async fn fetch_forum(
     Ok(page)
 }
 
-/// Searches topic titles, like the forum's "Search this forum" box: in the
-/// main game forum, or in all forums with `all_forums`. Not cached: results
-/// change, and the forum limits how often a user may search.
 #[tauri::command]
 pub async fn search_topics(
     app: AppHandle,
@@ -105,16 +96,11 @@ async fn topic_page(
     Ok(phpbb::parse_topic(&html, &url, topic_id, start))
 }
 
-/// How long cached data stays usable. Forum entries are also keyed by the
-/// topic's reply count, so new replies invalidate them sooner.
-/// The forum's main game listing ("Main Forum").
 const MAIN_FORUM_ID: u64 = 10;
 const TOPIC_MAX_AGE: Duration = Duration::from_secs(24 * 3600);
-/// Bumped when `SteamApp` gains fields (v2: trailers).
 const STEAM_APP_CACHE: &str = "steam_app_v2";
 const STEAM_APP_MAX_AGE: Duration = Duration::from_secs(3 * 24 * 3600);
 const STEAM_MATCH_MAX_AGE: Duration = Duration::from_secs(30 * 24 * 3600);
-/// Bumped when `Artwork` gains fields, so older entries are fetched again.
 const ARTWORK_CACHE: &str = "steam_artwork_v2";
 const STEAM_ARTWORK_MAX_AGE: Duration = Duration::from_secs(14 * 24 * 3600);
 const STEAM_NO_MATCH_MAX_AGE: Duration = Duration::from_secs(7 * 24 * 3600);
@@ -123,20 +109,13 @@ const STEAM_NO_MATCH_MAX_AGE: Duration = Duration::from_secs(7 * 24 * 3600);
 pub struct GameFirstPage {
     pub topic_id: u64,
     pub title: Option<String>,
-    /// From the topic's first post, when it holds the game's details.
     pub info: Option<GameInfo>,
-    /// Releases on page 1, newest first.
     pub releases: Vec<Release>,
     pub total_pages: Option<u32>,
-    /// Posts per page, when the topic has more than one page.
     pub per_page: Option<u32>,
-    /// `start=` of the topic's last page.
     pub last_start: u32,
 }
 
-/// Page 1 of a game topic: the game's details and the first releases.
-/// `replies` (from the forum listing) keys the cache: a topic with new
-/// replies is fetched again.
 #[tauri::command]
 pub async fn game_first_page(
     app: AppHandle,
@@ -169,8 +148,6 @@ pub async fn game_first_page(
     Ok(first)
 }
 
-/// Releases on one page of a topic, newest first. Cached like
-/// [`game_first_page`].
 #[tauri::command]
 pub async fn game_releases(
     app: AppHandle,
@@ -196,7 +173,6 @@ pub async fn game_releases(
     Ok(releases)
 }
 
-/// Steam store details for an app; `None` if Steam doesn't have it.
 #[tauri::command]
 pub async fn steam_app(
     steam: State<'_, SteamClient>,
@@ -213,8 +189,6 @@ pub async fn steam_app(
     Ok(details)
 }
 
-/// The Steam app a game name matches, for card images. Misses are cached
-/// too (for less long), so unmatched names aren't searched over and over.
 #[tauri::command]
 pub async fn steam_match(
     steam: State<'_, SteamClient>,
@@ -239,9 +213,6 @@ pub async fn steam_match(
     Ok(found)
 }
 
-/// Card artwork for many apps at once, from cache where possible and one
-/// Steam request per [`steam::ARTWORK_BATCH`] uncached apps. Apps Steam
-/// has no artwork for come back without images.
 #[tauri::command]
 pub async fn steam_artwork(
     steam: State<'_, SteamClient>,
@@ -269,9 +240,6 @@ pub async fn steam_artwork(
     Ok(found)
 }
 
-/// Records the Steam app a game name belongs to, overriding a name-search
-/// result. Used when a topic's first post links its Steam store page,
-/// which is more reliable than matching by name.
 #[tauri::command]
 pub async fn remember_steam_match(
     cache: State<'_, Cache>,
@@ -282,24 +250,17 @@ pub async fn remember_steam_match(
     Ok(())
 }
 
-/// Kept for good: visits are the user's own history, not cached data.
 const VISIT_MAX_AGE: Duration = Duration::from_secs(100 * 365 * 24 * 3600);
 
-/// What was there when a game topic was last opened.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Visit {
-    /// The topic's reply count at the time.
     pub replies: Option<u32>,
-    /// Post ids of the releases seen.
     pub release_ids: Vec<u64>,
-    /// Unix seconds.
     pub visited_at: u64,
-    /// The topic as listed at the time, for "recently viewed".
     #[serde(default)]
     pub topic: Option<TopicSummary>,
 }
 
-/// Last visits for the given topics; unvisited topics are left out.
 #[tauri::command]
 pub async fn topic_visits(
     cache: State<'_, Cache>,
@@ -316,8 +277,6 @@ pub async fn topic_visits(
         .collect())
 }
 
-/// Records a visit to a topic, keeping release ids seen on earlier visits
-/// (a visit may not have read every page). Returns the new visit.
 #[tauri::command]
 pub async fn record_visit(
     cache: State<'_, Cache>,
@@ -345,8 +304,6 @@ pub async fn record_visit(
     Ok(visit)
 }
 
-/// The most recently opened games, newest first (only visits recorded
-/// with their topic, i.e. not from before this was added).
 #[tauri::command]
 pub async fn recent_visits(cache: State<'_, Cache>, limit: Option<usize>) -> Result<Vec<Visit>> {
     Ok(cache
@@ -357,16 +314,12 @@ pub async fn recent_visits(cache: State<'_, Cache>, limit: Option<usize>) -> Res
         .collect())
 }
 
-/// A followed game; kept for good, like visits.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Follow {
     pub topic: TopicSummary,
-    /// Unix seconds.
     pub followed_at: u64,
 }
 
-/// Follows a game, or refreshes its stored listing if already followed
-/// (keeping when it was first followed).
 #[tauri::command]
 pub async fn follow_topic(cache: State<'_, Cache>, topic: TopicSummary) -> Result<Follow> {
     let key = topic.id.to_string();
@@ -390,7 +343,6 @@ pub async fn unfollow_topic(cache: State<'_, Cache>, topic_id: u64) -> Result<()
     Ok(())
 }
 
-/// Followed games, most recently followed first.
 #[tauri::command]
 pub async fn followed_topics(cache: State<'_, Cache>) -> Result<Vec<Follow>> {
     let mut follows = cache.list::<Follow>("follow", VISIT_MAX_AGE);
@@ -398,10 +350,6 @@ pub async fn followed_topics(cache: State<'_, Cache>) -> Result<Vec<Follow>> {
     Ok(follows)
 }
 
-/// Saves the raw HTML of a forum page (e.g. `viewforum.php?f=10`) to the
-/// app's data directory, for turning into parser test fixtures. Returns the
-/// file path. The page contains the signed-in username, so check it before
-/// committing.
 #[tauri::command]
 pub async fn save_snapshot(
     app: AppHandle,

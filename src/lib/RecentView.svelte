@@ -3,7 +3,6 @@
   import type { Listing, TopicSummary } from "./types";
   import { latest, loadRecent, recent } from "./visits.svelte";
 
-  /** Games opened before, most recent first, as one page of cards. */
   let { onselect }: { onselect: (topic: TopicSummary) => void } = $props();
 
   async function fetchPage(): Promise<Listing> {

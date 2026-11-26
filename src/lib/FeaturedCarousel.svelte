@@ -5,11 +5,6 @@
   import { artFor, matches, requestArt } from "./cardArt.svelte";
   import type { SteamApp, TopicSummary } from "./types";
 
-  /**
-   * Recently updated games on their Steam key art. Only games with hero
-   * art are featured; the carousel advances on its own and pauses while
-   * the pointer is over it.
-   */
   let { topics, onselect }: { topics: TopicSummary[]; onselect: (topic: TopicSummary) => void } = $props();
 
   const CANDIDATES = 16;
@@ -18,7 +13,6 @@
 
   const details = new SvelteMap<number, SteamApp | null>();
 
-  // Look up artwork for the most recent games.
   $effect(() => {
     for (const topic of topics.slice(0, CANDIDATES)) requestArt(topic.name, () => true);
   });
@@ -38,7 +32,6 @@
   const appId = $derived(item ? (matches.get(item.name) ?? null) : null);
   const app = $derived(appId ? (details.get(appId) ?? null) : null);
 
-  // Steam details (summary, genres) for the game on screen.
   $effect(() => {
     const id = appId;
     if (!id || details.has(id)) return;
@@ -49,7 +42,6 @@
       .catch(() => details.delete(id));
   });
 
-  // Advance every few seconds unless paused.
   $effect(() => {
     void tickKey;
     if (paused || featured.length < 2) return;

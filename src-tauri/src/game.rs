@@ -1,16 +1,9 @@
-//! What a game topic means: the game's details from the first post, and the
-//! releases (posts with download links) from the replies.
-//!
-//! Works on parsed [`Post`]s, so it doesn't touch HTML.
-
 use std::sync::LazyLock;
 
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::phpbb::{LinkKind, Post, PostLink};
-
-// ---------------------------------------------------------------- game info
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct GameInfo {
@@ -24,15 +17,11 @@ pub struct GameInfo {
     pub publisher: Option<String>,
     pub release_date: Option<String>,
     pub languages: Vec<String>,
-    /// `windows`, `macos`, `linux`, from the "Operating system(s)" icons.
     pub platforms: Vec<String>,
     pub features: Vec<String>,
-    /// The "About The Game" text, one paragraph per line.
     pub description: Option<String>,
     pub system_requirements: Vec<RequirementSet>,
-    /// Any other `Key: value` lines from the details section.
     pub fields: Vec<Field>,
-    /// Images other than the header and platform icons, e.g. screenshots.
     pub images: Vec<String>,
 }
 
@@ -44,7 +33,6 @@ pub struct Field {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct RequirementSet {
-    /// e.g. `Minimum` or `Recommended`; empty if the post has no label.
     pub label: String,
     pub items: Vec<Field>,
 }
@@ -73,7 +61,6 @@ fn section_heading(line: &str) -> Option<Section> {
     }
 }
 
-/// `Key: value`, with a short key so prose containing a colon isn't split.
 fn key_value(line: &str) -> Option<(&str, &str)> {
     let (key, value) = line.split_once(':')?;
     let key = key.trim();
@@ -89,10 +76,6 @@ fn split_list(value: &str) -> Vec<String> {
         .collect()
 }
 
-/// Reads the game details a topic's first post usually holds: a title, then
-/// "Details" (`Store Page:`, `Genre(s):`, ...), "Features", "About The
-/// Game" and "System Requirements". Returns `None` when the post has none
-/// of those, so it isn't a game info post.
 pub fn parse_game_info(post: &Post) -> Option<GameInfo> {
     let mut info = GameInfo::default();
     let mut section = Section::Intro;
@@ -174,8 +157,6 @@ pub fn parse_game_info(post: &Post) -> Option<GameInfo> {
     }
     info.description = (!about.is_empty()).then(|| about.join("\n"));
 
-    // The platform icons sit on the "Operating system(s):" line. The header
-    // image is the first other image. Spacer images pad the feature list.
     for image in post.images.iter().filter(|img| !img.in_quote) {
         let src = image.src.as_str();
         if src.contains("spacer.gif") || src.contains("/public/images/") {
@@ -203,21 +184,16 @@ pub fn parse_game_info(post: &Post) -> Option<GameInfo> {
     Some(info)
 }
 
-// ---------------------------------------------------------------- releases
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Release {
     pub post_id: u64,
     pub author: Option<String>,
     pub posted: Option<String>,
-    /// The post's first line, e.g. `Slotbound (v1.0.0.6 | Build 26665715) (149 MB)`.
     pub title: Option<String>,
-    /// The post's own lines (no quotes), for showing alongside the links.
     pub details: Vec<String>,
     pub version: Option<String>,
     pub build: Option<String>,
     pub size: Option<String>,
-    /// e.g. `Clean Steam Files`, `Pre-installed`.
     pub tags: Vec<String>,
     pub links: Vec<DownloadLink>,
 }
@@ -226,16 +202,11 @@ pub struct Release {
 pub struct DownloadLink {
     pub url: String,
     pub host: String,
-    /// The link's text, or the host when the text is just the URL.
     pub label: String,
-    /// Wrapped in the forum's "Unsafe filehosts" warning.
     pub flagged_unsafe: bool,
 }
 
-/// External sites that show up in posts but aren't downloads: stores,
-/// communities, wikis, video and image hosts. Subdomains match too.
 const NOT_DOWNLOAD_HOSTS: &[&str] = &[
-    // stores and launchers
     "steampowered.com",
     "steamstatic.com",
     "epicgames.com",
@@ -246,7 +217,6 @@ const NOT_DOWNLOAD_HOSTS: &[&str] = &[
     "microsoft.com",
     "humblebundle.com",
     "itch.io",
-    // communities and docs
     "steamcommunity.com",
     "discord.gg",
     "discord.com",
@@ -257,11 +227,9 @@ const NOT_DOWNLOAD_HOSTS: &[&str] = &[
     "wikipedia.org",
     "twitter.com",
     "x.com",
-    // media
     "youtube.com",
     "youtu.be",
     "twitch.tv",
-    // images
     "imgur.com",
     "ibb.co",
     "imgbb.com",
@@ -294,13 +262,10 @@ fn is_download(link: &PostLink) -> bool {
     let listed = NOT_DOWNLOAD_HOSTS
         .iter()
         .any(|h| host == *h || host.ends_with(&format!(".{h}")));
-    // Other sites' forums, e.g. forums.focus-home.com.
     let forum = host.starts_with("forum.") || host.starts_with("forums.");
     link.kind == LinkKind::External && !link.in_quote && !listed && !forum
 }
 
-/// A post is a release when it has download links of its own, i.e. outside
-/// quotes and not to Steam, the forum or community sites.
 pub fn parse_release(post: &Post) -> Option<Release> {
     let links: Vec<DownloadLink> = post
         .links
@@ -417,7 +382,6 @@ mod tests {
             (min[0].key.as_str(), min[0].value.as_str()),
             ("OS", "Windows 10 (64-bit)")
         );
-        // Requirement lines don't leak into the details' extra fields.
         assert!(info.fields.iter().all(|f| f.key != "OS"));
     }
 
@@ -434,7 +398,6 @@ mod tests {
 
     #[test]
     fn game_info_across_topics() {
-        // (topic, title, app id, developer, has requirements)
         let cases = [
             (135719, "Wizordum", 1715590, "Emberheart Games", true),
             (
@@ -471,7 +434,6 @@ mod tests {
             assert!(info.description.is_some(), "{title}");
             assert_eq!(!info.system_requirements.is_empty(), has_reqs, "{title}");
         }
-        // Extra detail lines are kept as fields.
         let swbf = parse_game_info(&fixture(80048).posts[0]).unwrap();
         assert_eq!(swbf.fields[0].key, "Steam Release Date");
     }
@@ -498,7 +460,6 @@ mod tests {
             ]
         );
         assert!(wizordum[0].links[0].flagged_unsafe);
-        // The forum's unsafe-filehost note doesn't end up in the text.
         assert!(
             wizordum
                 .iter()
@@ -508,7 +469,6 @@ mod tests {
         assert_eq!(csf.build.as_deref(), Some("16222355"));
         assert_eq!(csf.tags, ["Clean Steam Files"]);
 
-        // Store pages and other sites' forums are not releases.
         assert!(releases(91823).is_empty());
         assert!(releases(80048).is_empty());
     }
@@ -564,7 +524,6 @@ mod tests {
             "{:#?}",
             releases.iter().map(|r| &r.author).collect::<Vec<_>>()
         );
-        // The game info post links only to Steam, so it isn't a release.
         assert!(releases.iter().all(|r| r.post_id != page.posts[0].id));
 
         let kektin = by_author("kektin.com");
@@ -578,7 +537,6 @@ mod tests {
         assert_eq!(csf.links[0].label, "Gofile");
         assert_eq!(csf.build.as_deref(), Some("26735285"));
         assert_eq!(csf.tags, ["Clean Steam Files"]);
-        // Signature links (gbe_fork on GitHub, RAC/SAC on the forum) are not included.
         assert_eq!(csf.links.len(), 2);
 
         let pretend = by_author("pretendme");

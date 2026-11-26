@@ -5,7 +5,6 @@ import { setStatus } from "./status.svelte";
 import type { Follow, TopicSummary } from "./types";
 import { latest, newReplies } from "./visits.svelte";
 
-/** Followed games by topic id, most recently followed first. Reactive. */
 export const follows = new SvelteMap<number, Follow>();
 
 export async function loadFollows() {
@@ -27,7 +26,6 @@ export async function toggleFollow(topic: TopicSummary) {
       follows.delete(topic.id);
       await api.unfollowTopic(topic.id);
     } else {
-      // Show it straight away; the stored entry replaces it.
       follows.set(topic.id, { topic, followed_at: Date.now() / 1000 });
       follows.set(topic.id, await api.followTopic(topic));
     }
@@ -38,10 +36,6 @@ export async function toggleFollow(topic: TopicSummary) {
   }
 }
 
-/**
- * Followed games with their latest listing, those with new replies first,
- * then most recently followed.
- */
 export function followedTopics(): TopicSummary[] {
   return [...follows.values()]
     .sort((a, b) => b.followed_at - a.followed_at)

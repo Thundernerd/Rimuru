@@ -3,7 +3,6 @@
   import GameGrid from "./GameGrid.svelte";
   import type { Listing, TopicSummary } from "./types";
 
-  /** Followed games, those with new replies first, as one page of cards. */
   let { onselect }: { onselect: (topic: TopicSummary) => void } = $props();
 
   async function fetchPage(): Promise<Listing> {
@@ -14,7 +13,6 @@
   }
 </script>
 
-<!-- Re-list when follows change (e.g. unfollowing from a game page). -->
 {#key follows.size}
   <GameGrid
     {onselect}

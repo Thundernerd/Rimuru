@@ -1,5 +1,4 @@
 <script lang="ts">
-  /** A few line icons (24×24, stroked with the current colour). */
   let { name, size = 18 }: { name: keyof typeof PATHS; size?: number } = $props();
 
   const PATHS = {

@@ -1,18 +1,3 @@
-//! Game details and artwork from Steam's public store API (no key needed).
-//!
-//! - `appdetails?appids=<id>`: full details for one app.
-//! - `storesearch?term=<name>`: search by name, used to match forum topics
-//!   to Steam apps for card images.
-//! - `IStoreBrowseService/GetItems`: image paths (portrait "library
-//!   capsule", header, small capsule) for many apps in one request. Newer
-//!   apps keep images under hashed paths, so URLs can't be guessed from the
-//!   app id alone.
-//!
-//! These endpoints are unofficial and rate limited (commonly ~200 requests
-//! per 5 minutes), so requests are made one at a time, spaced out, capped
-//! below that, and paused after a 429/403. Results are cached by the caller.
-//! This client never sends the forum's cookies.
-
 use std::collections::{HashMap, VecDeque};
 use std::time::{Duration, Instant};
 
@@ -32,7 +17,6 @@ const BACKOFF: Duration = Duration::from_secs(60);
 pub struct SteamMatch {
     pub app_id: u64,
     pub name: String,
-    /// 231×87 capsule image.
     pub capsule_image: Option<String>,
 }
 
@@ -48,19 +32,15 @@ pub struct SteamApp {
     pub publishers: Vec<String>,
     pub release_date: Option<String>,
     pub coming_soon: bool,
-    /// `windows`, `macos`, `linux`.
     pub platforms: Vec<String>,
     pub genres: Vec<String>,
-    /// Steam's categories, e.g. "Single-player", "Steam Achievements".
     pub categories: Vec<String>,
     pub languages: Vec<String>,
     pub screenshots: Vec<Screenshot>,
     pub is_free: bool,
-    /// e.g. `$8.99`, in US dollars.
     pub price: Option<String>,
     pub metacritic: Option<u32>,
     pub website: Option<String>,
-    /// Trailers, the store's highlighted one first.
     #[serde(default)]
     pub movies: Vec<Movie>,
 }
@@ -69,27 +49,18 @@ pub struct SteamApp {
 pub struct Movie {
     pub name: String,
     pub thumbnail: Option<String>,
-    /// HLS stream (H.264): plays natively in WebKit, via hls.js elsewhere.
     pub hls: Option<String>,
-    /// A plain MP4 file; only older store entries still have one.
     pub mp4: Option<String>,
 }
 
-/// Image URLs for an app. Any can be missing, e.g. older apps without a
-/// portrait image.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Artwork {
-    /// 600×900 "library capsule".
     pub portrait: Option<String>,
-    /// 460×215 header.
     pub header: Option<String>,
-    /// 231×87 small capsule.
     pub capsule: Option<String>,
-    /// 3840×1240 "library hero": wide key art without a logo, for backdrops.
     pub hero: Option<String>,
 }
 
-/// Most app ids per `GetItems` request.
 pub const ARTWORK_BATCH: usize = 50;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -104,7 +75,6 @@ struct Pacer {
 }
 
 impl Pacer {
-    /// Waits for a free slot and claims it, or fails while backing off.
     async fn wait(&mut self) -> Result<()> {
         if self.blocked_until.is_some_and(|t| Instant::now() < t) {
             return Err(Error::SteamRateLimited);
@@ -166,7 +136,6 @@ impl SteamClient {
         serde_json::from_slice(&body).map_err(|e| Error::Steam(format!("unexpected response: {e}")))
     }
 
-    /// Full store details; `None` if Steam has no such app (or region-locks it).
     pub async fn app_details(&self, app_id: u64) -> Result<Option<SteamApp>> {
         let mut url = Url::parse("https://store.steampowered.com/api/appdetails")?;
         url.query_pairs_mut()
@@ -176,8 +145,6 @@ impl SteamClient {
         Ok(parse_app_details(&self.get_json(url).await?, app_id))
     }
 
-    /// Artwork for up to [`ARTWORK_BATCH`] apps in one request. Apps Steam
-    /// doesn't return are left out.
     pub async fn artwork(&self, app_ids: &[u64]) -> Result<HashMap<u64, Artwork>> {
         let ids: Vec<Value> = app_ids
             .iter()
@@ -194,7 +161,6 @@ impl SteamClient {
         Ok(parse_artwork(&self.get_json(url).await?))
     }
 
-    /// The Steam app whose name matches `name`, if any.
     pub async fn find(&self, name: &str) -> Result<Option<SteamMatch>> {
         for term in search_terms(name) {
             let mut url = Url::parse("https://store.steampowered.com/api/storesearch/")?;
@@ -209,8 +175,6 @@ impl SteamClient {
         Ok(None)
     }
 }
-
-// ---------------------------------------------------------------- parsing
 
 fn strings(value: &Value, field: &str) -> Vec<String> {
     value[field]
@@ -232,7 +196,6 @@ fn string(value: &Value, field: &str) -> Option<String> {
         .map(str::to_string)
 }
 
-/// "English<strong>*</strong>, French<br><strong>*</strong>languages with full audio support"
 fn parse_languages(html: &str) -> Vec<String> {
     let list = html.split("<br>").next().unwrap_or("");
     let mut text = String::new();
@@ -313,7 +276,6 @@ pub fn parse_artwork(json: &Value) -> HashMap<u64, Artwork> {
         .filter_map(|item| {
             let app_id = item["appid"].as_u64()?;
             let assets = &item["assets"];
-            // e.g. "steam/apps/4459590/${FILENAME}?t=1795587406"
             let format = assets["asset_url_format"].as_str()?;
             let url = |key: &str| {
                 let file = assets[key].as_str().filter(|f| !f.is_empty())?;
@@ -352,13 +314,10 @@ fn parse_movies(movies: &Value) -> Vec<Movie> {
         })
         .filter(|(_, m)| m.hls.is_some() || m.mp4.is_some())
         .collect();
-    // Highlighted first, otherwise in the store's order.
     movies.sort_by_key(|(highlight, _)| !highlight);
     movies.into_iter().map(|(_, m)| m).collect()
 }
 
-/// Lowercase letters and digits only, with `&` as "and" and trademark
-/// signs dropped: "Call of Duty®: Modern Warfare® 2" → "callofdutymodernwarfare2".
 pub fn normalize_name(name: &str) -> String {
     name.replace('&', " and ")
         .chars()
@@ -367,8 +326,6 @@ pub fn normalize_name(name: &str) -> String {
         .collect()
 }
 
-/// The name as on the forum, then without "(…)" parts: forum titles add
-/// things like "(Remake)" or "(2017)" that Steam's names may not have.
 fn search_terms(name: &str) -> Vec<String> {
     let mut terms = vec![name.trim().to_string()];
     let mut stripped = String::new();
@@ -388,8 +345,6 @@ fn search_terms(name: &str) -> Vec<String> {
     terms
 }
 
-/// Only an app whose normalized name equals the term's counts as a match;
-/// search also returns DLC, soundtracks and look-alikes.
 fn pick_match(json: &Value, term: &str) -> Option<SteamMatch> {
     let wanted = normalize_name(term);
     json["items"].as_array()?.iter().find_map(|item| {
@@ -476,7 +431,6 @@ mod tests {
 
     #[test]
     fn matching() {
-        // Shape of a real storesearch response for "Silent Hill 2".
         let body = json!({ "total": 2, "items": [
             { "type": "app", "id": 2124490, "name": "SILENT HILL 2", "tiny_image": "https://cdn.example/capsule.jpg" },
             { "type": "app", "id": 4423570, "name": "FATAL FRAME II x SILENT HILL f Costume Set", "tiny_image": "x" }
@@ -486,7 +440,6 @@ mod tests {
             (found.app_id, found.capsule_image.as_deref()),
             (2124490, Some("https://cdn.example/capsule.jpg"))
         );
-        // Look-alikes don't count.
         assert_eq!(pick_match(&body, "Silent Hill"), None);
         assert_eq!(
             pick_match(&json!({ "total": 0, "items": [] }), "Nothing"),
@@ -496,8 +449,6 @@ mod tests {
 
     #[test]
     fn artwork() {
-        // Shape of a real GetItems response: a hashed path (new app) and a
-        // plain one (older app), and an app without a portrait image.
         let body = json!({ "response": { "store_items": [
             { "appid": 4459590, "assets": {
                 "asset_url_format": "steam/apps/4459590/${FILENAME}?t=1795587406",

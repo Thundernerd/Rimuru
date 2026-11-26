@@ -18,16 +18,13 @@
   import type { TopicSummary } from "./lib/types";
   import { loadRecent } from "./lib/visits.svelte";
 
-  /** macOS draws its window buttons over our sidebar (overlay title bar). */
   const mac = navigator.userAgent.includes("Mac");
 
   let main = $state<HTMLElement>();
   let searchInput = $state<HTMLInputElement>();
-  /** Bumped on sign-in so the forum listings reload with the signed-in view. */
   let gridKey = $state(0);
 
   const view = $derived(current());
-  /** The page under a game (or the current page): kept mounted, see `underlying`. */
   const below = $derived(underlying());
   const search = $derived(below.kind === "search" ? below : null);
   const browse = $derived(below.kind === "browse" ? below : null);
@@ -37,7 +34,6 @@
   const openGame = (topic: TopicSummary) => navigate({ kind: "game", topic });
   const goBack = () => back(scrollTop());
   const goForward = () => forward(scrollTop());
-
 
   function searchPath(query: string, allForums: boolean) {
     return (start: number) => {
@@ -55,7 +51,6 @@
     searchInput?.select();
   }
 
-  // Restore each history entry's scroll position when it's shown again.
   $effect(() => {
     void nav.index;
     void nav.entries;
@@ -65,7 +60,6 @@
     });
   });
 
-  // Reload the home grid after signing in.
   let wasLoggedOut = false;
   $effect(() => {
     const state = session.current?.state;
@@ -91,7 +85,6 @@
     }
   }
 
-  // Mouse back/forward buttons.
   function onmouseup(e: MouseEvent) {
     if (e.button === 3) goBack();
     else if (e.button === 4) goForward();
@@ -101,8 +94,6 @@
     refreshSession();
     loadRecent();
     loadFollows();
-    // Each page the forum window finishes may change the session (security
-    // check passed, signed in, signed out).
     const unlisten = api.onForumPageLoaded(() => refreshSession());
     return () => {
       unlisten.then((u) => u());
@@ -126,7 +117,6 @@
 
     <main bind:this={main}>
       {#key gridKey}
-        <!-- Kept mounted, so the carousel and shelves don't reload. -->
         <div hidden={view.kind !== "home"}>
           <HomeView onselect={openGame} onnavigate={navigate} />
         </div>

@@ -2,10 +2,6 @@
   import Icon from "./Icon.svelte";
   import { canGoBack, canGoForward } from "./nav.svelte";
 
-  /**
-   * The bar above the content: back/forward, and the forum search
-   * (⌘K / Ctrl K). Its empty space drags the window.
-   */
   let {
     onback,
     onforward,
@@ -106,9 +102,6 @@
   .search:focus-within {
     border-color: rgb(63 200 240 / 0.6);
   }
-  /* WebKit draws search fields natively and clips text to the content box,
-     so with no padding the descenders of p/y/g/j were cut off. Plain field,
-     full height of the bar, and a line height with room for them. */
   input {
     flex: 1;
     min-width: 0;

@@ -1,5 +1,3 @@
-// Mirrors the Rust types in src-tauri/src/phpbb.rs, game.rs and commands.rs.
-
 export type Session = { state: "logged_in"; username: string | null } | { state: "logged_out" };
 
 export type Pagination = {
@@ -36,13 +34,11 @@ export type ForumPage = {
   pagination: Pagination;
 };
 
-/** One page of a topic listing: the forum's, or search results. */
 export type Listing = { topics: TopicSummary[]; pagination: Pagination; total_matches?: number | null };
 
 export type SearchPage = {
   query: string;
   topics: TopicSummary[];
-  /** From "Search found N matches". */
   total_matches: number | null;
   pagination: Pagination;
 };
@@ -87,19 +83,16 @@ export type GameFirstPage = {
   topic_id: number;
   title: string | null;
   info: GameInfo | null;
-  /** Releases on page 1, newest first. */
   releases: Release[];
   total_pages: number | null;
   per_page: number | null;
   last_start: number;
 };
 
-/** Image URLs for a Steam app; any can be missing. */
 export type Artwork = {
   portrait: string | null;
   header: string | null;
   capsule: string | null;
-  /** Wide key art without a logo, for backdrops. */
   hero: string | null;
 };
 
@@ -125,22 +118,18 @@ export type SteamApp = {
   price: string | null;
   metacritic: number | null;
   website: string | null;
-  /** Trailers, the store's highlighted one first. */
   movies: Movie[];
 };
 
 export type Movie = { name: string; thumbnail: string | null; hls: string | null; mp4: string | null };
 
-/** What was there when a game topic was last opened. */
 export type Visit = {
   replies: number | null;
   release_ids: number[];
   visited_at: number;
-  /** The topic as listed at the time (missing on visits from older versions). */
   topic: TopicSummary | null;
 };
 
 export type CommandError = { kind: string; message: string };
 
-/** A followed game. */
 export type Follow = { topic: TopicSummary; followed_at: number };

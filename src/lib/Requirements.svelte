@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { GameInfo } from "./types";
 
-  /** System requirements from the topic's first post, side by side. */
   let { sets }: { sets: GameInfo["system_requirements"] } = $props();
 </script>
 

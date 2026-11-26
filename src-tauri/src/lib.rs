@@ -22,12 +22,10 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| match (window.label(), event) {
-            // Closing the forum window only hides it; the session lives there.
             (forum_window::LABEL, WindowEvent::CloseRequested { api, .. }) => {
                 api.prevent_close();
                 let _ = window.hide();
             }
-            // The hidden forum window would otherwise keep the app running.
             ("main", WindowEvent::Destroyed) => window.app_handle().exit(0),
             _ => {}
         })

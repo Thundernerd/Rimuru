@@ -7,19 +7,15 @@
 
   let { topic, onselect }: { topic: TopicSummary; onselect: (topic: TopicSummary) => void } = $props();
 
-  // Placeholder until (or unless) Steam has artwork: a colour per topic.
   const hue = $derived((topic.id * 47) % 360);
-  // "[Info]" is on nearly every game topic, so it says nothing.
   const tags = $derived([...topic.prefixes.filter((p) => p.toLowerCase() !== "info"), ...topic.labels]);
 
   const art = $derived(artFor(topic.name));
   const fresh = $derived(newReplies(topic));
-  /** Portrait art fills the card; otherwise the header sits on a blurred copy of itself. */
   const portrait = $derived(art?.portrait ?? null);
   const fallback = $derived(portrait ? null : (art?.header ?? art?.capsule ?? null));
   const hasArt = $derived(!!(portrait || fallback));
 
-  /** The image that finished loading, so a replaced image fades in too. */
   let loaded = $state<string | null>(null);
   let failed = $state<string | null>(null);
 
@@ -27,7 +23,6 @@
   let visible = false;
   let requested = false;
 
-  // Look the game up on Steam once the card is (nearly) on screen.
   $effect(() => {
     if (!element) return;
     const observer = new IntersectionObserver(
@@ -39,7 +34,7 @@
         }
         requested = true;
         requestArt(topic.name, () => visible).then((looked) => {
-          if (!looked) requested = false; // skipped or failed; ask again when visible
+          if (!looked) requested = false;
         });
       },
       { rootMargin: "300px" },
@@ -110,7 +105,6 @@
 </button>
 
 <style>
-  /* Steam's portrait "library capsule" is 600×900. */
   .card {
     position: relative;
     aspect-ratio: 2 / 3;
@@ -191,7 +185,6 @@
     fill: currentColor;
   }
 
-  /* Title and details: always shown on placeholders, on hover/focus over art. */
   .overlay {
     position: absolute;
     inset: auto 0 0 0;
