@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, errorMessage } from "./api";
+  import { api, errorMessage, MAIN_FORUM_ID } from "./api";
   import { artFor, requestArt } from "./cardArt.svelte";
   import { followedTopics, follows } from "./follows.svelte";
   import { updateAvailable } from "./owned.svelte";
@@ -50,7 +50,7 @@
     <button
       type="button"
       class:active={view.kind === "browse"}
-      onclick={() => onnavigate({ kind: "browse", label: null })}
+      onclick={() => onnavigate({ kind: "browse", forumId: MAIN_FORUM_ID, sort: "activity", label: null })}
     >
       <Icon name="grid" /> Browse
     </button>

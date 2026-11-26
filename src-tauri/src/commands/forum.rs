@@ -31,9 +31,15 @@ pub async fn fetch_forum(
     forum_id: u64,
     start: Option<u32>,
     include_pinned: Option<bool>,
+    sort: Option<String>,
 ) -> Result<ForumPage> {
     let start = start.unwrap_or(0);
-    let path = format!("viewforum.php?f={forum_id}&start={start}");
+    let order = match sort.as_deref() {
+        Some("replies") => "&sk=r&sd=d",
+        Some("views") => "&sk=v&sd=d",
+        _ => "",
+    };
+    let path = format!("viewforum.php?f={forum_id}&start={start}{order}");
     let html = client.get(&app, &path).await?;
     let mut page = phpbb::parse_forum(&html, &forum_window::forum_url(&path)?, forum_id, start);
     if !include_pinned.unwrap_or(false) {

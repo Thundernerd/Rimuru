@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { errorMessage } from "./api";
+  import { errorMessage, MAIN_FORUM_ID } from "./api";
   import FeaturedCarousel from "./FeaturedCarousel.svelte";
   import { followedTopics } from "./follows.svelte";
   import { forumPage, labelCounts } from "./forum";
@@ -53,7 +53,7 @@
   {:else}
     <FeaturedCarousel {topics} {onselect} />
 
-    <LabelChips {labels} onselect={(label) => onnavigate({ kind: "browse", label })} />
+    <LabelChips {labels} onselect={(label) => onnavigate({ kind: "browse", forumId: MAIN_FORUM_ID, sort: "activity", label })} />
 
     <Shelf
       title="Following"
@@ -73,7 +73,7 @@
       subtitle="Latest activity in the main forum"
       topics={topics.slice(0, SHELF)}
       {onselect}
-      onseeall={() => onnavigate({ kind: "browse", label: null })}
+      onseeall={() => onnavigate({ kind: "browse", forumId: MAIN_FORUM_ID, sort: "activity", label: null })}
     />
     <Shelf
       title="Recently viewed"

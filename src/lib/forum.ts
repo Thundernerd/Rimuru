@@ -1,20 +1,33 @@
 import { api, MAIN_FORUM_ID } from "./api";
-import type { ForumPage } from "./types";
+import type { ForumSort } from "./nav.svelte";
+import type { ForumPage, ForumSection } from "./types";
 
 const MAX_AGE_MS = 5 * 60 * 1000;
-const pages = new Map<number, { at: number; page: Promise<ForumPage> }>();
+const pages = new Map<string, { at: number; page: Promise<ForumPage> }>();
+
+export function forumListing(forumId: number, sort: ForumSort, start: number): Promise<ForumPage> {
+  const key = `${forumId}:${sort}:${start}`;
+  const hit = pages.get(key);
+  if (hit && Date.now() - hit.at < MAX_AGE_MS) return hit.page;
+  const page = api.forumPage(forumId, start, sort);
+  page.catch(() => pages.delete(key));
+  pages.set(key, { at: Date.now(), page });
+  return page;
+}
 
 export function forumPage(start: number): Promise<ForumPage> {
-  const hit = pages.get(start);
-  if (hit && Date.now() - hit.at < MAX_AGE_MS) return hit.page;
-  const page = api.forumPage(MAIN_FORUM_ID, start);
-  page.catch(() => pages.delete(start));
-  pages.set(start, { at: Date.now(), page });
-  return page;
+  return forumListing(MAIN_FORUM_ID, "activity", start);
 }
 
 export function clearForumPages() {
   pages.clear();
+}
+
+export function englishSections(sections: ForumSection[]): ForumSection[] {
+  const start = sections.findIndex((s) => s.depth === 0 && /english/i.test(s.name));
+  if (start === -1) return sections.filter((s) => s.depth > 0);
+  const end = sections.findIndex((s, i) => i > start && s.depth === 0);
+  return sections.slice(start + 1, end === -1 ? undefined : end);
 }
 
 export function labelCounts(topics: { labels: string[] }[], min = 2): [string, number][] {

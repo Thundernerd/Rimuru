@@ -27,11 +27,14 @@ export type TopicSummary = {
   last_poster: string | null;
 };
 
+export type ForumSection = { id: number; name: string; depth: number };
+
 export type ForumPage = {
   forum_id: number;
   title: string | null;
   topics: TopicSummary[];
   pagination: Pagination;
+  sections: ForumSection[];
 };
 
 export type Listing = { topics: TopicSummary[]; pagination: Pagination; total_matches?: number | null };

@@ -132,9 +132,11 @@
         {#if browse}
           <div hidden={view.kind !== "browse"}>
             <BrowseView
+              forumId={browse.forumId}
+              sort={browse.sort}
               label={browse.label}
               onselect={openGame}
-              onlabel={(label) => replace({ kind: "browse", label })}
+              onchange={(change) => browse && replace({ ...browse, ...change })}
             />
           </div>
         {/if}

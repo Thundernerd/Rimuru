@@ -12,6 +12,7 @@ macro_rules! selector {
 }
 
 selector!(TR, "tr");
+selector!(FORUM_JUMP, r#"select[name="f"] option"#);
 selector!(SECTION_HEADER, "td.row3");
 selector!(TOPIC_TITLE, "a.topictitle");
 selector!(PROFILE_LINK, r#"a[href*="mode=viewprofile"]"#);
@@ -33,6 +34,14 @@ pub struct ForumPage {
     pub title: Option<String>,
     pub topics: Vec<TopicSummary>,
     pub pagination: Pagination,
+    pub sections: Vec<ForumSection>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ForumSection {
+    pub id: u64,
+    pub name: String,
+    pub depth: u32,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -175,7 +184,30 @@ pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> For
         pagination: parse_pagination(&doc, page_url, start, |u| {
             query_u64(u, "f") == Some(forum_id)
         }),
+        sections: parse_sections(&doc),
     }
+}
+
+fn parse_sections(doc: &Html) -> Vec<ForumSection> {
+    doc.select(&FORUM_JUMP)
+        .filter_map(|option| {
+            let id: i64 = option.value().attr("value")?.parse().ok()?;
+            if id <= 0 {
+                return None;
+            }
+            let raw: String = option.text().collect();
+            let indent = raw
+                .chars()
+                .take_while(|c| c.is_whitespace())
+                .filter(|c| *c == '\u{a0}')
+                .count();
+            Some(ForumSection {
+                id: id as u64,
+                name: raw.trim().to_string(),
+                depth: (indent / 2) as u32,
+            })
+        })
+        .collect()
 }
 
 #[derive(Debug, Default, Clone)]
@@ -798,6 +830,21 @@ mod tests {
                 t.title
             );
         }
+    }
+
+    #[test]
+    fn forum_sections_from_jump_box() {
+        let sections = forum().sections;
+        let find = |id: u64| sections.iter().find(|s| s.id == id).unwrap();
+        assert_eq!(
+            (find(27).name.as_str(), find(27).depth),
+            ("English Forums", 0)
+        );
+        assert_eq!((find(10).name.as_str(), find(10).depth), ("Main Forum", 1));
+        assert_eq!((find(29).name.as_str(), find(29).depth), ("Releases", 2));
+        assert_eq!((find(32).name.as_str(), find(32).depth), ("Standalones", 2));
+        assert_eq!(find(38).name, "Other Gaming Platforms");
+        assert!(sections.iter().all(|s| s.id > 0));
     }
 
     #[test]

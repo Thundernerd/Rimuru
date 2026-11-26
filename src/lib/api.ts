@@ -52,7 +52,8 @@ export function errorMessage(e: unknown): string {
 
 export const api = {
   session: () => forum<Session>("forum_session"),
-  forumPage: (forumId: number, start: number) => forum<ForumPage>("fetch_forum", { forumId, start }),
+  forumPage: (forumId: number, start: number, sort: string = "activity") =>
+    forum<ForumPage>("fetch_forum", { forumId, start, sort }),
   searchTopics: (query: string, start: number, allForums = false) =>
     forum<SearchPage>("search_topics", { query, start, allForums }),
   gameFirstPage: (topicId: number, replies: number | null) =>

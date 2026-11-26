@@ -1,8 +1,10 @@
 import type { TopicSummary } from "./types";
 
+export type ForumSort = "activity" | "replies" | "views";
+
 export type View =
   | { kind: "home" }
-  | { kind: "browse"; label: string | null }
+  | { kind: "browse"; forumId: number; sort: ForumSort; label: string | null }
   | { kind: "recent" }
   | { kind: "following" }
   | { kind: "search"; query: string; allForums: boolean; run: number }
@@ -68,6 +70,8 @@ export function underlying(): Exclude<View, { kind: "game" }> {
 function sameView(a: View, b: View): boolean {
   if (a.kind !== b.kind) return false;
   if (a.kind === "game" && b.kind === "game") return a.topic.id === b.topic.id;
-  if (a.kind === "browse" && b.kind === "browse") return a.label === b.label;
+  if (a.kind === "browse" && b.kind === "browse") {
+    return a.forumId === b.forumId && a.sort === b.sort && a.label === b.label;
+  }
   return a.kind === "home" || a.kind === "recent" || a.kind === "following";
 }
