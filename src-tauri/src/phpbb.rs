@@ -204,15 +204,85 @@ pub fn parse_session(html: &str) -> Session {
 
 /// Parses `viewforum.php?f=<forum_id>&start=<start>`.
 ///
-/// Topic rows have six cells: icon, title, replies, author, views, last post.
 /// Section header rows (`td.row3`) set the [`TopicKind`] of the rows below.
 pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> ForumPage {
     let doc = Html::parse_document(html);
+    ForumPage {
+        forum_id,
+        title: page_title(&doc),
+        topics: parse_topic_rows(&doc, page_url),
+        pagination: parse_pagination(&doc, page_url, start, |u| {
+            query_u64(u, "f") == Some(forum_id)
+        }),
+    }
+}
+
+/// Where each column is in a topic listing, read from its header row
+/// (`<th>Topics</th><th>Replies</th>...`), so listings that order their
+/// columns differently (forum pages, search results) parse alike.
+#[derive(Debug, Default, Clone)]
+struct Columns {
+    replies: Option<usize>,
+    author: Option<usize>,
+    views: Option<usize>,
+    last_post: Option<usize>,
+}
+
+impl Columns {
+    /// The forum page's layout: icon, title, replies, author, views, last post.
+    fn forum_default() -> Self {
+        Self {
+            replies: Some(2),
+            author: Some(3),
+            views: Some(4),
+            last_post: Some(5),
+        }
+    }
+
+    /// From a row of `<th>`s, counting `colspan`; `None` if it isn't one.
+    fn from_header(row: ElementRef) -> Option<Self> {
+        let cells: Vec<ElementRef> = row.children().filter_map(ElementRef::wrap).collect();
+        if cells.is_empty() || cells.iter().any(|c| c.value().name() != "th") {
+            return None;
+        }
+        let mut columns = Self::default();
+        let mut index = 0;
+        for cell in cells {
+            let span: usize = cell
+                .value()
+                .attr("colspan")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(1);
+            let slot = match text_of(cell).to_ascii_lowercase().as_str() {
+                "replies" => &mut columns.replies,
+                "author" => &mut columns.author,
+                "views" => &mut columns.views,
+                "last post" => &mut columns.last_post,
+                _ => {
+                    index += span;
+                    continue;
+                }
+            };
+            *slot = Some(index);
+            index += span;
+        }
+        (columns.replies.is_some() || columns.author.is_some()).then_some(columns)
+    }
+}
+
+/// Topic rows (`tr`s with an `a.topictitle`) of a forum page or search
+/// results, in order, without duplicates.
+fn parse_topic_rows(doc: &Html, page_url: &Url) -> Vec<TopicSummary> {
     let mut kind = TopicKind::Normal;
+    let mut columns = Columns::forum_default();
     let mut seen = HashSet::new();
     let mut topics = Vec::new();
 
     for row in doc.select(&TR) {
+        if let Some(header) = Columns::from_header(row) {
+            columns = header;
+            continue;
+        }
         if let Some(header) = row.select(&SECTION_HEADER).next() {
             kind = TopicKind::from_section(&text_of(header));
             continue;
@@ -234,13 +304,24 @@ pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> For
             continue;
         }
 
-        let cells: Vec<ElementRef> = row
+        // Cell positions, counting colspan, to match the header.
+        let mut cells: Vec<Option<ElementRef>> = Vec::new();
+        for cell in row
             .children()
             .filter_map(ElementRef::wrap)
             .filter(|el| el.value().name() == "td")
-            .collect();
-        let cell_number = |i: usize| cells.get(i).and_then(|c| parse_count(&text_of(*c)));
-        let last_post = cells.get(5);
+        {
+            let span: usize = cell
+                .value()
+                .attr("colspan")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(1);
+            cells.push(Some(cell));
+            cells.extend(std::iter::repeat_n(None, span.saturating_sub(1)));
+        }
+        let cell = |i: Option<usize>| i.and_then(|i| cells.get(i).copied().flatten());
+        let number = |i: Option<usize>| cell(i).and_then(|c| parse_count(&text_of(c)));
+        let last_post = cell(columns.last_post);
 
         let title = text_of(link);
         let (prefixes, name, labels) = split_title(&title);
@@ -252,8 +333,7 @@ pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> For
             labels,
             title,
             url: clean_url(url),
-            author: cells
-                .get(3)
+            author: cell(columns.author)
                 .and_then(|c| c.select(&PROFILE_LINK).next())
                 .map(text_of),
             created: link
@@ -261,8 +341,8 @@ pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> For
                 .attr("title")
                 .and_then(|t| t.strip_prefix("Posted:"))
                 .map(|t| t.trim().to_string()),
-            replies: cell_number(2),
-            views: cell_number(4),
+            replies: number(columns.replies),
+            views: number(columns.views),
             last_post_at: last_post
                 .and_then(|c| c.select(&TOPIC_DETAILS).next())
                 .map(text_of)
@@ -272,13 +352,82 @@ pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> For
                 .map(text_of),
         });
     }
+    topics
+}
 
-    ForumPage {
-        forum_id,
-        title: page_title(&doc),
-        topics,
-        pagination: parse_pagination(&doc, page_url, start, "f", forum_id),
+// ---------------------------------------------------------------- search
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct SearchPage {
+    pub query: String,
+    pub topics: Vec<TopicSummary>,
+    /// From "Search found N matches".
+    pub total_matches: Option<u32>,
+    pub pagination: Pagination,
+}
+
+/// Messages phpBB shows instead of results that mean "try again", rather
+/// than "nothing found".
+const SEARCH_REFUSALS: &[&str] = &[
+    "cannot use search at this time",
+    "You must specify at least one word",
+    "You cannot search for that many",
+    "search was terminated",
+    "Sorry but you are not permitted to use the search",
+];
+
+/// Parses `search.php?keywords=...&sr=topics` results. Returns the forum's
+/// message instead when it refused the search (e.g. searching again too
+/// soon after the last search).
+pub fn parse_search(
+    html: &str,
+    page_url: &Url,
+    query: &str,
+    start: u32,
+) -> std::result::Result<SearchPage, String> {
+    let doc = Html::parse_document(html);
+    let topics = parse_topic_rows(&doc, page_url);
+    if topics.is_empty() {
+        let text = doc.root_element().text().collect::<String>();
+        if let Some(message) = SEARCH_REFUSALS
+            .iter()
+            .find_map(|phrase| sentence_with(&text, phrase))
+        {
+            return Err(message);
+        }
     }
+    let total_matches = doc.root_element().text().find_map(|t| {
+        let rest = t.split_once("Search found ")?.1;
+        let digits: String = rest
+            .chars()
+            .take_while(|c| c.is_ascii_digit() || *c == ',')
+            .collect();
+        digits.replace(',', "").parse().ok()
+    });
+    Ok(SearchPage {
+        query: query.to_string(),
+        topics,
+        total_matches,
+        pagination: parse_pagination(&doc, page_url, start, |u| {
+            u.query_pairs()
+                .any(|(k, _)| k == "keywords" || k == "search_id")
+        }),
+    })
+}
+
+/// The sentence of `text` that contains `phrase`, tidied up.
+fn sentence_with(text: &str, phrase: &str) -> Option<String> {
+    let at = text.find(phrase)?;
+    let begin = text[..at].rfind(['.', '!', '?', '\n']).map_or(0, |i| i + 1);
+    let end = text[at..]
+        .find(['.', '!', '?', '\n'])
+        .map_or(text.len(), |i| at + i + 1);
+    Some(
+        text[begin..end]
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" "),
+    )
 }
 
 /// Splits `[Info] Name [VR] [Early Access]` into prefixes, name and labels.
@@ -369,7 +518,9 @@ pub fn parse_topic(html: &str, page_url: &Url, topic_id: u64, start: u32) -> Top
         topic_id,
         title: page_title(&doc),
         posts,
-        pagination: parse_pagination(&doc, page_url, start, "t", topic_id),
+        pagination: parse_pagination(&doc, page_url, start, |u| {
+            query_u64(u, "t") == Some(topic_id)
+        }),
     }
 }
 
@@ -595,13 +746,18 @@ fn page_title(doc: &Html) -> Option<String> {
         .filter(|s| !s.is_empty())
 }
 
-/// `start=` offsets from links to the same forum/topic, plus the
-/// "Page X of Y" label.
-fn parse_pagination(doc: &Html, page_url: &Url, start: u32, key: &str, id: u64) -> Pagination {
+/// `start=` offsets from links to the same listing (same script, and
+/// `same_listing` holds), plus the "Page X of Y" label.
+fn parse_pagination(
+    doc: &Html,
+    page_url: &Url,
+    start: u32,
+    same_listing: impl Fn(&Url) -> bool,
+) -> Pagination {
     let mut offsets: Vec<u32> = doc
         .select(&START_LINK)
         .filter_map(|a| page_url.join(a.value().attr("href")?).ok())
-        .filter(|u| u.path() == page_url.path() && query_u64(u, key) == Some(id))
+        .filter(|u| u.path() == page_url.path() && same_listing(u))
         .filter_map(|u| query_u64(&u, "start").and_then(|s| u32::try_from(s).ok()))
         .collect();
     offsets.push(0);
@@ -721,6 +877,68 @@ mod tests {
             (p.previous_start, p.next_start, p.last_start),
             (None, Some(100), 62900)
         );
+    }
+
+    /// The layout of subsilver2's search results: a forum column, and
+    /// author before replies (unlike forum pages). Not yet checked against
+    /// cs.rin.ru's own search page.
+    const SEARCH: &str = r#"
+      <table class="tablebg">
+        <tr><td class="cat" colspan="7"><span class="nav">Search found 27 matches</span></td></tr>
+        <tr>
+          <th>&nbsp;</th>
+          <th>&nbsp;Forum&nbsp;</th>
+          <th>&nbsp;Topics&nbsp;</th>
+          <th>&nbsp;Author&nbsp;</th>
+          <th>&nbsp;Replies&nbsp;</th>
+          <th>&nbsp;Views&nbsp;</th>
+          <th>&nbsp;Last post&nbsp;</th>
+        </tr>
+        <tr>
+          <td class="row1"><img src="x.gif" /></td>
+          <td class="row1"><a href="./viewforum.php?f=10" class="forumlink">Main Forum</a></td>
+          <td class="row1"><a title="Posted: Monday, 29 Jun 2026, 01:18" href="./viewtopic.php?f=10&amp;t=159639" class="topictitle">[Info] Slotbound</a></td>
+          <td class="row2"><p class="topicauthor"><a href="./memberlist.php?mode=viewprofile&amp;u=1">pixieflitter</a></p></td>
+          <td class="row1"><p class="topicdetails">34</p></td>
+          <td class="row2"><p class="topicdetails">5120</p></td>
+          <td class="row1"><p class="topicdetails">Today, 10:00</p><p class="topicdetails"><a href="./memberlist.php?mode=viewprofile&amp;u=2">DicDale</a></p></td>
+        </tr>
+      </table>
+      <table><tr><td class="nav">Page <strong>1</strong> of <strong>2</strong></td></tr></table>
+      <a href="./search.php?keywords=slot&amp;fid%5B%5D=10&amp;sr=topics&amp;sf=titleonly&amp;start=25">2</a>
+      <a href="./viewforum.php?f=10&amp;start=100">elsewhere</a>"#;
+
+    #[test]
+    fn search_results() {
+        let url = url("search.php?keywords=slot&fid[]=10&sr=topics&sf=titleonly");
+        let page = parse_search(SEARCH, &url, "slot", 0).unwrap();
+        assert_eq!(page.total_matches, Some(27));
+        assert_eq!(page.topics.len(), 1);
+        let t = &page.topics[0];
+        assert_eq!((t.id, t.name.as_str()), (159639, "Slotbound"));
+        // Columns come from the header row, not fixed positions.
+        assert_eq!(t.author.as_deref(), Some("pixieflitter"));
+        assert_eq!((t.replies, t.views), (Some(34), Some(5120)));
+        assert_eq!(t.last_post_at.as_deref(), Some("Today, 10:00"));
+        assert_eq!(t.last_poster.as_deref(), Some("DicDale"));
+        let p = &page.pagination;
+        assert_eq!(
+            (p.next_start, p.page, p.total_pages),
+            (Some(25), Some(1), Some(2))
+        );
+    }
+
+    #[test]
+    fn search_messages() {
+        let url = url("search.php?keywords=slot");
+        let flood = "<div><p>Sorry but you cannot use search at this time. Please try again in a few minutes.</p></div>";
+        assert_eq!(
+            parse_search(flood, &url, "slot", 0).unwrap_err(),
+            "Sorry but you cannot use search at this time."
+        );
+        let none = "<p>No suitable matches were found.</p>";
+        let page = parse_search(none, &url, "zzz", 0).unwrap();
+        assert!(page.topics.is_empty());
     }
 
     #[test]

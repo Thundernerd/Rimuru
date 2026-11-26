@@ -1,13 +1,32 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  import { api, errorMessage, MAIN_FORUM_ID } from "./api";
+  import { api, errorMessage } from "./api";
   import GameCard from "./GameCard.svelte";
   import { setStatus } from "./status.svelte";
   import { loadVisits } from "./visits.svelte";
-  import type { TopicSummary } from "./types";
+  import type { Listing, TopicSummary } from "./types";
 
-  let { onselect }: { onselect: (topic: TopicSummary) => void } = $props();
+  /**
+   * A grid of game cards that loads its listing a page at a time as you
+   * scroll. `fetchPage` gets a page by `start=` offset; `snapshotPath`
+   * gives the forum path of a page, for "Save HTML".
+   */
+  let {
+    onselect,
+    fetchPage,
+    snapshotPath,
+    heading = null,
+    emptyText = "No games here.",
+    errorText = "Couldn't load the game list",
+  }: {
+    onselect: (topic: TopicSummary) => void;
+    fetchPage: (start: number) => Promise<Listing>;
+    snapshotPath: (start: number) => string;
+    heading?: string | null;
+    emptyText?: string;
+    errorText?: string;
+  } = $props();
 
   let topics = $state<TopicSummary[]>([]);
   /** `start=` of the next forum page to load; null once the last is loaded. */
@@ -18,22 +37,17 @@
   let totalPages = $state<number | null>(null);
   let loading = $state(false);
   let error = $state<string | null>(null);
-  let filter = $state("");
+  let totalMatches = $state<number | null>(null);
   let sentinel = $state<HTMLElement>();
 
-  const shown = $derived.by(() => {
-    const q = filter.trim().toLowerCase();
-    return q ? topics.filter((t) => t.title.toLowerCase().includes(q)) : topics;
-  });
-
-  /** Loads the next forum page, one at a time. */
+  /** Loads the next page, one at a time. */
   async function loadMore() {
     if (loading || nextStart === null) return;
     loading = true;
     error = null;
     const start = nextStart;
     try {
-      const page = await api.forumPage(MAIN_FORUM_ID, start);
+      const page = await fetchPage(start);
       // New posts move topics between pages, so a later page can repeat some.
       const seen = new Set(topics.map((t) => t.id));
       topics.push(...page.topics.filter((t) => !seen.has(t.id)));
@@ -42,6 +56,7 @@
       lastStart = start;
       pagesLoaded += 1;
       totalPages = page.pagination.total_pages;
+      totalMatches = page.total_matches ?? null;
     } catch (e) {
       error = errorMessage(e);
     } finally {
@@ -51,7 +66,7 @@
 
   async function saveSnapshot() {
     try {
-      setStatus(`Saved ${await api.saveSnapshot(`viewforum.php?f=${MAIN_FORUM_ID}&start=${lastStart}`)}`);
+      setStatus(`Saved ${await api.saveSnapshot(snapshotPath(lastStart))}`);
     } catch (e) {
       setStatus(errorMessage(e));
     }
@@ -74,8 +89,9 @@
 </script>
 
 <div class="toolbar">
-  <input type="search" placeholder="Filter loaded games" bind:value={filter} />
+  {#if heading}<h2>{heading}</h2>{/if}
   <span class="count">
+    {#if totalMatches !== null}{totalMatches} matches ·{/if}
     {topics.length} games
     {#if totalPages}· {pagesLoaded} of {totalPages} pages{/if}
   </span>
@@ -83,7 +99,7 @@
 </div>
 
 <div class="grid">
-  {#each shown as topic (topic.id)}
+  {#each topics as topic (topic.id)}
     <GameCard {topic} {onselect} />
   {/each}
   {#if loading}
@@ -95,9 +111,11 @@
 
 {#if error}
   <div class="message">
-    <p>Couldn't load the game list: {error}</p>
+    <p>{errorText}: {error}</p>
     <button type="button" onclick={loadMore}>Try again</button>
   </div>
+{:else if !loading && pagesLoaded && !topics.length}
+  <div class="message"><p>{emptyText}</p></div>
 {:else if !loading && nextStart !== null}
   <div class="message">
     <button type="button" onclick={loadMore}>Load more</button>
@@ -112,8 +130,9 @@
     gap: 12px;
     margin-bottom: 16px;
   }
-  input {
-    flex: 0 1 320px;
+  h2 {
+    margin: 0;
+    font-size: 16px;
   }
   .count {
     color: var(--muted);

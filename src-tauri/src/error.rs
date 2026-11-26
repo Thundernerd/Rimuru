@@ -23,6 +23,11 @@ pub enum Error {
     #[error("Steam: {0}")]
     Steam(String),
 
+    /// The forum showed a message instead of the page, e.g. refusing a
+    /// search made too soon after the previous one.
+    #[error("{0}")]
+    ForumMessage(String),
+
     #[error(transparent)]
     Http(#[from] reqwest::Error),
 
@@ -44,6 +49,7 @@ impl Error {
             Error::Status(_) => "status",
             Error::SteamRateLimited => "steam_rate_limited",
             Error::Steam(_) => "steam",
+            Error::ForumMessage(_) => "forum_message",
             Error::Http(_) => "http",
             Error::Tauri(_) => "tauri",
             Error::Url(_) => "url",

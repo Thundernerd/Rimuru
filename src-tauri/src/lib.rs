@@ -36,6 +36,7 @@ pub fn run() {
             commands::show_forum_window,
             commands::hide_forum_window,
             commands::fetch_forum,
+            commands::search_topics,
             commands::fetch_topic,
             commands::game_first_page,
             commands::game_releases,

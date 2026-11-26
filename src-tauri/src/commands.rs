@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager, State};
 
 use crate::client::ForumClient;
-use crate::error::Result;
+use crate::error::{Error, Result};
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use crate::cache::Cache;
 use crate::forum_window;
 use crate::game::{self, GameInfo, Release};
-use crate::phpbb::{self, ForumPage, Session, TopicPage};
+use crate::phpbb::{self, ForumPage, SearchPage, Session, TopicPage};
 use crate::steam::{self, Artwork, SteamApp, SteamClient, SteamMatch};
 
 #[tauri::command]
@@ -55,6 +55,34 @@ pub async fn fetch_forum(
     Ok(page)
 }
 
+/// Searches topic titles, like the forum's "Search this forum" box: in the
+/// main game forum, or in all forums with `all_forums`. Not cached: results
+/// change, and the forum limits how often a user may search.
+#[tauri::command]
+pub async fn search_topics(
+    app: AppHandle,
+    client: State<'_, ForumClient>,
+    query: String,
+    start: Option<u32>,
+    all_forums: Option<bool>,
+) -> Result<SearchPage> {
+    let start = start.unwrap_or(0);
+    let mut url = forum_window::forum_url("search.php")?;
+    {
+        let mut q = url.query_pairs_mut();
+        q.append_pair("keywords", query.trim());
+        if !all_forums.unwrap_or(false) {
+            q.append_pair("fid[]", &MAIN_FORUM_ID.to_string());
+        }
+        q.append_pair("sr", "topics")
+            .append_pair("sf", "titleonly")
+            .append_pair("start", &start.to_string());
+    }
+    let path = format!("search.php?{}", url.query().unwrap_or_default());
+    let html = client.get(&app, &path).await?;
+    phpbb::parse_search(&html, &url, query.trim(), start).map_err(Error::ForumMessage)
+}
+
 #[tauri::command]
 pub async fn fetch_topic(
     app: AppHandle,
@@ -79,6 +107,8 @@ async fn topic_page(
 
 /// How long cached data stays usable. Forum entries are also keyed by the
 /// topic's reply count, so new replies invalidate them sooner.
+/// The forum's main game listing ("Main Forum").
+const MAIN_FORUM_ID: u64 = 10;
 const TOPIC_MAX_AGE: Duration = Duration::from_secs(24 * 3600);
 /// Bumped when `SteamApp` gains fields (v2: trailers).
 const STEAM_APP_CACHE: &str = "steam_app_v2";

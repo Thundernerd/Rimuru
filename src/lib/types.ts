@@ -36,6 +36,17 @@ export type ForumPage = {
   pagination: Pagination;
 };
 
+/** One page of a topic listing: the forum's, or search results. */
+export type Listing = { topics: TopicSummary[]; pagination: Pagination; total_matches?: number | null };
+
+export type SearchPage = {
+  query: string;
+  topics: TopicSummary[];
+  /** From "Search found N matches". */
+  total_matches: number | null;
+  pagination: Pagination;
+};
+
 export type Field = { key: string; value: string };
 
 export type GameInfo = {

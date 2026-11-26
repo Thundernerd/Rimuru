@@ -8,6 +8,7 @@ import type {
   ForumPage,
   GameFirstPage,
   Release,
+  SearchPage,
   Session,
   SteamApp,
   SteamMatch,
@@ -56,6 +57,8 @@ export function errorMessage(e: unknown): string {
 export const api = {
   session: () => forum<Session>("forum_session"),
   forumPage: (forumId: number, start: number) => forum<ForumPage>("fetch_forum", { forumId, start }),
+  searchTopics: (query: string, start: number, allForums = false) =>
+    forum<SearchPage>("search_topics", { query, start, allForums }),
   gameFirstPage: (topicId: number, replies: number | null) =>
     forum<GameFirstPage>("game_first_page", { topicId, replies }),
   gameReleases: (topicId: number, start: number, replies: number | null) =>
