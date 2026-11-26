@@ -357,6 +357,47 @@ pub async fn recent_visits(cache: State<'_, Cache>, limit: Option<usize>) -> Res
         .collect())
 }
 
+/// A followed game; kept for good, like visits.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Follow {
+    pub topic: TopicSummary,
+    /// Unix seconds.
+    pub followed_at: u64,
+}
+
+/// Follows a game, or refreshes its stored listing if already followed
+/// (keeping when it was first followed).
+#[tauri::command]
+pub async fn follow_topic(cache: State<'_, Cache>, topic: TopicSummary) -> Result<Follow> {
+    let key = topic.id.to_string();
+    let followed_at = cache
+        .get::<Follow>("follow", &key, None, VISIT_MAX_AGE)
+        .map(|f| f.followed_at)
+        .unwrap_or_else(|| {
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0)
+        });
+    let follow = Follow { topic, followed_at };
+    cache.put("follow", &key, None, &follow);
+    Ok(follow)
+}
+
+#[tauri::command]
+pub async fn unfollow_topic(cache: State<'_, Cache>, topic_id: u64) -> Result<()> {
+    cache.delete("follow", &topic_id.to_string());
+    Ok(())
+}
+
+/// Followed games, most recently followed first.
+#[tauri::command]
+pub async fn followed_topics(cache: State<'_, Cache>) -> Result<Vec<Follow>> {
+    let mut follows = cache.list::<Follow>("follow", VISIT_MAX_AGE);
+    follows.sort_by_key(|f| std::cmp::Reverse(f.followed_at));
+    Ok(follows)
+}
+
 /// Saves the raw HTML of a forum page (e.g. `viewforum.php?f=10`) to the
 /// app's data directory, for turning into parser test fixtures. Returns the
 /// file path. The page contains the signed-in username, so check it before

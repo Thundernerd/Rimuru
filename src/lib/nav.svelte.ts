@@ -11,6 +11,7 @@ export type View =
   /** The forum's full listing, optionally only topics with a title label. */
   | { kind: "browse"; label: string | null }
   | { kind: "recent" }
+  | { kind: "following" }
   /** `run` makes a repeated search of the same text a new search. */
   | { kind: "search"; query: string; allForums: boolean; run: number }
   | { kind: "game"; topic: TopicSummary };
@@ -84,5 +85,5 @@ function sameView(a: View, b: View): boolean {
   if (a.kind !== b.kind) return false;
   if (a.kind === "game" && b.kind === "game") return a.topic.id === b.topic.id;
   if (a.kind === "browse" && b.kind === "browse") return a.label === b.label;
-  return a.kind === "home" || a.kind === "recent";
+  return a.kind === "home" || a.kind === "recent" || a.kind === "following";
 }

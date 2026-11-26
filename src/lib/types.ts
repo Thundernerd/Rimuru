@@ -141,3 +141,6 @@ export type Visit = {
 };
 
 export type CommandError = { kind: string; message: string };
+
+/** A followed game. */
+export type Follow = { topic: TopicSummary; followed_at: number };

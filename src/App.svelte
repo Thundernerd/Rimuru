@@ -3,6 +3,8 @@
 
   import { api, MAIN_FORUM_ID } from "./lib/api";
   import BrowseView from "./lib/BrowseView.svelte";
+  import { loadFollows } from "./lib/follows.svelte";
+  import FollowingView from "./lib/FollowingView.svelte";
   import { clearForumPages } from "./lib/forum";
   import GameGrid from "./lib/GameGrid.svelte";
   import GameView from "./lib/GameView.svelte";
@@ -98,6 +100,7 @@
   onMount(() => {
     refreshSession();
     loadRecent();
+    loadFollows();
     // Each page the forum window finishes may change the session (security
     // check passed, signed in, signed out).
     const unlisten = api.onForumPageLoaded(() => refreshSession());
@@ -156,6 +159,8 @@
 
       {#if view.kind === "recent"}
         <RecentView onselect={openGame} />
+      {:else if view.kind === "following"}
+        <FollowingView onselect={openGame} />
       {:else if view.kind === "game"}
         {#key view.topic.id}
           <GameView topic={view.topic} />

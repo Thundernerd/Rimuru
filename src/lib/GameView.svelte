@@ -12,7 +12,8 @@
   import TrailerPlayer from "./TrailerPlayer.svelte";
   import { setStatus } from "./status.svelte";
   import type { Artwork, GameFirstPage, Release, SteamApp, TopicSummary, Visit } from "./types";
-  import { previousVisit, recordVisit } from "./visits.svelte";
+  import { isFollowed, toggleFollow } from "./follows.svelte";
+  import { latest as listed, previousVisit, recordVisit } from "./visits.svelte";
 
   let { topic }: { topic: TopicSummary } = $props();
 
@@ -178,6 +179,8 @@
   {stats}
   hasTrailer={movies.length > 0}
   latestIsNew={!!latest && newIds.has(latest.post_id)}
+  followed={isFollowed(topic.id)}
+  onfollow={() => toggleFollow(listed.get(topic.id) ?? topic)}
   ontrailer={() => (trailerAt = 0)}
   onsnapshot={saveSnapshot}
 />

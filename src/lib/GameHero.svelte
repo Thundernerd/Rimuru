@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from "./Icon.svelte";
   import LinkButton from "./LinkButton.svelte";
   import type { Artwork, GameInfo, SteamApp, TopicSummary } from "./types";
 
@@ -15,6 +16,8 @@
     stats,
     hasTrailer,
     latestIsNew,
+    followed,
+    onfollow,
     ontrailer,
     onsnapshot,
   }: {
@@ -27,6 +30,8 @@
     stats: [string, string, boolean?][];
     hasTrailer: boolean;
     latestIsNew: boolean;
+    followed: boolean;
+    onfollow: () => void;
     ontrailer: () => void;
     onsnapshot: () => void;
   } = $props();
@@ -97,6 +102,17 @@
         {#if hasTrailer}
           <button type="button" class="primary" onclick={ontrailer}>▶ Watch trailer</button>
         {/if}
+        <button
+          type="button"
+          class="follow"
+          class:on={followed}
+          aria-pressed={followed}
+          onclick={onfollow}
+          title={followed ? "Stop following this game" : "Follow this game: it shows in the sidebar, with new replies marked"}
+        >
+          <Icon name="star" size={15} />
+          {followed ? "Following" : "Follow"}
+        </button>
         {#if appId}
           <LinkButton url={steam?.store_url ?? `https://store.steampowered.com/app/${appId}`} label="Steam store" />
           <LinkButton url={forum?.steamdb_url ?? `https://steamdb.info/app/${appId}`} label="SteamDB" />
@@ -274,6 +290,19 @@
     filter: brightness(1.08);
   }
 
+  .actions .follow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .actions .follow.on {
+    color: #ffd27a;
+    border-color: rgb(255 190 60 / 0.5);
+    background: rgb(255 190 60 / 0.14);
+  }
+  .actions .follow.on :global(svg) {
+    fill: currentColor;
+  }
   .stats {
     display: flex;
     margin: 0;

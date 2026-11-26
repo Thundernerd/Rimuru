@@ -47,6 +47,9 @@ pub fn run() {
             commands::topic_visits,
             commands::record_visit,
             commands::recent_visits,
+            commands::follow_topic,
+            commands::unfollow_topic,
+            commands::followed_topics,
             commands::save_snapshot,
         ])
         .run(tauri::generate_context!())

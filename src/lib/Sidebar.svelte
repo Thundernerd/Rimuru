@@ -1,6 +1,7 @@
 <script lang="ts">
   import { api, errorMessage } from "./api";
   import { artFor, requestArt } from "./cardArt.svelte";
+  import { followedTopics, follows } from "./follows.svelte";
   import Icon from "./Icon.svelte";
   import { current, type View } from "./nav.svelte";
   import { session, signIn } from "./session.svelte";
@@ -9,8 +10,8 @@
   import { latest, newReplies, recent } from "./visits.svelte";
 
   /**
-   * Navigation, the recently viewed games (with a dot for new replies) and
-   * the forum account.
+   * Navigation, followed and recently viewed games (with a dot for new
+   * replies), and the forum account.
    */
   let {
     onnavigate,
@@ -18,19 +19,20 @@
     mac,
   }: { onnavigate: (view: View) => void; onsearch: () => void; mac: boolean } = $props();
 
-  const SHOWN = 8;
+  const following = $derived(followedTopics());
+  // Fewer recent games when the followed list takes room too.
   const shown = $derived(
     recent.visits
       .map((v) => v.topic && (latest.get(v.topic.id) ?? v.topic))
-      .filter((t): t is TopicSummary => !!t)
-      .slice(0, SHOWN),
+      .filter((t): t is TopicSummary => !!t && !follows.has(t.id))
+      .slice(0, following.length ? 5 : 8),
   );
   const view = $derived(current());
   const openGame = $derived(view.kind === "game" ? view.topic.id : null);
 
   // Thumbnails for the list.
   $effect(() => {
-    for (const topic of shown) requestArt(topic.name, () => true);
+    for (const topic of [...following, ...shown]) requestArt(topic.name, () => true);
   });
 
   const username = $derived(session.current?.state === "logged_in" ? session.current.username : null);
@@ -60,40 +62,39 @@
     <button type="button" class:active={view.kind === "search"} onclick={onsearch}>
       <Icon name="search" /> Search
     </button>
+    <button
+      type="button"
+      class:active={view.kind === "following"}
+      onclick={() => onnavigate({ kind: "following" })}
+    >
+      <Icon name="star" /> Following
+    </button>
     <button type="button" class:active={view.kind === "recent"} onclick={() => onnavigate({ kind: "recent" })}>
       <Icon name="clock" /> Recently viewed
     </button>
   </nav>
 
-  <section class="recent">
-    <div class="eyebrow">
-      Recently viewed {#if recent.visits.length}<span class="count">{recent.visits.length}</span>{/if}
-    </div>
-    {#if shown.length}
-      <ul>
-        {#each shown as topic (topic.id)}
-          {@const art = artFor(topic.name)}
-          {@const fresh = newReplies(topic)}
-          <li>
-            <button
-              type="button"
-              class:active={openGame === topic.id}
-              title={fresh ? `${topic.title}: ${fresh} new replies` : topic.title}
-              onclick={() => onnavigate({ kind: "game", topic })}
-            >
-              <span class="thumb" style:--hue={(topic.id * 47) % 360}>
-                {#if art?.portrait || art?.capsule}<img src={art.portrait ?? art.capsule} alt="" />{/if}
-              </span>
-              <span class="title">{topic.name}</span>
-              {#if fresh}<span class="dot" aria-label={`${fresh} new replies`}></span>{/if}
-            </button>
-          </li>
-        {/each}
-      </ul>
-    {:else if recent.loaded}
-      <p class="empty">Games you open show up here.</p>
+  <div class="lists">
+    {#if following.length}
+      <section>
+        <div class="eyebrow">Following <span class="count">{following.length}</span></div>
+        {@render games(following)}
+      </section>
     {/if}
-  </section>
+    <!-- Followed games aren't repeated here; hide the heading if that leaves nothing. -->
+    {#if shown.length || !following.length}
+      <section>
+        <div class="eyebrow">
+          Recently viewed {#if recent.visits.length}<span class="count">{recent.visits.length}</span>{/if}
+        </div>
+        {#if shown.length}
+          {@render games(shown)}
+        {:else if recent.loaded}
+          <p class="empty">Games you open show up here.</p>
+        {/if}
+      </section>
+    {/if}
+  </div>
 
   <footer>
     <span class="avatar">{(username ?? "?").slice(0, 1).toUpperCase()}</span>
@@ -113,6 +114,29 @@
     </button>
   </footer>
 </aside>
+
+{#snippet games(topics: TopicSummary[])}
+  <ul>
+    {#each topics as topic (topic.id)}
+      {@const art = artFor(topic.name)}
+      {@const fresh = newReplies(topic)}
+      <li>
+        <button
+          type="button"
+          class:active={openGame === topic.id}
+          title={fresh ? `${topic.title}: ${fresh} new replies` : topic.title}
+          onclick={() => onnavigate({ kind: "game", topic })}
+        >
+          <span class="thumb" style:--hue={(topic.id * 47) % 360}>
+            {#if art?.portrait || art?.capsule}<img src={art.portrait ?? art.capsule} alt="" />{/if}
+          </span>
+          <span class="title">{topic.name}</span>
+          {#if fresh}<span class="dot" aria-label={`${fresh} new replies`}></span>{/if}
+        </button>
+      </li>
+    {/each}
+  </ul>
+{/snippet}
 
 <style>
   aside {
@@ -194,13 +218,16 @@
     background: var(--accent);
   }
 
-  .recent {
+  .lists {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     padding: 16px 10px;
+    display: grid;
+    align-content: start;
+    gap: 18px;
   }
-  .recent .eyebrow {
+  .lists .eyebrow {
     padding: 0 8px 8px;
     text-transform: none;
     letter-spacing: 0;

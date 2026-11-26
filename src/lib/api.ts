@@ -5,6 +5,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import type {
   Artwork,
   CommandError,
+  Follow,
   ForumPage,
   GameFirstPage,
   Release,
@@ -70,6 +71,9 @@ export const api = {
   topicVisits: (topicIds: number[]) => invoke<Record<string, Visit>>("topic_visits", { topicIds }),
   recordVisit: (topic: TopicSummary, releaseIds: number[]) => invoke<Visit>("record_visit", { topic, releaseIds }),
   recentVisits: (limit = 50) => invoke<Visit[]>("recent_visits", { limit }),
+  followTopic: (topic: TopicSummary) => invoke<Follow>("follow_topic", { topic }),
+  unfollowTopic: (topicId: number) => invoke<void>("unfollow_topic", { topicId }),
+  followedTopics: () => invoke<Follow[]>("followed_topics"),
   rememberSteamMatch: (name: string, found: SteamMatch) => invoke<void>("remember_steam_match", { name, found }),
   saveSnapshot: (path: string) => forum<string>("save_snapshot", { path }),
   showForumWindow: (path?: string) => invoke<void>("show_forum_window", { path }),

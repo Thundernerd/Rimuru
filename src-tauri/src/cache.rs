@@ -105,6 +105,16 @@ impl Cache {
             .unwrap_or_default()
     }
 
+    pub fn delete(&self, kind: &str, key: &str) {
+        let Ok(conn) = self.conn.lock() else { return };
+        if let Err(e) = conn.execute(
+            "DELETE FROM entries WHERE kind = ?1 AND key = ?2",
+            params![kind, key],
+        ) {
+            log::warn!("cache delete failed: {e}");
+        }
+    }
+
     pub fn put<T: Serialize>(&self, kind: &str, key: &str, version: Option<&str>, value: &T) {
         let Ok(json) = serde_json::to_string(value) else {
             return;
@@ -162,6 +172,14 @@ mod tests {
             )
             .unwrap();
         assert_eq!(cache.list::<i32>("visit", DAY), vec![2, 1]);
+    }
+
+    #[test]
+    fn deletes() {
+        let cache = Cache::in_memory();
+        cache.put("follow", "1", None, &1);
+        cache.delete("follow", "1");
+        assert_eq!(cache.get::<i32>("follow", "1", None, DAY), None);
     }
 
     #[test]

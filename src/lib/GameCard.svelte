@@ -1,6 +1,8 @@
 <script lang="ts">
   import { artFor, matches, requestArt } from "./cardArt.svelte";
   import type { TopicSummary } from "./types";
+  import { isFollowed } from "./follows.svelte";
+  import Icon from "./Icon.svelte";
   import { newReplies } from "./visits.svelte";
 
   let { topic, onselect }: { topic: TopicSummary; onselect: (topic: TopicSummary) => void } = $props();
@@ -87,6 +89,10 @@
     </span>
   {/if}
 
+  {#if isFollowed(topic.id)}
+    <span class="followed" title="Following"><Icon name="star" size={13} /></span>
+  {/if}
+
   <div class="overlay">
     <h3>{topic.name}</h3>
     {#if tags.length}
@@ -166,6 +172,23 @@
     color: var(--accent-text);
     background: var(--accent);
     box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+  }
+
+  .followed {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: #ffd27a;
+    background: rgb(8 10 16 / 0.7);
+    backdrop-filter: blur(4px);
+  }
+  .followed :global(svg) {
+    fill: currentColor;
   }
 
   /* Title and details: always shown on placeholders, on hover/focus over art. */

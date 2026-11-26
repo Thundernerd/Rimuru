@@ -1,6 +1,7 @@
 <script lang="ts">
   import { errorMessage } from "./api";
   import FeaturedCarousel from "./FeaturedCarousel.svelte";
+  import { followedTopics } from "./follows.svelte";
   import { forumPage, labelCounts } from "./forum";
   import LabelChips from "./LabelChips.svelte";
   import type { View } from "./nav.svelte";
@@ -38,7 +39,9 @@
       .map((v) => v.topic && (latest.get(v.topic.id) ?? v.topic))
       .filter((t): t is TopicSummary => !!t),
   );
-  const withNewReplies = $derived(viewed.filter((t) => newReplies(t) > 0));
+  const following = $derived(followedTopics());
+  // Followed games have their own shelf, so leave them out of this one.
+  const withNewReplies = $derived(viewed.filter((t) => newReplies(t) > 0 && !following.some((f) => f.id === t.id)));
 </script>
 
 <div class="home">
@@ -52,6 +55,13 @@
 
     <LabelChips {labels} onselect={(label) => onnavigate({ kind: "browse", label })} />
 
+    <Shelf
+      title="Following"
+      subtitle="New replies first"
+      topics={following.slice(0, SHELF)}
+      {onselect}
+      onseeall={() => onnavigate({ kind: "following" })}
+    />
     <Shelf
       title="New since your last visit"
       subtitle="Games you opened that have new replies"
