@@ -72,13 +72,39 @@ export type Release = {
   links: DownloadLink[];
 };
 
-export type GameDetail = {
+export type GameFirstPage = {
   topic_id: number;
   title: string | null;
   info: GameInfo | null;
+  /** Releases on page 1, newest first. */
   releases: Release[];
-  pages_read: number[];
   total_pages: number | null;
+  per_page: number | null;
+  last_start: number;
+};
+
+export type SteamMatch = { app_id: number; name: string; capsule_image: string | null };
+
+export type SteamApp = {
+  app_id: number;
+  name: string;
+  store_url: string;
+  header_image: string | null;
+  capsule_image: string | null;
+  short_description: string | null;
+  developers: string[];
+  publishers: string[];
+  release_date: string | null;
+  coming_soon: boolean;
+  platforms: string[];
+  genres: string[];
+  categories: string[];
+  languages: string[];
+  screenshots: { thumbnail: string; full: string }[];
+  is_free: boolean;
+  price: string | null;
+  metacritic: number | null;
+  website: string | null;
 };
 
 export type CommandError = { kind: string; message: string };

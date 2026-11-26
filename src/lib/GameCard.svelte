@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { cardArt } from "./cardArt";
   import type { TopicSummary } from "./types";
 
   let { topic, onselect }: { topic: TopicSummary; onselect: (topic: TopicSummary) => void } = $props();
 
-  // Until cards get real artwork: a colour per topic and the name's initials.
+  // Placeholder until (or unless) Steam has artwork: a colour and initials.
   const hue = $derived((topic.id * 47) % 360);
   const initials = $derived(
     topic.name
@@ -16,11 +17,41 @@
   );
   // "[Info]" is on nearly every game topic, so it says nothing.
   const tags = $derived([...topic.prefixes.filter((p) => p.toLowerCase() !== "info"), ...topic.labels]);
+
+  let element = $state<HTMLElement>();
+  let visible = false;
+  let requested = false;
+  let image = $state<string | null>(null);
+  let imageLoaded = $state(false);
+
+  // Look the game up on Steam once the card is (nearly) on screen.
+  $effect(() => {
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        if (!visible || requested || image) return;
+        requested = true;
+        cardArt(topic.name, () => visible)
+          .then((match) => {
+            if (match === undefined) requested = false; // skipped; ask again when visible
+            else image = match?.capsule_image ?? null;
+          })
+          .catch(() => (requested = false));
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  });
 </script>
 
-<button type="button" class="card" title={topic.title} onclick={() => onselect(topic)}>
+<button bind:this={element} type="button" class="card" title={topic.title} onclick={() => onselect(topic)}>
   <div class="art" style:--hue={hue}>
     <span>{initials}</span>
+    {#if image}
+      <img src={image} alt="" class:loaded={imageLoaded} onload={() => (imageLoaded = true)} />
+    {/if}
   </div>
   <div class="body">
     <h3>{topic.name}</h3>
@@ -60,18 +91,31 @@
     outline-offset: 2px;
   }
 
-  /* Steam header images are 460×215. */
+  /* Steam's capsule image is 231×87; keeping its shape avoids cropping. */
   .art {
-    aspect-ratio: 460 / 215;
+    position: relative;
+    aspect-ratio: 231 / 87;
     display: grid;
     place-items: center;
     background: linear-gradient(135deg, hsl(var(--hue) 45% 32%), hsl(calc(var(--hue) + 40) 50% 18%));
   }
   .art span {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
     letter-spacing: 1px;
     color: rgb(255 255 255 / 0.85);
+  }
+  .art img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 250ms ease;
+  }
+  .art img.loaded {
+    opacity: 1;
   }
 
   .body {

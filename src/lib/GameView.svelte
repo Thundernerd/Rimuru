@@ -1,49 +1,88 @@
 <script lang="ts">
   import { api, errorMessage } from "./api";
-  import LinkButton from "./LinkButton.svelte";
-  import ReleaseCard from "./ReleaseCard.svelte";
+  import GameInfoPanel from "./GameInfoPanel.svelte";
+  import ReleaseList from "./ReleaseList.svelte";
   import { setStatus } from "./status.svelte";
-  import type { GameDetail, TopicSummary } from "./types";
+  import type { GameFirstPage, Release, SteamApp, TopicSummary } from "./types";
 
   let { topic, onback }: { topic: TopicSummary; onback: () => void } = $props();
 
-  const PLATFORM_NAMES: Record<string, string> = { windows: "Windows", macos: "macOS", linux: "Linux" };
+  /** Pages read for releases: page 1 plus up to this many from the end. */
+  const RECENT_PAGES = 4;
 
-  let detail = $state<GameDetail | null>(null);
+  let first = $state<GameFirstPage | null>(null);
+  let steam = $state<SteamApp | null>(null);
+  let steamLoading = $state(false);
+  /** Releases from the most recent pages, newest first; page 1's come after. */
+  let recent = $state<Release[]>([]);
+  let pagesRead = $state(0);
+  let pagesPlanned = $state(1);
+  let loading = $state(false);
   let error = $state<string | null>(null);
   let attempt = $state(0);
 
-  // Load whenever the topic changes (or on retry); drop stale responses.
+  const releases = $derived([...recent, ...(first?.releases ?? [])]);
+
+  // Load whenever the topic changes (or on retry); responses for a topic
+  // that's no longer shown are dropped.
   $effect(() => {
     const id = topic.id;
+    const replies = topic.replies;
+    const name = topic.name;
     void attempt;
     let current = true;
-    detail = null;
+
+    first = null;
+    steam = null;
+    recent = [];
+    pagesRead = 0;
+    pagesPlanned = 1;
     error = null;
-    api
-      .game(id)
-      .then((d) => current && (detail = d))
-      .catch((e) => current && (error = errorMessage(e)));
+    loading = true;
+
+    (async () => {
+      const page = await api.gameFirstPage(id, replies);
+      if (!current) return;
+      first = page;
+      pagesRead = 1;
+
+      loadSteam(page, name, () => current);
+
+      // Then the most recent pages, newest first, one at a time.
+      const starts: number[] = [];
+      if (page.per_page) {
+        for (let s = page.last_start; s > 0 && starts.length < RECENT_PAGES; s -= page.per_page) starts.push(s);
+      }
+      pagesPlanned = 1 + starts.length;
+      for (const start of starts) {
+        const found = await api.gameReleases(id, start, replies);
+        if (!current) return;
+        recent.push(...found);
+        pagesRead += 1;
+      }
+    })()
+      .catch((e) => current && (error = errorMessage(e)))
+      .finally(() => current && (loading = false));
+
     return () => {
       current = false;
     };
   });
 
-  const info = $derived(detail?.info ?? null);
-  const facts = $derived(
-    info
-      ? [
-          ["Developer", info.developer],
-          ["Publisher", info.publisher],
-          ["Release date", info.release_date],
-          ["Genres", info.genres.join(", ")],
-          ["Platforms", info.platforms.map((p) => PLATFORM_NAMES[p] ?? p).join(", ")],
-          ["Languages", info.languages.join(", ")],
-          ...info.fields.map((f) => [f.key, f.value]),
-        ].filter((row): row is [string, string] => !!row[1])
-      : [],
-  );
-  const tags = $derived([...topic.prefixes.filter((p) => p.toLowerCase() !== "info"), ...topic.labels]);
+  async function loadSteam(page: GameFirstPage, name: string, isCurrent: () => boolean) {
+    steamLoading = true;
+    try {
+      const appId = page.info?.steam_app_id ?? (await api.steamMatch(name))?.app_id;
+      if (appId && isCurrent()) {
+        const app = await api.steamApp(appId);
+        if (isCurrent()) steam = app;
+      }
+    } catch (e) {
+      if (isCurrent()) setStatus(`Steam details unavailable: ${errorMessage(e)}`);
+    } finally {
+      if (isCurrent()) steamLoading = false;
+    }
+  }
 
   async function saveSnapshot() {
     try {
@@ -60,83 +99,25 @@
 </div>
 
 <div class="layout">
-  <section class="info">
-    {#if info?.header_image}
-      <img class="header" src={info.header_image} alt="" />
-    {/if}
-    <h2>{info?.title ?? topic.name}</h2>
-    {#if tags.length}
-      <div class="tags">{#each tags as tag (tag)}<span class="tag">{tag}</span>{/each}</div>
-    {/if}
-
-    {#if info}
-      <div class="links">
-        {#if info.store_url}<LinkButton url={info.store_url} label="Steam store" />{/if}
-        {#if info.steamdb_url}<LinkButton url={info.steamdb_url} label="SteamDB" />{/if}
-        <LinkButton url={topic.url} label="Forum topic" />
-      </div>
-      <dl>
-        {#each facts as [key, value] (key)}
-          <dt>{key}</dt>
-          <dd>{value}</dd>
-        {/each}
-      </dl>
-      {#if info.description}
-        <details>
-          <summary>About</summary>
-          <p class="text">{info.description}</p>
-        </details>
-      {/if}
-      {#if info.features.length}
-        <details>
-          <summary>Features</summary>
-          <ul>{#each info.features as f (f)}<li>{f}</li>{/each}</ul>
-        </details>
-      {/if}
-      {#if info.system_requirements.length}
-        <details>
-          <summary>System requirements</summary>
-          {#each info.system_requirements as set, i (i)}
-            {#if set.label}<h4>{set.label}</h4>{/if}
-            <dl>
-              {#each set.items as item, j (j)}
-                <dt>{item.key}</dt>
-                <dd>{item.value}</dd>
-              {/each}
-            </dl>
-          {/each}
-        </details>
-      {/if}
-    {:else if detail}
-      <p class="muted">This topic's first post has no game details.</p>
-      <div class="links"><LinkButton url={topic.url} label="Forum topic" /></div>
-    {/if}
-  </section>
-
-  <section class="releases">
-    {#if error}
-      <div class="message">
-        <p>Couldn't load this topic: {error}</p>
-        <button type="button" onclick={() => attempt++}>Try again</button>
-      </div>
-    {:else if !detail}
-      <p class="muted">Loading releases…</p>
-    {:else}
-      <h3>
-        Releases <span class="muted">({detail.releases.length})</span>
-      </h3>
-      {#if detail.total_pages && detail.pages_read.length < detail.total_pages}
-        <p class="muted small">
-          Read {detail.pages_read.length} of {detail.total_pages} pages: the first and the most recent.
-        </p>
-      {/if}
-      {#each detail.releases as release (release.post_id)}
-        <ReleaseCard {release} />
-      {:else}
-        <p class="muted">No posts with download links on the pages read.</p>
-      {/each}
-    {/if}
-  </section>
+  <GameInfoPanel {topic} forum={first?.info ?? null} {steam} loading={!first || steamLoading} />
+  {#if first}
+    <ReleaseList
+      {releases}
+      {pagesRead}
+      {pagesPlanned}
+      totalPages={first.total_pages}
+      {loading}
+      {error}
+      onretry={() => attempt++}
+    />
+  {:else if error}
+    <div class="message">
+      <p>Couldn't load this topic: {error}</p>
+      <button type="button" onclick={() => attempt++}>Try again</button>
+    </div>
+  {:else}
+    <p class="muted">Loading releases…</p>
+  {/if}
 </div>
 
 <style>
@@ -145,93 +126,26 @@
     justify-content: space-between;
     margin-bottom: 16px;
   }
-
   .layout {
     display: grid;
-    grid-template-columns: minmax(280px, 380px) 1fr;
+    grid-template-columns: minmax(280px, 400px) 1fr;
     gap: 24px;
     align-items: start;
+  }
+  .layout > :global(.panel) {
+    position: sticky;
+    top: 0;
   }
   @media (max-width: 800px) {
     .layout {
       grid-template-columns: 1fr;
     }
-  }
-
-  .info {
-    position: sticky;
-    top: 0;
-  }
-  .header {
-    width: 100%;
-    border-radius: 10px;
-    display: block;
-  }
-  h2 {
-    margin: 12px 0 6px;
-    font-size: 20px;
-  }
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-  .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 12px 0;
-  }
-
-  dl {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 4px 12px;
-    margin: 0 0 12px;
-    font-size: 13px;
-  }
-  dt {
-    color: var(--muted);
-  }
-  dd {
-    margin: 0;
-  }
-  details {
-    border-top: 1px solid var(--border);
-    padding: 8px 0;
-  }
-  summary {
-    cursor: pointer;
-    font-weight: 600;
-  }
-  h4 {
-    margin: 8px 0 4px;
-    font-size: 13px;
-  }
-  .text {
-    white-space: pre-wrap;
-    font-size: 13px;
-  }
-  ul {
-    margin: 6px 0 0;
-    padding-left: 18px;
-    font-size: 13px;
-  }
-
-  .releases {
-    display: grid;
-    gap: 12px;
-  }
-  h3 {
-    margin: 0;
-    font-size: 16px;
+    .layout > :global(.panel) {
+      position: static;
+    }
   }
   .muted {
     color: var(--muted);
-  }
-  .small {
-    margin: -6px 0 0;
-    font-size: 12px;
   }
   .message {
     display: flex;

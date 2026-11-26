@@ -16,6 +16,13 @@ pub enum Error {
     #[error("the forum answered with HTTP {0}")]
     Status(u16),
 
+    /// Steam refused requests for a while (HTTP 429/403); try again later.
+    #[error("Steam is rate limiting requests; try again in a minute")]
+    SteamRateLimited,
+
+    #[error("Steam: {0}")]
+    Steam(String),
+
     #[error(transparent)]
     Http(#[from] reqwest::Error),
 
@@ -35,6 +42,8 @@ impl Error {
             Error::SecurityCheck => "security_check",
             Error::NoForumWindow => "no_forum_window",
             Error::Status(_) => "status",
+            Error::SteamRateLimited => "steam_rate_limited",
+            Error::Steam(_) => "steam",
             Error::Http(_) => "http",
             Error::Tauri(_) => "tauri",
             Error::Url(_) => "url",

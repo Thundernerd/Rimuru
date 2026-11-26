@@ -7,11 +7,15 @@ use tauri::{AppHandle, Manager, State};
 
 use crate::client::ForumClient;
 use crate::error::Result;
-use serde::Serialize;
+use std::time::Duration;
 
+use serde::{Deserialize, Serialize};
+
+use crate::cache::Cache;
 use crate::forum_window;
 use crate::game::{self, GameInfo, Release};
 use crate::phpbb::{self, ForumPage, Session, TopicPage};
+use crate::steam::{self, SteamApp, SteamClient, SteamMatch};
 
 #[tauri::command]
 pub async fn forum_session(app: AppHandle, client: State<'_, ForumClient>) -> Result<Session> {
@@ -72,63 +76,130 @@ async fn topic_page(
     Ok(phpbb::parse_topic(&html, &url, topic_id, start))
 }
 
-#[derive(Debug, Serialize)]
-pub struct GameDetail {
+/// How long cached data stays usable. Forum entries are also keyed by the
+/// topic's reply count, so new replies invalidate them sooner.
+const TOPIC_MAX_AGE: Duration = Duration::from_secs(24 * 3600);
+const STEAM_APP_MAX_AGE: Duration = Duration::from_secs(3 * 24 * 3600);
+const STEAM_MATCH_MAX_AGE: Duration = Duration::from_secs(30 * 24 * 3600);
+const STEAM_NO_MATCH_MAX_AGE: Duration = Duration::from_secs(7 * 24 * 3600);
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GameFirstPage {
     pub topic_id: u64,
     pub title: Option<String>,
     /// From the topic's first post, when it holds the game's details.
     pub info: Option<GameInfo>,
-    /// Newest first.
+    /// Releases on page 1, newest first.
     pub releases: Vec<Release>,
-    /// `start=` offsets of the topic pages that were read.
-    pub pages_read: Vec<u32>,
     pub total_pages: Option<u32>,
+    /// Posts per page, when the topic has more than one page.
+    pub per_page: Option<u32>,
+    /// `start=` of the topic's last page.
+    pub last_start: u32,
 }
 
-/// A game topic's details and releases. Reads page 1 for the game info,
-/// then up to `max_pages - 1` pages from the end (default 5 pages in all),
-/// since new releases are posted at the end of long topics. Pages are
-/// fetched one after another to keep the load on the forum low.
+/// Page 1 of a game topic: the game's details and the first releases.
+/// `replies` (from the forum listing) keys the cache: a topic with new
+/// replies is fetched again.
 #[tauri::command]
-pub async fn fetch_game(
+pub async fn game_first_page(
     app: AppHandle,
     client: State<'_, ForumClient>,
+    cache: State<'_, Cache>,
     topic_id: u64,
-    max_pages: Option<u32>,
-) -> Result<GameDetail> {
-    let max_pages = max_pages.unwrap_or(5).max(1) as usize;
-    let first = topic_page(&app, &client, topic_id, 0).await?;
-    let info = first.posts.first().and_then(game::parse_game_info);
-    let title = first.title.clone();
-    let total_pages = first.pagination.total_pages;
-
-    let mut pages = Vec::new();
-    // Page 1 links to page 2, which gives the page size.
-    if let Some(per_page) = first.pagination.next_start.filter(|&n| n > 0) {
-        let mut start = first.pagination.last_start;
-        while start > 0 && pages.len() + 1 < max_pages {
-            pages.push(topic_page(&app, &client, topic_id, start).await?);
-            start = start.saturating_sub(per_page);
-        }
+    replies: Option<u32>,
+) -> Result<GameFirstPage> {
+    let key = topic_id.to_string();
+    let version = replies.map(|r| r.to_string());
+    if let Some(hit) = cache.get("topic_first", &key, version.as_deref(), TOPIC_MAX_AGE) {
+        return Ok(hit);
     }
-    pages.push(first);
-    // `pages` runs from the last page back to page 1; read each newest first.
-    let releases = pages
+    let page = topic_page(&app, &client, topic_id, 0).await?;
+    let first = GameFirstPage {
+        topic_id,
+        title: page.title.clone(),
+        info: page.posts.first().and_then(game::parse_game_info),
+        releases: page
+            .posts
+            .iter()
+            .rev()
+            .filter_map(game::parse_release)
+            .collect(),
+        total_pages: page.pagination.total_pages,
+        per_page: page.pagination.next_start.filter(|&n| n > 0),
+        last_start: page.pagination.last_start,
+    };
+    cache.put("topic_first", &key, version.as_deref(), &first);
+    Ok(first)
+}
+
+/// Releases on one page of a topic, newest first. Cached like
+/// [`game_first_page`].
+#[tauri::command]
+pub async fn game_releases(
+    app: AppHandle,
+    client: State<'_, ForumClient>,
+    cache: State<'_, Cache>,
+    topic_id: u64,
+    start: u32,
+    replies: Option<u32>,
+) -> Result<Vec<Release>> {
+    let key = format!("{topic_id}:{start}");
+    let version = replies.map(|r| r.to_string());
+    if let Some(hit) = cache.get("topic_releases", &key, version.as_deref(), TOPIC_MAX_AGE) {
+        return Ok(hit);
+    }
+    let page = topic_page(&app, &client, topic_id, start).await?;
+    let releases: Vec<Release> = page
+        .posts
         .iter()
-        .flat_map(|page| page.posts.iter().rev())
+        .rev()
         .filter_map(game::parse_release)
         .collect();
-    let mut pages_read: Vec<u32> = pages.iter().map(|p| p.pagination.start).collect();
-    pages_read.sort_unstable();
+    cache.put("topic_releases", &key, version.as_deref(), &releases);
+    Ok(releases)
+}
 
-    Ok(GameDetail {
-        topic_id,
-        title,
-        info,
-        releases,
-        pages_read,
-        total_pages,
-    })
+/// Steam store details for an app; `None` if Steam doesn't have it.
+#[tauri::command]
+pub async fn steam_app(
+    steam: State<'_, SteamClient>,
+    cache: State<'_, Cache>,
+    app_id: u64,
+) -> Result<Option<SteamApp>> {
+    let key = app_id.to_string();
+    if let Some(hit) = cache.get::<Option<SteamApp>>("steam_app", &key, None, STEAM_APP_MAX_AGE) {
+        return Ok(hit);
+    }
+    let details = steam.app_details(app_id).await?;
+    cache.put("steam_app", &key, None, &details);
+    Ok(details)
+}
+
+/// The Steam app a game name matches, for card images. Misses are cached
+/// too (for less long), so unmatched names aren't searched over and over.
+#[tauri::command]
+pub async fn steam_match(
+    steam: State<'_, SteamClient>,
+    cache: State<'_, Cache>,
+    name: String,
+) -> Result<Option<SteamMatch>> {
+    let key = steam::normalize_name(&name);
+    if let Some(hit) = cache.get::<SteamMatch>("steam_match", &key, None, STEAM_MATCH_MAX_AGE) {
+        return Ok(Some(hit));
+    }
+    if cache
+        .get::<()>("steam_no_match", &key, None, STEAM_NO_MATCH_MAX_AGE)
+        .is_some()
+    {
+        return Ok(None);
+    }
+    let found = steam.find(&name).await?;
+    match &found {
+        Some(m) => cache.put("steam_match", &key, None, m),
+        None => cache.put("steam_no_match", &key, None, &()),
+    }
+    Ok(found)
 }
 
 /// Saves the raw HTML of a forum page (e.g. `viewforum.php?f=10`) to the

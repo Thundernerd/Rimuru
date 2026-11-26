@@ -6,13 +6,13 @@
 use std::sync::LazyLock;
 
 use regex::Regex;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::phpbb::{LinkKind, Post, PostLink};
 
 // ---------------------------------------------------------------- game info
 
-#[derive(Debug, Clone, Serialize, PartialEq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct GameInfo {
     pub title: Option<String>,
     pub header_image: Option<String>,
@@ -36,13 +36,13 @@ pub struct GameInfo {
     pub images: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Field {
     pub key: String,
     pub value: String,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct RequirementSet {
     /// e.g. `Minimum` or `Recommended`; empty if the post has no label.
     pub label: String,
@@ -205,7 +205,7 @@ pub fn parse_game_info(post: &Post) -> Option<GameInfo> {
 
 // ---------------------------------------------------------------- releases
 
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Release {
     pub post_id: u64,
     pub author: Option<String>,
@@ -222,7 +222,7 @@ pub struct Release {
     pub links: Vec<DownloadLink>,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DownloadLink {
     pub url: String,
     pub host: String,

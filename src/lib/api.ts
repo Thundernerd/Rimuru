@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-import type { CommandError, ForumPage, GameDetail, Session } from "./types";
+import type { CommandError, ForumPage, GameFirstPage, Release, Session, SteamApp, SteamMatch } from "./types";
 
 /** The forum's main game listing ("Main Forum"). */
 export const MAIN_FORUM_ID = 10;
@@ -46,7 +46,12 @@ export function errorMessage(e: unknown): string {
 export const api = {
   session: () => forum<Session>("forum_session"),
   forumPage: (forumId: number, start: number) => forum<ForumPage>("fetch_forum", { forumId, start }),
-  game: (topicId: number) => forum<GameDetail>("fetch_game", { topicId }),
+  gameFirstPage: (topicId: number, replies: number | null) =>
+    forum<GameFirstPage>("game_first_page", { topicId, replies }),
+  gameReleases: (topicId: number, start: number, replies: number | null) =>
+    forum<Release[]>("game_releases", { topicId, start, replies }),
+  steamApp: (appId: number) => invoke<SteamApp | null>("steam_app", { appId }),
+  steamMatch: (name: string) => invoke<SteamMatch | null>("steam_match", { name }),
   saveSnapshot: (path: string) => forum<string>("save_snapshot", { path }),
   showForumWindow: (path?: string) => invoke<void>("show_forum_window", { path }),
   hideForumWindow: () => invoke<void>("hide_forum_window"),

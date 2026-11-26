@@ -1,9 +1,11 @@
+mod cache;
 mod client;
 mod commands;
 mod error;
 mod forum_window;
 mod game;
 mod phpbb;
+mod steam;
 
 use tauri::{Manager, WindowEvent};
 
@@ -12,7 +14,10 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(client::ForumClient::new().expect("failed to build HTTP client"))
+        .manage(steam::SteamClient::new().expect("failed to build Steam client"))
         .setup(|app| {
+            let cache_path = app.path().app_data_dir()?.join("cache.sqlite");
+            app.manage(cache::Cache::open(&cache_path));
             forum_window::create(app.handle())?;
             Ok(())
         })
@@ -32,7 +37,10 @@ pub fn run() {
             commands::hide_forum_window,
             commands::fetch_forum,
             commands::fetch_topic,
-            commands::fetch_game,
+            commands::game_first_page,
+            commands::game_releases,
+            commands::steam_app,
+            commands::steam_match,
             commands::save_snapshot,
         ])
         .run(tauri::generate_context!())
