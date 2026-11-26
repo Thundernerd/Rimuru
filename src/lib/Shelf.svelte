@@ -1,6 +1,7 @@
 <script lang="ts">
   import GameCard from "./GameCard.svelte";
   import Icon from "./Icon.svelte";
+  import { arrowNavigation } from "./keyboard";
   import type { TopicSummary } from "./types";
 
   let {
@@ -38,7 +39,7 @@
         <Icon name="forward" size={16} />
       </button>
     </header>
-    <div class="row" bind:this={row}>
+    <div class="row" bind:this={row} use:arrowNavigation>
       {#each topics as topic (topic.id)}
         <div class="slot"><GameCard {topic} {onselect} /></div>
       {/each}

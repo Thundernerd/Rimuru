@@ -84,6 +84,15 @@
 
   function onkeydown(e: KeyboardEvent) {
     const mod = mac ? e.metaKey : e.ctrlKey;
+    if (e.key === "Escape" && !mod && !e.defaultPrevented) {
+      const active = document.activeElement;
+      if (active instanceof HTMLInputElement || active instanceof HTMLSelectElement || active instanceof HTMLTextAreaElement) {
+        active.blur();
+      } else if (!document.querySelector('[role="dialog"]')) {
+        goBack();
+      }
+      return;
+    }
     if (mod && e.key.toLowerCase() === "k") {
       e.preventDefault();
       focusSearch();

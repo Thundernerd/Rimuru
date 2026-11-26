@@ -4,6 +4,7 @@
 
   import { api, errorMessage } from "./api";
   import GameCard from "./GameCard.svelte";
+  import { arrowNavigation } from "./keyboard";
   import { setStatus } from "./status.svelte";
   import { loadVisits, rememberListed } from "./visits.svelte";
   import type { Listing, TopicSummary } from "./types";
@@ -115,7 +116,7 @@
   {/if}
 </div>
 
-<div class="grid">
+<div class="grid" use:arrowNavigation>
   {#each shown as topic (topic.id)}
     <GameCard {topic} {onselect} />
   {/each}
