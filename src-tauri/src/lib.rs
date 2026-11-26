@@ -18,6 +18,13 @@ pub fn run() {
         .setup(|app| {
             let cache_path = app.path().app_data_dir()?.join("cache.sqlite");
             app.manage(cache::Cache::open(&cache_path));
+            let handle = app.handle().clone();
+            std::thread::spawn(move || {
+                let removed = handle
+                    .state::<cache::Cache>()
+                    .prune(&commands::expiring_kinds(), commands::PERMANENT_KINDS);
+                log::info!("pruned {removed} cache entries");
+            });
             forum_window::create(app.handle())?;
             Ok(())
         })

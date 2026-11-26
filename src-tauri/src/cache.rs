@@ -95,6 +95,44 @@ impl Cache {
             .unwrap_or_default()
     }
 
+    pub fn prune(&self, expiring: &[(&str, Duration)], permanent: &[&str]) -> usize {
+        let Ok(conn) = self.conn.lock() else {
+            return 0;
+        };
+        let mut removed = 0;
+        for (kind, max_age) in expiring {
+            let oldest = now() - max_age.as_secs().min(i64::MAX as u64) as i64;
+            removed += conn
+                .execute(
+                    "DELETE FROM entries WHERE kind = ?1 AND stored_at < ?2",
+                    params![kind, oldest],
+                )
+                .unwrap_or(0);
+        }
+        let known: Vec<&str> = expiring
+            .iter()
+            .map(|(kind, _)| *kind)
+            .chain(permanent.iter().copied())
+            .collect();
+        if !known.is_empty() {
+            let slots = (1..=known.len())
+                .map(|i| format!("?{i}"))
+                .collect::<Vec<_>>()
+                .join(", ");
+            removed += conn
+                .execute(
+                    &format!("DELETE FROM entries WHERE kind NOT IN ({slots})"),
+                    rusqlite::params_from_iter(known.iter()),
+                )
+                .unwrap_or(0);
+        }
+        if removed > 0 {
+            let _ = conn.execute_batch("VACUUM;");
+        }
+        let _ = conn.execute_batch("PRAGMA optimize;");
+        removed
+    }
+
     pub fn delete(&self, kind: &str, key: &str) {
         let Ok(conn) = self.conn.lock() else { return };
         if let Err(e) = conn.execute(
@@ -160,6 +198,30 @@ mod tests {
             )
             .unwrap();
         assert_eq!(cache.list::<i32>("visit", DAY), vec![2, 1]);
+    }
+
+    #[test]
+    fn prunes_expired_and_retired_kinds() {
+        let cache = Cache::in_memory();
+        cache.put("topic", "old", None, &1);
+        cache.put("topic", "new", None, &2);
+        cache.put("topic_v1", "x", None, &3);
+        cache.put("visit", "1", None, &4);
+        cache
+            .conn
+            .lock()
+            .unwrap()
+            .execute(
+                "UPDATE entries SET stored_at = stored_at - 7200 WHERE key IN ('old', '1')",
+                [],
+            )
+            .unwrap();
+        let removed = cache.prune(&[("topic", Duration::from_secs(3600))], &["visit"]);
+        assert_eq!(removed, 2);
+        assert_eq!(cache.get::<i32>("topic", "old", None, DAY), None);
+        assert_eq!(cache.get::<i32>("topic", "new", None, DAY), Some(2));
+        assert_eq!(cache.get::<i32>("topic_v1", "x", None, DAY), None);
+        assert_eq!(cache.get::<i32>("visit", "1", None, DAY), Some(4));
     }
 
     #[test]
