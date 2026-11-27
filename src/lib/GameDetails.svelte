@@ -77,6 +77,7 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     background: var(--surface);
+    min-width: 0;
   }
   h3 {
     margin: 0 0 10px;
@@ -85,6 +86,7 @@
   .text {
     margin: 0;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     line-height: 1.6;
     font-size: 13px;
     color: #c9cedb;
@@ -116,6 +118,12 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+  }
+  /* Features can be whole sentences: let them wrap inside their pill. */
+  .tags .tag {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
   .langs {
     margin: 0;
