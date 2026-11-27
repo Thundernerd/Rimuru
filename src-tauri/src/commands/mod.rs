@@ -1,3 +1,4 @@
+pub mod bookmarks;
 pub mod forum;
 pub mod game;
 pub mod library;

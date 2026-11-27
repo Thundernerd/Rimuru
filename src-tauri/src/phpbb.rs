@@ -27,6 +27,9 @@ selector!(POST_ANCHOR, r#"a[name^="p"]"#);
 selector!(POST_AUTHOR, "b.postauthor");
 selector!(POST_HEADER, "td.gensmall");
 selector!(POST_BODY, "div.postbody");
+selector!(BOOKMARK_LINK, r#"a[href*="bookmark=1"]"#);
+selector!(TOPIC_LINK, r#"a[href*="viewtopic.php"]"#);
+selector!(MARK_CHECKBOX, r#"input[type="checkbox"][name^="t["]"#);
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct ForumPage {
@@ -173,6 +176,123 @@ pub fn parse_session(html: &str) -> Session {
         .map(|(name, _)| name.trim().to_string())
         .filter(|name| !name.is_empty());
     Session::LoggedIn { username }
+}
+
+/// The topic page's "Bookmark topic" / "Remove from bookmarks" link. phpBB only
+/// shows it to logged-in users, and following it toggles the bookmark.
+#[derive(Debug, Clone, PartialEq)]
+pub struct BookmarkLink {
+    pub bookmarked: bool,
+    pub url: Url,
+}
+
+pub fn parse_bookmark_link(html: &str, page_url: &Url) -> Option<BookmarkLink> {
+    let doc = Html::parse_document(html);
+    doc.select(&BOOKMARK_LINK).find_map(|a| {
+        let url = page_url.join(a.value().attr("href")?).ok()?;
+        query_u64(&url, "t")?;
+        let label = format!(
+            "{} {}",
+            text_of(a),
+            a.value().attr("title").unwrap_or_default()
+        )
+        .to_ascii_lowercase();
+        Some(BookmarkLink {
+            bookmarked: label.contains("remove"),
+            url,
+        })
+    })
+}
+
+/// One page of the User Control Panel's bookmarks (`ucp.php?i=main&mode=bookmarks`).
+/// Only the topics' ids and titles are kept: the list's columns aren't the forum
+/// listing's, so no counts are read from it.
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct BookmarksPage {
+    pub topics: Vec<TopicSummary>,
+    pub pagination: Pagination,
+}
+
+pub fn parse_bookmarks(html: &str, page_url: &Url, start: u32) -> BookmarksPage {
+    let doc = Html::parse_document(html);
+    let mut seen = HashSet::new();
+    let mut topics = Vec::new();
+    for row in doc.select(&TR) {
+        if row.select(&TR).next().is_some() {
+            continue;
+        }
+        let Some((id, link)) = bookmark_row(row, page_url) else {
+            continue;
+        };
+        if !seen.insert(id) {
+            continue;
+        }
+        let title = text_of(link.0);
+        let (prefixes, name, labels) = split_title(&title);
+        topics.push(TopicSummary {
+            id,
+            kind: TopicKind::Normal,
+            name,
+            prefixes,
+            labels,
+            title,
+            url: clean_url(link.1),
+            author: None,
+            created: None,
+            replies: None,
+            views: None,
+            last_post_at: None,
+            last_poster: None,
+        });
+    }
+    BookmarksPage {
+        topics,
+        pagination: parse_pagination(&doc, page_url, start, |u| {
+            u.query_pairs()
+                .any(|(k, v)| k == "mode" && v == "bookmarks")
+        }),
+    }
+}
+
+/// A bookmarks row's topic id, from its "Mark" checkbox (`t[<id>]`) or else its
+/// title link, and the link to the topic itself (not to its last post or a page).
+fn bookmark_row<'a>(row: ElementRef<'a>, page_url: &Url) -> Option<(u64, (ElementRef<'a>, Url))> {
+    let links: Vec<(ElementRef, Url)> = row
+        .select(&TOPIC_LINK)
+        .filter_map(|a| Some((a, page_url.join(a.value().attr("href")?).ok()?)))
+        .filter(|(a, u)| {
+            !text_of(*a).is_empty()
+                && ["p", "view", "start"]
+                    .iter()
+                    .all(|k| !u.query_pairs().any(|(q, _)| q == *k))
+        })
+        .collect();
+    let id = row
+        .select(&MARK_CHECKBOX)
+        .find_map(|input| {
+            input
+                .value()
+                .attr("name")?
+                .strip_prefix("t[")?
+                .strip_suffix(']')?
+                .parse()
+                .ok()
+        })
+        .or_else(|| {
+            links
+                .iter()
+                .find(|(a, _)| is_topic_title(*a))
+                .and_then(|(_, u)| query_u64(u, "t"))
+        })?;
+    let link = links
+        .into_iter()
+        .find(|(_, u)| query_u64(u, "t") == Some(id))?;
+    Some((id, link))
+}
+
+fn is_topic_title(a: ElementRef) -> bool {
+    let has_class = |el: ElementRef| el.value().classes().any(|c| c == "topictitle");
+    has_class(a) || a.parent().and_then(ElementRef::wrap).is_some_and(has_class)
 }
 
 pub fn parse_forum(html: &str, page_url: &Url, forum_id: u64, start: u32) -> ForumPage {
@@ -1018,6 +1138,60 @@ mod tests {
         );
         let out = r#"<a href="./ucp.php?mode=login">Login</a>"#;
         assert_eq!(parse_session(out), Session::LoggedOut);
+    }
+
+    #[test]
+    fn bookmark_link_states() {
+        let page = url("viewtopic.php?t=159639");
+        let link = parse_bookmark_link(TOPIC, &page).unwrap();
+        assert!(!link.bookmarked);
+        assert_eq!(query_u64(&link.url, "t"), Some(159639));
+        assert!(
+            link.url
+                .as_str()
+                .starts_with("https://cs.rin.ru/forum/viewtopic.php?")
+        );
+        assert!(
+            link.url
+                .query_pairs()
+                .any(|(k, v)| k == "hash" && v == "00000000")
+        );
+
+        let marked = r#"<a href="./viewtopic.php?f=10&amp;t=7&amp;bookmark=1&amp;hash=ab12cd34"
+            title="Remove from bookmarks">Remove from bookmarks</a>"#;
+        let link = parse_bookmark_link(marked, &page).unwrap();
+        assert!(link.bookmarked);
+
+        let signed_out = r#"<a href="./viewtopic.php?f=10&amp;t=7&amp;view=print">Print view</a>"#;
+        assert_eq!(parse_bookmark_link(signed_out, &page), None);
+    }
+
+    #[test]
+    fn bookmarks_list() {
+        let html = include_str!("../tests/fixtures/ucp_bookmarks_sample.html");
+        let page = parse_bookmarks(html, &url("ucp.php?i=main&mode=bookmarks&start=0"), 0);
+        let ids: Vec<u64> = page.topics.iter().map(|t| t.id).collect();
+        assert_eq!(ids, [80048, 135719, 91289]);
+        let first = &page.topics[0];
+        assert_eq!(first.title, "[Info] Example Game: Deluxe Edition [Multi]");
+        assert_eq!(first.name, "Example Game: Deluxe Edition");
+        assert_eq!(
+            first.url,
+            "https://cs.rin.ru/forum/viewtopic.php?f=10&t=80048"
+        );
+        assert_eq!(page.topics[1].title, "Another Game");
+        assert_eq!(
+            page.topics[1].url,
+            "https://cs.rin.ru/forum/viewtopic.php?f=10&t=135719"
+        );
+        assert!(page.topics.iter().all(|t| t.replies.is_none()));
+        assert_eq!(page.pagination.next_start, Some(25));
+        assert_eq!(
+            parse_session(html),
+            Session::LoggedIn {
+                username: Some("TestUser".into())
+            }
+        );
     }
 
     #[test]

@@ -7,6 +7,7 @@ export const DEFAULT_SETTINGS: Settings = {
   refresh_minutes: 15,
   notifications: true,
   dev_tools: false,
+  sync_bookmarks: false,
 };
 
 export const settings = $state({ value: { ...DEFAULT_SETTINGS }, loaded: false });
