@@ -70,6 +70,9 @@ export const api = {
   followTopic: (topic: TopicSummary) => invoke<Follow>("follow_topic", { topic }),
   unfollowTopic: (topicId: number) => invoke<void>("unfollow_topic", { topicId }),
   followedTopics: () => invoke<Follow[]>("followed_topics"),
+  setForumBookmark: (topicId: number, bookmarked: boolean) =>
+    forum<boolean>("set_forum_bookmark", { topicId, bookmarked }),
+  importForumBookmarks: () => forum<Follow[]>("import_forum_bookmarks"),
   markOwned: (topicId: number, release: Release) => invoke<Owned>("mark_owned", { topicId, release }),
   clearOwned: (topicId: number) => invoke<void>("clear_owned", { topicId }),
   ownedReleases: () => invoke<Owned[]>("owned_releases"),

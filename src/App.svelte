@@ -3,7 +3,7 @@
 
   import { api, MAIN_FORUM_ID } from "./lib/api";
   import BrowseView from "./lib/BrowseView.svelte";
-  import { loadFollows } from "./lib/follows.svelte";
+  import { importBookmarks, loadFollows } from "./lib/follows.svelte";
   import { loadOwned } from "./lib/owned.svelte";
   import { startNotifications } from "./lib/notify.svelte";
   import { startRefresh, stopRefresh } from "./lib/refresh.svelte";
@@ -74,6 +74,13 @@
       clearForumPages();
       gridKey++;
     }
+  });
+
+  $effect(() => {
+    if (!settings.loaded) return;
+    void settings.value.sync_bookmarks;
+    void session.current;
+    untrack(() => importBookmarks());
   });
 
   $effect(() => {

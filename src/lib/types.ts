@@ -151,4 +151,5 @@ export type Settings = {
   refresh_minutes: number;
   notifications: boolean;
   dev_tools: boolean;
+  sync_bookmarks: boolean;
 };

@@ -95,6 +95,30 @@ pub async fn unfollow_topic(cache: State<'_, Cache>, topic_id: u64) -> Result<()
     Ok(())
 }
 
+/// Follows each topic not followed yet, as of now; returns the new Follows.
+/// Topics already followed keep their Follow, `followed_at` included.
+pub fn add_follows(cache: &Cache, topics: Vec<TopicSummary>) -> Vec<Follow> {
+    let now = unix_now();
+    topics
+        .into_iter()
+        .filter_map(|topic| {
+            let key = topic.id.to_string();
+            if cache
+                .get::<Follow>("follow", &key, None, VISIT_MAX_AGE)
+                .is_some()
+            {
+                return None;
+            }
+            let follow = Follow {
+                topic,
+                followed_at: now,
+            };
+            cache.put("follow", &key, None, &follow);
+            Some(follow)
+        })
+        .collect()
+}
+
 #[tauri::command]
 pub async fn followed_topics(cache: State<'_, Cache>) -> Result<Vec<Follow>> {
     let mut follows = cache.list::<Follow>("follow", VISIT_MAX_AGE);
@@ -155,4 +179,49 @@ pub async fn mark_notified(cache: State<'_, Cache>, post_ids: Vec<u64>) -> Resul
         cache.put("notified", &id.to_string(), None, &unix_now());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::phpbb::TopicKind;
+
+    fn topic(id: u64) -> TopicSummary {
+        TopicSummary {
+            id,
+            kind: TopicKind::Normal,
+            title: format!("Game {id}"),
+            name: format!("Game {id}"),
+            prefixes: vec![],
+            labels: vec![],
+            url: format!("https://cs.rin.ru/forum/viewtopic.php?t={id}"),
+            author: None,
+            created: None,
+            replies: None,
+            views: None,
+            last_post_at: None,
+            last_poster: None,
+        }
+    }
+
+    #[test]
+    fn add_follows_keeps_existing_follows() {
+        let cache = Cache::in_memory();
+        let old = Follow {
+            topic: topic(1),
+            followed_at: 5,
+        };
+        cache.put("follow", "1", None, &old);
+
+        let added = add_follows(&cache, vec![topic(1), topic(2), topic(2)]);
+
+        assert_eq!(added.iter().map(|f| f.topic.id).collect::<Vec<_>>(), [2]);
+        let one: Follow = cache.get("follow", "1", None, VISIT_MAX_AGE).unwrap();
+        assert_eq!(one, old);
+        assert!(
+            cache
+                .get::<Follow>("follow", "2", None, VISIT_MAX_AGE)
+                .is_some()
+        );
+    }
 }

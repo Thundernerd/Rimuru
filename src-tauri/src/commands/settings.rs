@@ -14,6 +14,7 @@ pub struct Settings {
     pub refresh_minutes: u32,
     pub notifications: bool,
     pub dev_tools: bool,
+    pub sync_bookmarks: bool,
 }
 
 impl Default for Settings {
@@ -23,6 +24,7 @@ impl Default for Settings {
             refresh_minutes: 15,
             notifications: true,
             dev_tools: false,
+            sync_bookmarks: false,
         }
     }
 }

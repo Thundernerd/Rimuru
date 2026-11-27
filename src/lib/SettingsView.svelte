@@ -92,6 +92,17 @@
         onchange={(e) => updateSettings({ notifications: e.currentTarget.checked })}
       />
     </label>
+    <label class="row">
+      <span class="label">
+        Sync follows with forum bookmarks
+        <small>When signed in, following a game bookmarks its topic on your cs.rin.ru account, and topics bookmarked there are followed here.</small>
+      </span>
+      <input
+        type="checkbox"
+        checked={settings.value.sync_bookmarks}
+        onchange={(e) => updateSettings({ sync_bookmarks: e.currentTarget.checked })}
+      />
+    </label>
     <div class="row">
       <span class="label">
         Check now

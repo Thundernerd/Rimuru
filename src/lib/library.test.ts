@@ -6,6 +6,8 @@ const api = vi.hoisted(() => ({
   followTopic: vi.fn(),
   unfollowTopic: vi.fn(),
   followedTopics: vi.fn(),
+  setForumBookmark: vi.fn(),
+  importForumBookmarks: vi.fn(),
   markOwned: vi.fn(),
   clearOwned: vi.fn(),
   ownedReleases: vi.fn(),
@@ -20,6 +22,10 @@ type Follows = typeof import("./follows.svelte");
 type Visits = typeof import("./visits.svelte");
 type OwnedStore = typeof import("./owned.svelte");
 type Status = typeof import("./status.svelte");
+type SessionStore = typeof import("./session.svelte");
+type SettingsStore = typeof import("./settings.svelte");
+let session: SessionStore;
+let settings: SettingsStore;
 let follows: Follows;
 let visits: Visits;
 let owned: OwnedStore;
@@ -68,6 +74,8 @@ beforeEach(async () => {
   follows = await import("./follows.svelte");
   owned = await import("./owned.svelte");
   status = await import("./status.svelte");
+  session = await import("./session.svelte");
+  settings = await import("./settings.svelte");
 });
 
 describe("new replies", () => {
@@ -119,6 +127,66 @@ describe("following", () => {
     follows.follows.set(3, { topic: topic(3), followed_at: 100 });
     visits.visits.set(3, visit(topic(3), 5));
     expect(follows.followedTopics().map((t) => t.id)).toEqual([3, 1, 2]);
+  });
+});
+
+describe("forum bookmark sync", () => {
+  function signIn(sync = true) {
+    session.session.current = { state: "logged_in", username: "TestUser" };
+    settings.settings.value = { ...settings.settings.value, sync_bookmarks: sync };
+  }
+
+  it("leaves the forum alone unless sync is on and signed in", async () => {
+    api.followTopic.mockResolvedValue({ topic: topic(1), followed_at: 1 });
+    await follows.toggleFollow(topic(1));
+    signIn(false);
+    await follows.toggleFollow(topic(1));
+    await follows.importBookmarks();
+    expect(api.setForumBookmark).not.toHaveBeenCalled();
+    expect(api.importForumBookmarks).not.toHaveBeenCalled();
+  });
+
+  it("mirrors follows and unfollows to bookmarks", async () => {
+    signIn();
+    api.followTopic.mockResolvedValue({ topic: topic(1), followed_at: 1 });
+    api.setForumBookmark.mockResolvedValue(true);
+    await follows.toggleFollow(topic(1));
+    expect(api.setForumBookmark).toHaveBeenLastCalledWith(1, true);
+    await follows.toggleFollow(topic(1));
+    expect(api.setForumBookmark).toHaveBeenLastCalledWith(1, false);
+  });
+
+  it("keeps the local follow when the forum fails", async () => {
+    signIn();
+    api.followTopic.mockResolvedValue({ topic: topic(1), followed_at: 1 });
+    api.setForumBookmark.mockRejectedValue(new Error("security check"));
+    await follows.toggleFollow(topic(1));
+    expect(follows.isFollowed(1)).toBe(true);
+    expect(status.status.text).toContain("forum bookmark");
+  });
+
+  it("imports bookmarks once per sign-in", async () => {
+    signIn();
+    api.importForumBookmarks.mockResolvedValue([{ topic: topic(7), followed_at: 9 }]);
+    await follows.importBookmarks();
+    await follows.importBookmarks();
+    expect(follows.isFollowed(7)).toBe(true);
+    expect(api.importForumBookmarks).toHaveBeenCalledTimes(1);
+
+    session.session.current = { state: "logged_out" };
+    await follows.importBookmarks();
+    signIn();
+    await follows.importBookmarks();
+    expect(api.importForumBookmarks).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries the import after a failure", async () => {
+    signIn();
+    api.importForumBookmarks.mockRejectedValueOnce(new Error("offline")).mockResolvedValue([]);
+    await follows.importBookmarks();
+    expect(status.status.text).toContain("offline");
+    await follows.importBookmarks();
+    expect(api.importForumBookmarks).toHaveBeenCalledTimes(2);
   });
 });
 
