@@ -426,7 +426,10 @@ mod tests {
         );
         assert_eq!(app.movies[1].mp4.as_deref(), Some("b.mp4"));
 
-        assert_eq!(app.short_description.as_deref(), Some("A roguelike auto-battler."));
+        assert_eq!(
+            app.short_description.as_deref(),
+            Some("A roguelike auto-battler.")
+        );
 
         let missing = json!({ "1": { "success": false } });
         assert_eq!(parse_app_details(&missing, 1), None);
@@ -444,7 +447,10 @@ mod tests {
             app.short_description.as_deref(),
             Some("Fast & furious \"co-op\" 'fun' <3 \u{263A}")
         );
-        assert_eq!(decode_entities("Plain text, no entities"), "Plain text, no entities");
+        assert_eq!(
+            decode_entities("Plain text, no entities"),
+            "Plain text, no entities"
+        );
         assert_eq!(decode_entities("Rock & roll"), "Rock & roll");
     }
 
