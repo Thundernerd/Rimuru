@@ -18,6 +18,8 @@
     onfollow,
     ontrailer,
     onsnapshot,
+    onrefresh,
+    refreshing,
   }: {
     topic: TopicSummary;
     forum: GameInfo | null;
@@ -32,6 +34,8 @@
     onfollow: () => void;
     ontrailer: () => void;
     onsnapshot: () => void;
+    onrefresh: () => void;
+    refreshing: boolean;
   } = $props();
 
   const PLATFORM_NAMES: Record<string, string> = { windows: "Windows", macos: "macOS", linux: "Linux" };
@@ -111,6 +115,15 @@
         >
           <Icon name="star" size={15} />
           {followed ? "Following" : "Follow"}
+        </button>
+        <button
+          type="button"
+          class="refresh"
+          onclick={onrefresh}
+          disabled={refreshing}
+          title="Re-fetch this topic's first page and recent release pages from the forum, skipping the cache. Older pages load again on request."
+        >
+          ↻ Refresh
         </button>
         {#if appId}
           <LinkButton url={steam?.store_url ?? `https://store.steampowered.com/app/${appId}`} label="Steam store" />
