@@ -196,6 +196,24 @@ fn string(value: &Value, field: &str) -> Option<String> {
         .map(str::to_string)
 }
 
+/// Steam's store API sends some text fields HTML-entity encoded, such as
+/// `&amp;` for `&`. Decodes them into plain text.
+fn decode_entities(text: &str) -> String {
+    if !text.contains('&') {
+        return text.to_string();
+    }
+    scraper::Html::parse_fragment(text)
+        .root_element()
+        .text()
+        .collect()
+}
+
+fn decoded(value: &Value, field: &str) -> Option<String> {
+    string(value, field)
+        .map(|s| decode_entities(&s).trim().to_string())
+        .filter(|s| !s.is_empty())
+}
+
 fn parse_languages(html: &str) -> Vec<String> {
     let list = html.split("<br>").next().unwrap_or("");
     let mut text = String::new();
@@ -241,11 +259,11 @@ pub fn parse_app_details(json: &Value, app_id: u64) -> Option<SteamApp> {
 
     Some(SteamApp {
         app_id,
-        name: string(d, "name").unwrap_or_default(),
+        name: decoded(d, "name").unwrap_or_default(),
         store_url: format!("https://store.steampowered.com/app/{app_id}"),
         header_image: string(d, "header_image"),
         capsule_image: string(d, "capsule_image"),
-        short_description: string(d, "short_description"),
+        short_description: decoded(d, "short_description"),
         developers: strings(d, "developers"),
         publishers: strings(d, "publishers"),
         release_date: string(&d["release_date"], "date"),
@@ -408,8 +426,26 @@ mod tests {
         );
         assert_eq!(app.movies[1].mp4.as_deref(), Some("b.mp4"));
 
+        assert_eq!(app.short_description.as_deref(), Some("A roguelike auto-battler."));
+
         let missing = json!({ "1": { "success": false } });
         assert_eq!(parse_app_details(&missing, 1), None);
+    }
+
+    #[test]
+    fn decodes_entities() {
+        let body = json!({ "7": { "success": true, "data": {
+            "name": "Sword &amp; Sorcery",
+            "short_description": "Fast &amp; furious &quot;co-op&quot; &#39;fun&#39; &lt;3 &#x263A;"
+        }}});
+        let app = parse_app_details(&body, 7).unwrap();
+        assert_eq!(app.name, "Sword & Sorcery");
+        assert_eq!(
+            app.short_description.as_deref(),
+            Some("Fast & furious \"co-op\" 'fun' <3 \u{263A}")
+        );
+        assert_eq!(decode_entities("Plain text, no entities"), "Plain text, no entities");
+        assert_eq!(decode_entities("Rock & roll"), "Rock & roll");
     }
 
     #[test]
