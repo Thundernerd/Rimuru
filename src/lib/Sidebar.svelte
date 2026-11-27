@@ -219,11 +219,17 @@
   .lists {
     flex: 1;
     min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     padding: 16px 10px;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     align-content: start;
     gap: 18px;
+  }
+  .lists > section,
+  li {
+    min-width: 0;
   }
   .lists .eyebrow {
     padding: 0 8px 8px;
@@ -240,6 +246,7 @@
     margin: 0;
     padding: 0;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1px;
   }
   li button {
