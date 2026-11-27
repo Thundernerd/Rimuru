@@ -440,11 +440,14 @@
   }
   @media (max-width: 960px) {
     .columns {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
   }
   .stack {
     display: grid;
+    /* One track the width of the column: an implicit `auto` track would grow to fit its
+       widest content, such as a long feature tag, and run under the side column (RIM-10). */
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
   .shot-skeletons {
