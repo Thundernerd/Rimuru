@@ -63,12 +63,43 @@ pub async fn record_visit(
 
 #[tauri::command]
 pub async fn recent_visits(cache: State<'_, Cache>, limit: Option<usize>) -> Result<Vec<Visit>> {
-    Ok(cache
+    Ok(list_recent(&cache, limit.unwrap_or(50)))
+}
+
+/// The visits that show under "Recently viewed": those that still name their topic.
+pub fn list_recent(cache: &Cache, limit: usize) -> Vec<Visit> {
+    cache
         .list::<Visit>("visit", VISIT_MAX_AGE)
         .into_iter()
         .filter(|v| v.topic.is_some())
-        .take(limit.unwrap_or(50))
-        .collect())
+        .take(limit)
+        .collect()
+}
+
+#[tauri::command]
+pub async fn clear_recent_visits(cache: State<'_, Cache>) -> Result<()> {
+    clear_recent(&cache);
+    Ok(())
+}
+
+/// Empties "Recently viewed" by dropping each visit's topic, keeping its reply count and
+/// release ids so new-reply counts and new-release highlighting keep their baseline.
+/// A later visit names the topic again.
+pub fn clear_recent(cache: &Cache) {
+    for visit in cache.list::<Visit>("visit", VISIT_MAX_AGE) {
+        if let Some(topic) = &visit.topic {
+            let key = topic.id.to_string();
+            cache.put(
+                "visit",
+                &key,
+                None,
+                &Visit {
+                    topic: None,
+                    ..visit
+                },
+            );
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -202,6 +233,52 @@ mod tests {
             last_post_at: None,
             last_poster: None,
         }
+    }
+
+    fn visit(id: u64, replies: u32, release_ids: Vec<u64>) -> Visit {
+        Visit {
+            replies: Some(replies),
+            release_ids,
+            visited_at: 1,
+            topic: Some(topic(id)),
+        }
+    }
+
+    #[test]
+    fn clear_recent_empties_recent_but_keeps_baselines() {
+        let cache = Cache::in_memory();
+        cache.put("visit", "1", None, &visit(1, 7, vec![10, 11]));
+        cache.put("visit", "2", None, &visit(2, 3, vec![]));
+        cache.put(
+            "follow",
+            "1",
+            None,
+            &Follow {
+                topic: topic(1),
+                followed_at: 5,
+            },
+        );
+        assert_eq!(list_recent(&cache, 50).len(), 2);
+
+        clear_recent(&cache);
+
+        assert!(list_recent(&cache, 50).is_empty());
+        let one: Visit = cache.get("visit", "1", None, VISIT_MAX_AGE).unwrap();
+        assert_eq!(one.replies, Some(7));
+        assert_eq!(one.release_ids, [10, 11]);
+        assert_eq!(one.topic, None);
+        let two: Visit = cache.get("visit", "2", None, VISIT_MAX_AGE).unwrap();
+        assert_eq!(two.replies, Some(3));
+        assert!(
+            cache
+                .get::<Follow>("follow", "1", None, VISIT_MAX_AGE)
+                .is_some()
+        );
+
+        cache.put("visit", "2", None, &visit(2, 4, vec![]));
+        let recent = list_recent(&cache, 50);
+        assert_eq!(recent.len(), 1);
+        assert_eq!(recent[0].topic.as_ref().map(|t| t.id), Some(2));
     }
 
     #[test]

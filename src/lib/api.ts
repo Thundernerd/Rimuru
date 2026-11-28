@@ -67,6 +67,7 @@ export const api = {
   topicVisits: (topicIds: number[]) => invoke<Record<string, Visit>>("topic_visits", { topicIds }),
   recordVisit: (topic: TopicSummary, releaseIds: number[]) => invoke<Visit>("record_visit", { topic, releaseIds }),
   recentVisits: (limit = 50) => invoke<Visit[]>("recent_visits", { limit }),
+  clearVisits: () => invoke<void>("clear_recent_visits"),
   followTopic: (topic: TopicSummary) => invoke<Follow>("follow_topic", { topic }),
   unfollowTopic: (topicId: number) => invoke<void>("unfollow_topic", { topicId }),
   followedTopics: () => invoke<Follow[]>("followed_topics"),
