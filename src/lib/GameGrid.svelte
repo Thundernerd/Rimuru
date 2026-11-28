@@ -1,6 +1,6 @@
 <script lang="ts">
   import { settings } from "./settings.svelte";
-  import { onMount } from "svelte";
+  import { onMount, type Snippet } from "svelte";
 
   import { api, errorMessage } from "./api";
   import GameCard from "./GameCard.svelte";
@@ -18,6 +18,7 @@
     errorText = "Couldn't load the game list",
     showSnapshot = true,
     filter = null,
+    actions,
   }: {
     onselect: (topic: TopicSummary) => void;
     fetchPage: (start: number) => Promise<Listing>;
@@ -27,6 +28,7 @@
     errorText?: string;
     showSnapshot?: boolean;
     filter?: ((topic: TopicSummary) => boolean) | null;
+    actions?: Snippet;
   } = $props();
 
   const MAX_AUTO_LOADS = 5;
@@ -111,6 +113,7 @@
     {#if filter}{shown.length} of {topics.length} games{:else}{topics.length} games{/if}
     {#if totalPages}· {pagesLoaded} of {totalPages} pages{/if}
   </span>
+  {@render actions?.()}
   {#if showSnapshot && settings.value.dev_tools}
     <button type="button" class="subtle" onclick={saveSnapshot} disabled={!pagesLoaded}>Save HTML</button>
   {/if}

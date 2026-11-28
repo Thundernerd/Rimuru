@@ -48,6 +48,12 @@ export async function recordVisit(topic: TopicSummary, releaseIds: number[]) {
   } catch {}
 }
 
+/** Empties "Recently viewed". The `visits` map stays, as it holds the new-reply baselines. */
+export async function clearRecent() {
+  await api.clearVisits();
+  recent.visits = [];
+}
+
 export function newReplies(topic: TopicSummary): number {
   const visit = visits.get(topic.id);
   const now = latest.get(topic.id) ?? topic;

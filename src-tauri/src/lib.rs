@@ -57,6 +57,7 @@ pub fn run() {
             commands::library::topic_visits,
             commands::library::record_visit,
             commands::library::recent_visits,
+            commands::library::clear_recent_visits,
             commands::library::follow_topic,
             commands::library::unfollow_topic,
             commands::library::followed_topics,

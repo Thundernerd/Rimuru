@@ -11,6 +11,7 @@ const api = vi.hoisted(() => ({
   markOwned: vi.fn(),
   clearOwned: vi.fn(),
   ownedReleases: vi.fn(),
+  clearVisits: vi.fn(),
 }));
 
 vi.mock("./api", () => ({
@@ -96,6 +97,31 @@ describe("new replies", () => {
   it("never goes negative", () => {
     visits.visits.set(4, visit(topic(4), 20));
     expect(visits.newReplies(topic(4, 18))).toBe(0);
+  });
+});
+
+describe("clearing recently viewed", () => {
+  it("empties the recent list and keeps the new-reply baselines", async () => {
+    const game = topic(1, 10);
+    visits.visits.set(1, visit(game, 7));
+    visits.recent.visits = [visit(game, 7), visit(topic(2), 3)];
+    api.clearVisits.mockResolvedValue(undefined);
+
+    await visits.clearRecent();
+
+    expect(api.clearVisits).toHaveBeenCalled();
+    expect(visits.recent.visits).toEqual([]);
+    expect(visits.visits.get(1)).toEqual(visit(game, 7));
+    expect(visits.newReplies(game)).toBe(3);
+  });
+
+  it("leaves the list as it was when clearing fails", async () => {
+    const before = [visit(topic(1), 7)];
+    visits.recent.visits = before;
+    api.clearVisits.mockRejectedValue(new Error("disk full"));
+
+    await expect(visits.clearRecent()).rejects.toThrow("disk full");
+    expect(visits.recent.visits).toEqual(before);
   });
 });
 
