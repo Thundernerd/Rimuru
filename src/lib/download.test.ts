@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  handOffEntry,
+  viaJdownloader,
   baseName,
   clearFinished,
   failEntry,
@@ -38,6 +40,23 @@ describe("isArchive", () => {
     expect(isArchive("/home/me/Games/Game v1.2.ZIP")).toBe(true);
     expect(isArchive("C:\\Games\\game.tar.gz")).toBe(true);
     expect(isArchive("/home/me/Games/setup.exe")).toBe(false);
+  });
+});
+
+describe("jdownloader entries", () => {
+  const base = { url: "u", host: "h", label: "l", topic: null, id: 1 };
+
+  it("marks an entry as going through JDownloader and keeps it running", () => {
+    const e = viaJdownloader(progressEntry(startEntry([], base), 1, { received: 5, total: 9 }), 1);
+    expect(e[0]).toMatchObject({ state: "running", via: "jdownloader", progress: { received: 0, total: null } });
+    expect(finishEntry(e, 1, "/d/a.zip")[0]).toMatchObject({ state: "done", via: "jdownloader" });
+  });
+
+  it("marks a handed-off entry, which is no longer running", () => {
+    const e = handOffEntry(viaJdownloader(startEntry([], base), 1), 1);
+    expect(e[0].state).toBe("handed_off");
+    expect(runningCount(e)).toBe(0);
+    expect(clearFinished(e)).toEqual([]);
   });
 });
 

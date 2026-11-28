@@ -39,6 +39,9 @@ pub enum Error {
 
     #[error(transparent)]
     Download(#[from] crate::download::DownloadError),
+
+    #[error(transparent)]
+    JDownloader(#[from] crate::jdownloader::JdError),
 }
 
 impl Error {
@@ -56,6 +59,7 @@ impl Error {
             Error::Io(_) => "io",
             Error::Extract(e) => e.kind(),
             Error::Download(e) => e.kind(),
+            Error::JDownloader(e) => e.kind(),
         }
     }
 }

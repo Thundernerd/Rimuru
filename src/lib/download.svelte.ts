@@ -6,13 +6,15 @@ import {
   clearFinished,
   failEntry,
   finishEntry,
+  handOffEntry,
   progressEntry,
   startEntry,
+  viaJdownloader,
   type DownloadEntry,
 } from "./download";
 import type { DownloadLink, DownloadProgress, TopicSummary } from "./types";
 
-type Running = { id: number; progress: DownloadProgress };
+type Running = { id: number; progress: DownloadProgress; via?: "jdownloader" };
 
 /** The in-app downloads running now, by link. */
 export const downloads = $state<{
@@ -45,15 +47,32 @@ export async function downloadLink(link: DownloadLink, topic: TopicSummary | nul
   downloads.running[url] = { id, progress: { received: 0, total: null } };
   delete downloads.done[url];
   downloads.entries = startEntry(downloads.entries, { id, url, host: link.host, label: link.label, topic });
+  const onProgress = (progress: DownloadProgress) => {
+    const running = downloads.running[url];
+    if (running?.id === id) running.progress = progress;
+    downloads.entries = progressEntry(downloads.entries, id, progress);
+  };
   try {
-    const path = await api.downloadFile(id, url, (progress) => {
+    let path: string;
+    try {
+      path = await api.downloadFile(id, url, onProgress);
+    } catch (e) {
+      if (!settings.value.jdownloader || (e as { kind?: string })?.kind !== "download_unsupported") throw e;
+      // The setting is on and the link needs a browser: JDownloader is the fallback.
+      downloads.entries = viaJdownloader(downloads.entries, id);
       const running = downloads.running[url];
-      if (running?.id === id) running.progress = progress;
-      downloads.entries = progressEntry(downloads.entries, id, progress);
-    });
+      if (running) running.via = "jdownloader";
+      const outcome = await api.sendToJdownloader(id, url, topic?.name ?? null, topic?.url ?? null, onProgress);
+      if ("handedOff" in outcome) {
+        downloads.entries = handOffEntry(downloads.entries, id);
+        setStatus("Sent to JDownloader; progress shows there");
+        return null;
+      }
+      path = outcome.path;
+    }
     downloads.done[url] = path;
     downloads.entries = finishEntry(downloads.entries, id, path);
-    setStatus(`Downloaded to ${path}`);
+    setStatus(`Downloaded to ${path}${downloads.entries.find((e) => e.id === id)?.via ? " via JDownloader" : ""}`);
     return path;
   } catch (e) {
     downloads.entries = failEntry(
@@ -62,7 +81,7 @@ export async function downloadLink(link: DownloadLink, topic: TopicSummary | nul
       errorMessage(e),
       (e as { kind?: string })?.kind === "download_cancelled",
     );
-    setStatus(`Couldn't download: ${errorMessage(e)}`);
+    setStatus(`Couldn't download: ${errorMessage(e)}. "Open in browser" still works.`);
     return null;
   } finally {
     delete downloads.running[url];

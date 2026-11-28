@@ -6,6 +6,7 @@ mod error;
 mod extract;
 mod forum_window;
 mod game;
+mod jdownloader;
 mod phpbb;
 mod steam;
 
@@ -21,6 +22,9 @@ pub fn run() {
         .manage(steam::SteamClient::new().expect("failed to build Steam client"))
         .manage(commands::download::DownloadClient(
             download::client().expect("failed to build download client"),
+        ))
+        .manage(commands::download::JdClient(
+            jdownloader::client().expect("failed to build JDownloader client"),
         ))
         .manage(commands::download::Downloads::default())
         .setup(|app| {
@@ -82,6 +86,7 @@ pub fn run() {
             commands::extract::extract_archive,
             commands::download::download_file,
             commands::download::cancel_download,
+            commands::download::send_to_jdownloader,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

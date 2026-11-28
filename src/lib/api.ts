@@ -6,6 +6,7 @@ import type {
   Artwork,
   CommandError,
   DownloadProgress,
+  JdOutcome,
   Follow,
   ForumPage,
   GameFirstPage,
@@ -87,6 +88,17 @@ export const api = {
     const channel = new Channel<DownloadProgress>();
     channel.onmessage = onProgress;
     return invoke<string>("download_file", { id, url, onProgress: channel });
+  },
+  sendToJdownloader: (
+    id: number,
+    url: string,
+    package_: string | null,
+    source: string | null,
+    onProgress: (p: DownloadProgress) => void,
+  ) => {
+    const channel = new Channel<DownloadProgress>();
+    channel.onmessage = onProgress;
+    return invoke<JdOutcome>("send_to_jdownloader", { id, url, package: package_, source, onProgress: channel });
   },
   cancelDownload: (id: number) => invoke<void>("cancel_download", { id }),
   showForumWindow: (path?: string) => invoke<void>("show_forum_window", { path }),

@@ -29,11 +29,13 @@
             {/if}
             {#if e.state === "running"}
               <span class="detail">
-                {formatProgress(e.progress)}
+                {e.via ? "via JDownloader · " : ""}{formatProgress(e.progress)}
                 {#if e.progress.total}<progress max={e.progress.total} value={e.progress.received}></progress>{/if}
               </span>
             {:else if e.state === "done"}
               <span class="detail path">{e.path}</span>
+            {:else if e.state === "handed_off"}
+              <span class="detail">Sent to JDownloader; progress shows there</span>
             {:else if e.state === "cancelled"}
               <span class="detail">Cancelled</span>
             {:else}
