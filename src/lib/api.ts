@@ -80,6 +80,7 @@ export const api = {
   markNotified: (postIds: number[]) => invoke<void>("mark_notified", { postIds }),
   rememberSteamMatch: (name: string, found: SteamMatch) => invoke<void>("remember_steam_match", { name, found }),
   saveSnapshot: (path: string) => forum<string>("save_snapshot", { path }),
+  extractArchive: (path: string) => invoke<string>("extract_archive", { path }),
   showForumWindow: (path?: string) => invoke<void>("show_forum_window", { path }),
   hideForumWindow: () => invoke<void>("hide_forum_window"),
   openInBrowser: (url: string, app?: string | null) => openUrl(url, app ?? undefined),

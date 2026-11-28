@@ -15,6 +15,7 @@ pub struct Settings {
     pub notifications: bool,
     pub dev_tools: bool,
     pub sync_bookmarks: bool,
+    pub extract_dir: Option<String>,
 }
 
 impl Default for Settings {
@@ -25,15 +26,20 @@ impl Default for Settings {
             notifications: true,
             dev_tools: false,
             sync_bookmarks: false,
+            extract_dir: None,
         }
     }
 }
 
+pub fn load(cache: &Cache) -> Settings {
+    cache
+        .get("setting", "app", None, VISIT_MAX_AGE)
+        .unwrap_or_default()
+}
+
 #[tauri::command]
 pub async fn get_settings(cache: State<'_, Cache>) -> Result<Settings> {
-    Ok(cache
-        .get("setting", "app", None, VISIT_MAX_AGE)
-        .unwrap_or_default())
+    Ok(load(&cache))
 }
 
 #[tauri::command]
@@ -43,6 +49,10 @@ pub async fn set_settings(cache: State<'_, Cache>, settings: Settings) -> Result
             .link_browser
             .map(|b| b.trim().to_string())
             .filter(|b| !b.is_empty()),
+        extract_dir: settings
+            .extract_dir
+            .map(|d| d.trim().to_string())
+            .filter(|d| !d.is_empty()),
         refresh_minutes: settings.refresh_minutes.clamp(1, 24 * 60),
         ..settings
     };
@@ -58,4 +68,23 @@ pub async fn clear_cache(cache: State<'_, Cache>) -> Result<usize> {
 #[tauri::command]
 pub async fn sign_out(app: AppHandle) -> Result<()> {
     forum_window::sign_out(&app)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extract_dir_defaults_to_none_and_round_trips() {
+        let old: Settings = serde_json::from_str(r#"{"refresh_minutes": 30}"#).unwrap();
+        assert_eq!(old.extract_dir, None);
+        assert_eq!(old.refresh_minutes, 30);
+
+        let settings = Settings {
+            extract_dir: Some("/games/extracted".into()),
+            ..Settings::default()
+        };
+        let json = serde_json::to_string(&settings).unwrap();
+        assert_eq!(serde_json::from_str::<Settings>(&json).unwrap(), settings);
+    }
 }
