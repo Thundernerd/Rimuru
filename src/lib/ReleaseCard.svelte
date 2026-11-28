@@ -142,7 +142,8 @@
   }
   .downloads {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 8px;
     margin-top: 14px;
   }
