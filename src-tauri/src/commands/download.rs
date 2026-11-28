@@ -82,8 +82,7 @@ pub async fn send_to_jdownloader(
 ) -> Result<Outcome> {
     let settings = settings::load(&cache);
     let dest = settings.extract_dir.ok_or(ExtractError::NoDestination)?;
-    // One client, so one cookie jar, per download.
-    let client = download::client().map_err(DownloadError::from)?;
+    let client = client.0.clone();
     let endpoints = Endpoints::local(settings.jdownloader_port);
     let package = package
         .filter(|p| !p.is_empty())
