@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
   notifications: true,
   dev_tools: false,
   sync_bookmarks: false,
+  extract_dir: null,
 };
 
 export const settings = $state({ value: { ...DEFAULT_SETTINGS }, loaded: false });

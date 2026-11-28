@@ -152,4 +152,5 @@ export type Settings = {
   notifications: boolean;
   dev_tools: boolean;
   sync_bookmarks: boolean;
+  extract_dir: string | null;
 };

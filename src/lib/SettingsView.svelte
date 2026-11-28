@@ -5,6 +5,7 @@
   import { clearForumPages } from "./forum";
   import { refresh, runRefresh } from "./refresh.svelte";
   import { refreshSession, session } from "./session.svelte";
+  import { chooseExtractDir, extractDownload, extraction } from "./extract.svelte";
   import { settings, updateSettings } from "./settings.svelte";
 
   const INTERVALS = [5, 10, 15, 30, 60];
@@ -14,6 +15,23 @@
   let cacheMessage = $state<string | null>(null);
   let signOutArmed = $state(false);
   let accountMessage = $state<string | null>(null);
+  let extractMessage = $state<string | null>(null);
+
+  async function chooseDir() {
+    try {
+      await chooseExtractDir();
+    } catch (e) {
+      extractMessage = `Couldn't choose a folder: ${errorMessage(e)}`;
+    }
+  }
+
+  async function extract() {
+    try {
+      extractMessage = (await extractDownload()) ?? extractMessage;
+    } catch (e) {
+      extractMessage = `Couldn't extract: ${errorMessage(e)}`;
+    }
+  }
 
   const username = $derived(session.current?.state === "logged_in" ? session.current.username : null);
   const lastCheck = $derived(refresh.lastRun ? new Date(refresh.lastRun).toLocaleTimeString() : null);
@@ -65,6 +83,27 @@
         {#each BROWSERS as name (name)}<option value={name}></option>{/each}
       </datalist>
     </label>
+  </section>
+
+  <section class="card">
+    <h2>Downloads</h2>
+    <div class="row">
+      <span class="label">
+        Extract to
+        <small class="path">{settings.value.extract_dir ?? "Not set. Archives are extracted into a folder named after them here."}</small>
+      </span>
+      <button type="button" onclick={chooseDir}>{settings.value.extract_dir ? "Change…" : "Choose…"}</button>
+    </div>
+    <div class="row">
+      <span class="label">
+        Extract a download
+        <small>Pick a downloaded zip, rar, 7z, tar or gz archive. Protected archives are opened with the password cs.rin.ru. Installers and disc images aren't extracted.</small>
+      </span>
+      <button type="button" onclick={extract} disabled={extraction.running}>
+        {extraction.running ? "Extracting…" : "Extract…"}
+      </button>
+    </div>
+    {#if extractMessage}<p class="note">{extractMessage}</p>{/if}
   </section>
 
   <section class="card">
@@ -243,8 +282,12 @@
     gap: 6px;
     flex-shrink: 0;
   }
+  small.path {
+    word-break: break-all;
+  }
   .note {
     margin: 0 0 12px;
+    word-break: break-word;
     font-size: 13px;
     color: var(--muted);
   }

@@ -2,6 +2,7 @@ mod cache;
 mod client;
 mod commands;
 mod error;
+mod extract;
 mod forum_window;
 mod game;
 mod phpbb;
@@ -14,6 +15,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(client::ForumClient::new().expect("failed to build HTTP client"))
         .manage(steam::SteamClient::new().expect("failed to build Steam client"))
         .setup(|app| {
@@ -71,6 +73,7 @@ pub fn run() {
             commands::settings::clear_cache,
             commands::settings::sign_out,
             commands::forum::save_snapshot,
+            commands::extract::extract_archive,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

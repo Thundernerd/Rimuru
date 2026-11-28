@@ -1,5 +1,6 @@
 <script lang="ts">
   import LinkButton from "./LinkButton.svelte";
+  import { extractDownload, extraction } from "./extract.svelte";
   import { isOwned, toggleOwned } from "./owned.svelte";
   import type { Release } from "./types";
 
@@ -59,6 +60,14 @@
           primary={!link.flagged_unsafe}
         />
       {/each}
+      <button
+        type="button"
+        onclick={() => extractDownload()}
+        disabled={extraction.running}
+        title="Extract an archive you downloaded into the folder set in Settings"
+      >
+        {extraction.running ? "Extracting…" : "Extract a download…"}
+      </button>
     </div>
     {#if release.links.some((l) => l.flagged_unsafe)}
       <p class="unsafe note">⚠ The forum flags some of these hosts as unsafe; those need a second click.</p>

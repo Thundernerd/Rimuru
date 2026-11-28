@@ -33,6 +33,9 @@ pub enum Error {
 
     #[error(transparent)]
     Io(#[from] std::io::Error),
+
+    #[error(transparent)]
+    Extract(#[from] crate::extract::ExtractError),
 }
 
 impl Error {
@@ -48,6 +51,7 @@ impl Error {
             Error::Tauri(_) => "tauri",
             Error::Url(_) => "url",
             Error::Io(_) => "io",
+            Error::Extract(e) => e.kind(),
         }
     }
 }
