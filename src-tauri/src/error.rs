@@ -36,6 +36,9 @@ pub enum Error {
 
     #[error(transparent)]
     Extract(#[from] crate::extract::ExtractError),
+
+    #[error(transparent)]
+    Download(#[from] crate::download::DownloadError),
 }
 
 impl Error {
@@ -52,6 +55,7 @@ impl Error {
             Error::Url(_) => "url",
             Error::Io(_) => "io",
             Error::Extract(e) => e.kind(),
+            Error::Download(e) => e.kind(),
         }
     }
 }

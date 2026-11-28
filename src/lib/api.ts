@@ -1,10 +1,11 @@
-import { invoke } from "@tauri-apps/api/core";
+import { Channel, invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
 import type {
   Artwork,
   CommandError,
+  DownloadProgress,
   Follow,
   ForumPage,
   GameFirstPage,
@@ -82,6 +83,12 @@ export const api = {
   rememberSteamMatch: (name: string, found: SteamMatch) => invoke<void>("remember_steam_match", { name, found }),
   saveSnapshot: (path: string) => forum<string>("save_snapshot", { path }),
   extractArchive: (path: string) => invoke<string>("extract_archive", { path }),
+  downloadFile: (id: number, url: string, onProgress: (p: DownloadProgress) => void) => {
+    const channel = new Channel<DownloadProgress>();
+    channel.onmessage = onProgress;
+    return invoke<string>("download_file", { id, url, onProgress: channel });
+  },
+  cancelDownload: (id: number) => invoke<void>("cancel_download", { id }),
   showForumWindow: (path?: string) => invoke<void>("show_forum_window", { path }),
   hideForumWindow: () => invoke<void>("hide_forum_window"),
   openInBrowser: (url: string, app?: string | null) => openUrl(url, app ?? undefined),

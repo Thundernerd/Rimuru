@@ -135,6 +135,9 @@ export type Visit = {
 
 export type CommandError = { kind: string; message: string };
 
+/** How far an in-app download is; `total` is null when the host doesn't say the size. */
+export type DownloadProgress = { received: number; total: number | null };
+
 export type Follow = { topic: TopicSummary; followed_at: number };
 
 export type Owned = {
