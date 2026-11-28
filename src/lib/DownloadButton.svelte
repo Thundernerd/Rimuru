@@ -30,7 +30,7 @@
 
 {#if running}
   <button type="button" class="busy" onclick={() => cancelDownload(url)} title="Cancel this download">
-    Downloading {formatProgress(running.progress)} · Cancel
+    Downloading{running.via ? " via JDownloader" : ""} {formatProgress(running.progress)} · Cancel
   </button>
 {:else}
   <button

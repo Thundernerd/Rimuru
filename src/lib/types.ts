@@ -156,4 +156,9 @@ export type Settings = {
   dev_tools: boolean;
   sync_bookmarks: boolean;
   extract_dir: string | null;
+  jdownloader: boolean;
+  jdownloader_port: number;
 };
+
+/** What `send_to_jdownloader` came to: the file's path, or that JDownloader only took the link. */
+export type JdOutcome = { path: string } | { handedOff: true };

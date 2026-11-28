@@ -25,7 +25,7 @@ export function isArchive(path: string): boolean {
   return ARCHIVE_EXTENSIONS.some((ext) => name.endsWith(`.${ext}`));
 }
 
-export type DownloadState = "running" | "done" | "failed" | "cancelled";
+export type DownloadState = "running" | "done" | "handed_off" | "failed" | "cancelled";
 
 /** One download of this session, as the Downloads view lists it. */
 export type DownloadEntry = {
@@ -38,6 +38,8 @@ export type DownloadEntry = {
   progress: DownloadProgress;
   path?: string;
   error?: string;
+  /** Set when JDownloader, not Rimuru, is doing the download. */
+  via?: "jdownloader";
 };
 
 /** Adds a new running entry. */
@@ -60,6 +62,16 @@ export function progressEntry(entries: DownloadEntry[], id: number, progress: Do
 /** Marks an entry done, with where its file went. */
 export function finishEntry(entries: DownloadEntry[], id: number, path: string): DownloadEntry[] {
   return update(entries, id, { state: "done", path });
+}
+
+/** Marks an entry as being downloaded by JDownloader. */
+export function viaJdownloader(entries: DownloadEntry[], id: number): DownloadEntry[] {
+  return update(entries, id, { via: "jdownloader", progress: { received: 0, total: null } });
+}
+
+/** Marks an entry handed to JDownloader, which shows the progress from here on. */
+export function handOffEntry(entries: DownloadEntry[], id: number): DownloadEntry[] {
+  return update(entries, id, { state: "handed_off" });
 }
 
 /** Marks an entry failed, or cancelled when the error says the user cancelled it. */

@@ -16,6 +16,8 @@ pub struct Settings {
     pub dev_tools: bool,
     pub sync_bookmarks: bool,
     pub extract_dir: Option<String>,
+    pub jdownloader: bool,
+    pub jdownloader_port: u16,
 }
 
 impl Default for Settings {
@@ -27,6 +29,8 @@ impl Default for Settings {
             dev_tools: false,
             sync_bookmarks: false,
             extract_dir: None,
+            jdownloader: false,
+            jdownloader_port: 3128,
         }
     }
 }
@@ -54,6 +58,7 @@ pub async fn set_settings(cache: State<'_, Cache>, settings: Settings) -> Result
             .map(|d| d.trim().to_string())
             .filter(|d| !d.is_empty()),
         refresh_minutes: settings.refresh_minutes.clamp(1, 24 * 60),
+        jdownloader_port: settings.jdownloader_port.max(1),
         ..settings
     };
     cache.put("setting", "app", None, &settings);
@@ -82,6 +87,21 @@ mod tests {
 
         let settings = Settings {
             extract_dir: Some("/games/extracted".into()),
+            ..Settings::default()
+        };
+        let json = serde_json::to_string(&settings).unwrap();
+        assert_eq!(serde_json::from_str::<Settings>(&json).unwrap(), settings);
+    }
+
+    #[test]
+    fn jdownloader_is_off_on_port_3128_by_default_and_round_trips() {
+        let old: Settings = serde_json::from_str(r#"{"refresh_minutes": 30}"#).unwrap();
+        assert!(!old.jdownloader);
+        assert_eq!(old.jdownloader_port, 3128);
+
+        let settings = Settings {
+            jdownloader: true,
+            jdownloader_port: 4000,
             ..Settings::default()
         };
         let json = serde_json::to_string(&settings).unwrap();

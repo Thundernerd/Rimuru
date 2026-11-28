@@ -9,6 +9,8 @@ export const DEFAULT_SETTINGS: Settings = {
   dev_tools: false,
   sync_bookmarks: false,
   extract_dir: null,
+  jdownloader: false,
+  jdownloader_port: 3128,
 };
 
 export const settings = $state({ value: { ...DEFAULT_SETTINGS }, loaded: false });
