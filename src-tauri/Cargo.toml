@@ -34,6 +34,7 @@ tauri-plugin-notification = "2"
 zip = { version = "9", default-features = false, features = ["deflate", "aes-crypto", "bzip2", "zstd", "lzma"] }
 sevenz-rust2 = "0.27"
 tar = "0.4"
+sha2 = "0.10"
 flate2 = "1"
 unrar = "0.5"
 tauri-plugin-dialog = "2"

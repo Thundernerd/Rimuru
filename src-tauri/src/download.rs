@@ -27,11 +27,21 @@ const STALL_TIMEOUT: Duration = Duration::from_secs(60);
 /// How often progress is reported at most.
 const PROGRESS_INTERVAL: Duration = Duration::from_millis(150);
 
-/// The website token gofile's own site sends when listing a folder's contents.
-const GOFILE_WEBSITE_TOKEN: &str = "4fd6sg89d7s6";
+/// The salt gofile's site mixes into its `X-Website-Token` header. It lives in gofile's obfuscated
+/// JavaScript and gofile rotates it by hand every few months; when gofile answers
+/// `error-notPremium` to a public link again, read the current one from the site's JS in the
+/// browser's devtools and put it here.
+const GOFILE_WT_SALT: &str = "12af056dacea0b";
+/// The language gofile's site reports in its `X-BL` header and in the website token.
+const GOFILE_LANGUAGE: &str = "en-US";
+/// How long one website token stays valid, in seconds.
+const GOFILE_WT_SLOT_SECS: u64 = 14_400;
 
 #[derive(Debug, thiserror::Error)]
 pub enum DownloadError {
+    #[error("{host} refused the download ({status}); open the link in the browser instead")]
+    Refused { host: String, status: String },
+
     #[error("{0} doesn't offer a direct download Rimuru can fetch; open it in the browser instead")]
     Unsupported(String),
 
@@ -62,7 +72,7 @@ impl DownloadError {
         match self {
             DownloadError::Unsupported(_) => "download_unsupported",
             DownloadError::Status { .. } => "download_status",
-            DownloadError::Resolve { .. } => "download_resolve",
+            DownloadError::Resolve { .. } | DownloadError::Refused { .. } => "download_resolve",
             DownloadError::Stalled => "download_stalled",
             DownloadError::Cancelled => "download_cancelled",
             DownloadError::BadUrl(_) => "download_bad_url",
@@ -188,6 +198,32 @@ fn parse_gofile<T: serde::de::DeserializeOwned>(body: String) -> Result<GofileAn
     })
 }
 
+/// The `X-Website-Token` gofile's site computes for a request: a SHA-256 over the user agent, the
+/// language, the account token (empty before the guest account exists), the current four-hour slot
+/// and a salt.
+fn gofile_website_token(user_agent: &str, account_token: &str, now_secs: u64) -> String {
+    use sha2::{Digest, Sha256};
+    let slot = now_secs / GOFILE_WT_SLOT_SECS;
+    let input =
+        format!("{user_agent}::{GOFILE_LANGUAGE}::{account_token}::{slot}::{GOFILE_WT_SALT}");
+    format!("{:x}", Sha256::digest(input.as_bytes()))
+}
+
+/// Adds the headers gofile's own site sends to an API call.
+fn gofile_request(req: reqwest::RequestBuilder, account_token: &str) -> reqwest::RequestBuilder {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    req.header(
+        "X-Website-Token",
+        gofile_website_token(crate::forum_window::USER_AGENT, account_token, now),
+    )
+    .header("X-BL", GOFILE_LANGUAGE)
+    .header("Origin", "https://gofile.io")
+    .header("Referer", "https://gofile.io/")
+}
+
 async fn resolve_gofile(client: &reqwest::Client, hosts: &Hosts, code: &str) -> Result<DirectFile> {
     let fail = |message: String| DownloadError::Resolve {
         host: "gofile.io".into(),
@@ -196,8 +232,7 @@ async fn resolve_gofile(client: &reqwest::Client, hosts: &Hosts, code: &str) -> 
     let api = hosts.gofile_api.trim_end_matches('/');
 
     let account: GofileAnswer<GofileAccount> = parse_gofile(
-        client
-            .post(format!("{api}/accounts"))
+        gofile_request(client.post(format!("{api}/accounts")), "")
             .send()
             .await?
             .text()
@@ -205,21 +240,35 @@ async fn resolve_gofile(client: &reqwest::Client, hosts: &Hosts, code: &str) -> 
     )?;
     let token = match (account.status.as_str(), account.data) {
         ("ok", Some(data)) => data.token,
-        (status, _) => return Err(fail(format!("couldn't get a guest account ({status})"))),
+        (status, _) => {
+            return Err(DownloadError::Refused {
+                host: "gofile.io".into(),
+                status: status.into(),
+            });
+        }
     };
 
     let contents: GofileAnswer<GofileContent> = parse_gofile(
-        client
-            .get(format!("{api}/contents/{code}?wt={GOFILE_WEBSITE_TOKEN}"))
-            .header(AUTHORIZATION, format!("Bearer {token}"))
-            .send()
-            .await?
-            .text()
-            .await?,
+        gofile_request(
+            client.get(format!(
+                "{api}/contents/{code}?cache=true&sortField=createTime&sortDirection=1"
+            )),
+            &token,
+        )
+        .header(AUTHORIZATION, format!("Bearer {token}"))
+        .send()
+        .await?
+        .text()
+        .await?,
     )?;
     let content = match (contents.status.as_str(), contents.data) {
         ("ok", Some(data)) => data,
-        (status, _) => return Err(fail(format!("it answered {status}"))),
+        (status, _) => {
+            return Err(DownloadError::Refused {
+                host: "gofile.io".into(),
+                status: status.into(),
+            });
+        }
     };
 
     let mut files: Vec<GofileContent> = if content.kind == "file" {
@@ -814,7 +863,21 @@ mod tests {
                 br#"{"status":"ok","data":{"id":"g","token":"tok123"}}"#,
             ),
             ("GET", p) if p.starts_with("/contents/xYz?") => {
-                if req.header("authorization") != Some("Bearer tok123") {
+                if req.header("authorization") != Some("Bearer tok123") || p.contains("wt=") {
+                    return response("401 Unauthorized", &[], b"");
+                }
+                let now = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs();
+                let ua = crate::forum_window::USER_AGENT;
+                let ok_token = [now, now.saturating_sub(GOFILE_WT_SLOT_SECS)]
+                    .iter()
+                    .any(|t| {
+                        req.header("x-website-token")
+                            == Some(gofile_website_token(ua, "tok123", *t).as_str())
+                    });
+                if !ok_token || req.header("x-bl") != Some("en-US") {
                     return response("401 Unauthorized", &[], b"");
                 }
                 let body = format!(
@@ -855,6 +918,49 @@ mod tests {
         assert_eq!(fs::read(&path).unwrap(), ARCHIVE);
     }
 
+    #[test]
+    fn the_gofile_website_token_is_a_sha256_of_its_parts() {
+        // sha256("UA::en-US::tok::1::12af056dacea0b") with slot = 14400 / 14400
+        let token = gofile_website_token("UA", "tok", GOFILE_WT_SLOT_SECS + 5);
+        use sha2::{Digest, Sha256};
+        let expected = format!(
+            "{:x}",
+            Sha256::digest(format!("UA::en-US::tok::1::{GOFILE_WT_SALT}").as_bytes())
+        );
+        assert_eq!(token, expected);
+        assert_eq!(token.len(), 64);
+        assert_ne!(
+            token,
+            gofile_website_token("UA", "tok", 2 * GOFILE_WT_SLOT_SECS)
+        );
+    }
+
+    #[tokio::test]
+    async fn gofile_not_premium_points_to_the_browser() {
+        let base = serve(|req, _| match req.path.as_str() {
+            "/accounts" => response("200 OK", &[], br#"{"status":"ok","data":{"token":"t"}}"#),
+            _ => response("200 OK", &[], br#"{"status":"error-notPremium","data":{}}"#),
+        });
+        let hosts = Hosts {
+            gofile_api: base,
+            ..Hosts::default()
+        };
+        let dir = tempfile::tempdir().unwrap();
+        let err = download(
+            &test_client(),
+            &hosts,
+            "https://gofile.io/d/xYz",
+            dir.path(),
+            |_| {},
+        )
+        .await
+        .unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("error-notPremium"), "{msg}");
+        assert!(msg.contains("open the link in the browser"), "{msg}");
+        assert!(!msg.contains("couldn't find"), "{msg}");
+    }
+
     #[tokio::test]
     async fn a_gofile_error_is_reported_and_nothing_is_written() {
         let base = serve(|req, _| match req.path.as_str() {
@@ -879,7 +985,7 @@ mod tests {
         )
         .await
         .unwrap_err();
-        assert!(matches!(err, DownloadError::Resolve { .. }), "{err:?}");
+        assert!(matches!(err, DownloadError::Refused { .. }), "{err:?}");
         assert!(err.to_string().contains("error-passwordRequired"));
         assert!(entries(dir.path()).is_empty());
     }
