@@ -121,6 +121,24 @@
         onchange={(e) => updateSettings({ jdownloader: e.currentTarget.checked })}
       />
     </label>
+    <label class="row">
+      <span class="label">
+        JDownloader port
+        <small>The port of JDownloader's local API. The default is 3128.</small>
+      </span>
+      <input
+        type="number"
+        min="1"
+        max="65535"
+        value={settings.value.jdownloader_port}
+        disabled={!settings.value.jdownloader}
+        onchange={(e) => {
+          const port = Math.round(Number(e.currentTarget.value));
+          if (port >= 1 && port <= 65535) updateSettings({ jdownloader_port: port });
+          else e.currentTarget.value = String(settings.value.jdownloader_port);
+        }}
+      />
+    </label>
   </section>
 
   <section class="card">

@@ -225,7 +225,6 @@ pub async fn poll(
                 "bytesTotal": true,
                 "finished": true,
                 "status": true,
-                "availability": true,
                 "packageUUID": true,
                 "name": true,
             }),
@@ -233,19 +232,29 @@ pub async fn poll(
         .await?;
         let links = links.as_array().cloned().unwrap_or_default();
         if links.is_empty() {
-            if !crawling(client, ep, job).await? {
-                return Err(JdError::Rejected(
-                    "it found no file at that link, or the link is offline".into(),
-                ));
-            }
-        } else {
-            if let Some(offline) = links
+            // Not in the download list (yet): the link may still sit in the Linkgrabber, where
+            // JDownloader checks it and, for an online one, moves it on after its auto-confirm wait.
+            let grabbed = call(
+                client,
+                &ep.api,
+                "linkgrabberv2/queryLinks",
+                json!({ "jobUUIDs": [job], "availability": true, "name": true }),
+            )
+            .await?;
+            let grabbed = grabbed.as_array().cloned().unwrap_or_default();
+            if let Some(offline) = grabbed
                 .iter()
                 .find(|l| l["availability"].as_str() == Some("OFFLINE"))
             {
                 let name = offline["name"].as_str().unwrap_or("the file");
                 return Err(JdError::Rejected(format!("{name} is offline")));
             }
+            if grabbed.is_empty() && !crawling(client, ep, job).await? {
+                return Err(JdError::Rejected(
+                    "it found no file at that link, or the link is offline".into(),
+                ));
+            }
+        } else {
             let sum = |key: &str| links.iter().filter_map(|l| l[key].as_u64()).sum::<u64>();
             let total = sum("bytesTotal");
             on_progress(Progress {
@@ -528,8 +537,13 @@ mod tests {
 
     #[tokio::test]
     async fn poll_ends_when_the_link_is_offline_or_unknown() {
-        let (offline, _) = serve(|_, _| {
-            data(json!([{ "name": "x.zip", "availability": "OFFLINE", "finished": false }]))
+        // Offline links stay in the Linkgrabber and never reach the download list.
+        let (offline, _) = serve(|r, _| {
+            if r.path.starts_with("/linkgrabberv2/queryLinks") {
+                data(json!([{ "name": "x.zip", "availability": "OFFLINE" }]))
+            } else {
+                data(json!([]))
+            }
         });
         let c = client().unwrap();
         let err = poll(
@@ -587,6 +601,47 @@ mod tests {
         .await
         .unwrap();
         assert_eq!(path, PathBuf::from("/d/a.zip"));
+    }
+
+    #[tokio::test]
+    async fn poll_waits_while_links_sit_in_the_linkgrabber() {
+        // Crawler done, download list empty, link still in the Linkgrabber, then it moves on.
+        let (api, seen) = serve(|r, n| {
+            if r.path.starts_with("/downloadsV2/queryLinks") {
+                if n < 5 {
+                    data(json!([]))
+                } else {
+                    data(
+                        json!([{ "bytesLoaded": 1, "bytesTotal": 1, "finished": true,
+                        "name": "a.zip", "packageUUID": 1 }]),
+                    )
+                }
+            } else if r.path.starts_with("/linkgrabberv2/queryLinks") {
+                data(json!([{ "name": "a.zip", "availability": "ONLINE" }]))
+            } else if r.path.starts_with("/linkgrabberv2/queryLinkCrawlerJobs") {
+                data(json!([{ "crawling": false, "checking": false }]))
+            } else {
+                data(json!([{ "saveTo": "/d" }]))
+            }
+        });
+        let c = client().unwrap();
+        let path = poll(
+            &c,
+            &eps(&api, &closed()),
+            1,
+            Duration::from_millis(5),
+            |_| {},
+        )
+        .await
+        .unwrap();
+        assert_eq!(path, PathBuf::from("/d/a.zip"));
+        let grabber_polls = seen
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|r| r.path.starts_with("/linkgrabberv2/queryLinks"))
+            .count();
+        assert!(grabber_polls >= 1);
     }
 
     #[tokio::test]
