@@ -17,9 +17,6 @@ use crate::jdownloader::{self, Endpoints, Outcome};
 #[derive(Default)]
 pub struct Downloads(Mutex<HashMap<u32, AbortHandle>>);
 
-/// The HTTP client for file hosts, kept apart from the forum's.
-pub struct DownloadClient(pub reqwest::Client);
-
 /// The HTTP client for JDownloader on this computer.
 pub struct JdClient(pub reqwest::Client);
 
@@ -28,7 +25,6 @@ pub struct JdClient(pub reqwest::Client);
 #[tauri::command]
 pub async fn download_file(
     cache: State<'_, Cache>,
-    client: State<'_, DownloadClient>,
     downloads: State<'_, Downloads>,
     id: u32,
     url: String,
@@ -38,7 +34,8 @@ pub async fn download_file(
         .extract_dir
         .map(PathBuf::from)
         .ok_or(ExtractError::NoDestination)?;
-    let client = client.0.clone();
+    // One client, so one cookie jar, per download.
+    let client = download::client().map_err(DownloadError::from)?;
     let task = tauri::async_runtime::spawn(async move {
         download::download(&client, &Hosts::default(), &url, &dest, |p| {
             let _ = on_progress.send(p);
@@ -85,7 +82,8 @@ pub async fn send_to_jdownloader(
 ) -> Result<Outcome> {
     let settings = settings::load(&cache);
     let dest = settings.extract_dir.ok_or(ExtractError::NoDestination)?;
-    let client = client.0.clone();
+    // One client, so one cookie jar, per download.
+    let client = download::client().map_err(DownloadError::from)?;
     let endpoints = Endpoints::local(settings.jdownloader_port);
     let package = package
         .filter(|p| !p.is_empty())
