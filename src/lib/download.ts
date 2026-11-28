@@ -1,4 +1,4 @@
-import type { DownloadProgress } from "./types";
+import type { DownloadProgress, TopicSummary } from "./types";
 import { ARCHIVE_EXTENSIONS } from "./archives";
 
 /** A byte count for people: `512 B`, `3.4 MB`. */
@@ -23,4 +23,71 @@ export function formatProgress(p: DownloadProgress): string {
 export function isArchive(path: string): boolean {
   const name = path.split(/[\\/]/).pop()?.toLowerCase() ?? "";
   return ARCHIVE_EXTENSIONS.some((ext) => name.endsWith(`.${ext}`));
+}
+
+export type DownloadState = "running" | "done" | "failed" | "cancelled";
+
+/** One download of this session, as the Downloads view lists it. */
+export type DownloadEntry = {
+  id: number;
+  url: string;
+  host: string;
+  label: string;
+  topic: TopicSummary | null;
+  state: DownloadState;
+  progress: DownloadProgress;
+  path?: string;
+  error?: string;
+};
+
+/** Adds a new running entry. */
+export function startEntry(
+  entries: DownloadEntry[],
+  entry: Pick<DownloadEntry, "id" | "url" | "host" | "label" | "topic">,
+): DownloadEntry[] {
+  return [...entries, { ...entry, state: "running", progress: { received: 0, total: null } }];
+}
+
+function update(entries: DownloadEntry[], id: number, patch: Partial<DownloadEntry>): DownloadEntry[] {
+  return entries.map((e) => (e.id === id ? { ...e, ...patch } : e));
+}
+
+/** Records a running entry's progress. */
+export function progressEntry(entries: DownloadEntry[], id: number, progress: DownloadProgress): DownloadEntry[] {
+  return update(entries, id, { progress });
+}
+
+/** Marks an entry done, with where its file went. */
+export function finishEntry(entries: DownloadEntry[], id: number, path: string): DownloadEntry[] {
+  return update(entries, id, { state: "done", path });
+}
+
+/** Marks an entry failed, or cancelled when the error says the user cancelled it. */
+export function failEntry(
+  entries: DownloadEntry[],
+  id: number,
+  error: string,
+  cancelled: boolean,
+): DownloadEntry[] {
+  return update(entries, id, { state: cancelled ? "cancelled" : "failed", error });
+}
+
+/** Running entries first, then the rest, each group newest first. */
+export function orderEntries(entries: DownloadEntry[]): DownloadEntry[] {
+  const rank = (e: DownloadEntry) => (e.state === "running" ? 0 : 1);
+  return [...entries].sort((a, b) => rank(a) - rank(b) || b.id - a.id);
+}
+
+export function runningCount(entries: DownloadEntry[]): number {
+  return entries.filter((e) => e.state === "running").length;
+}
+
+/** The entries that are still running; drops finished, failed and cancelled ones. */
+export function clearFinished(entries: DownloadEntry[]): DownloadEntry[] {
+  return entries.filter((e) => e.state === "running");
+}
+
+/** A file's name from its path. */
+export function baseName(path: string): string {
+  return path.split(/[\\/]/).pop() || path;
 }

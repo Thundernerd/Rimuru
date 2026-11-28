@@ -9,6 +9,8 @@
   import { session, signIn } from "./session.svelte";
   import { setStatus } from "./status.svelte";
   import type { TopicSummary } from "./types";
+  import { runningCount } from "./download";
+  import { downloads } from "./download.svelte";
   import { latest, newReplies, recent } from "./visits.svelte";
 
   let {
@@ -17,6 +19,7 @@
     mac,
   }: { onnavigate: (view: View) => void; onsearch: () => void; mac: boolean } = $props();
 
+  const running = $derived(runningCount(downloads.entries));
   const following = $derived(followedTopics());
   const shown = $derived(
     recent.visits
@@ -67,6 +70,10 @@
     </button>
     <button type="button" class:active={view.kind === "recent"} onclick={() => onnavigate({ kind: "recent" })}>
       <Icon name="clock" /> Recently viewed
+    </button>
+    <button type="button" class:active={view.kind === "downloads"} onclick={() => onnavigate({ kind: "downloads" })}>
+      <Icon name="download" /> Downloads
+      {#if running}<span class="count">{running}</span>{/if}
     </button>
   </nav>
 

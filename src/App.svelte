@@ -15,6 +15,7 @@
   import GameView from "./lib/GameView.svelte";
   import HomeView from "./lib/HomeView.svelte";
   import { back, current, forward, go, nav, replace, savedScroll, underlying, type View } from "./lib/nav.svelte";
+  import DownloadsView from "./lib/DownloadsView.svelte";
   import RecentView from "./lib/RecentView.svelte";
   import { refreshSession, session } from "./lib/session.svelte";
   import Sidebar from "./lib/Sidebar.svelte";
@@ -185,6 +186,8 @@
         <RecentView onselect={openGame} />
       {:else if view.kind === "following"}
         <FollowingView onselect={openGame} />
+      {:else if view.kind === "downloads"}
+        <DownloadsView onselect={openGame} />
       {:else if view.kind === "settings"}
         <SettingsView />
       {:else if view.kind === "game"}

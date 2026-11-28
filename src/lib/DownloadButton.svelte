@@ -3,7 +3,15 @@
   import { cancelDownload, downloadLink, downloads } from "./download.svelte";
   import { extractDownload, extraction } from "./extract.svelte";
 
-  let { url, confirm = false }: { url: string; confirm?: boolean } = $props();
+  import type { DownloadLink, TopicSummary } from "./types";
+
+  let {
+    link,
+    topic = null,
+    confirm = false,
+  }: { link: DownloadLink; topic?: TopicSummary | null; confirm?: boolean } = $props();
+
+  const url = $derived(link.url);
 
   let armed = $state(false);
 
@@ -16,7 +24,7 @@
       return;
     }
     armed = false;
-    downloadLink(url);
+    downloadLink(link, topic);
   }
 </script>
 

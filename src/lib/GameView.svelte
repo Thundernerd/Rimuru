@@ -286,7 +286,7 @@
         {/if}
       </header>
       {#if latest}
-        <ReleaseCard release={latest} topicId={topic.id} isNew={newIds.has(latest.post_id)} featured />
+        <ReleaseCard release={latest} topicId={topic.id} {topic} isNew={newIds.has(latest.post_id)} featured />
       {:else if skeletons.latest}
         <div class="placeholder"></div>
       {:else}
@@ -331,6 +331,7 @@
     <ReleaseList
       {releases}
       topicId={topic.id}
+      {topic}
       {newIds}
       {pagesRead}
       {pagesPlanned}

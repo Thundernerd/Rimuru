@@ -3,14 +3,15 @@
   import LinkButton from "./LinkButton.svelte";
   import { extractDownload, extraction } from "./extract.svelte";
   import { isOwned, toggleOwned } from "./owned.svelte";
-  import type { Release } from "./types";
+  import type { Release, TopicSummary } from "./types";
 
   let {
     release,
     topicId,
+    topic = null,
     isNew = false,
     featured = false,
-  }: { release: Release; topicId: number; isNew?: boolean; featured?: boolean } = $props();
+  }: { release: Release; topicId: number; topic?: TopicSummary | null; isNew?: boolean; featured?: boolean } = $props();
 
   const have = $derived(isOwned(topicId, release.post_id));
 
@@ -61,7 +62,7 @@
             confirm={link.flagged_unsafe}
             primary={!link.flagged_unsafe}
           />
-          <DownloadButton url={link.url} confirm={link.flagged_unsafe} />
+          <DownloadButton {link} {topic} confirm={link.flagged_unsafe} />
         </span>
       {/each}
       <button
@@ -84,7 +85,7 @@
         {#if link.label !== link.host}<span class="label">{link.label}</span>{/if}
         {#if link.flagged_unsafe}<span class="unsafe">⚠ flagged unsafe by the forum</span>{/if}
         <span class="actions">
-          <DownloadButton url={link.url} confirm={link.flagged_unsafe} />
+          <DownloadButton {link} {topic} confirm={link.flagged_unsafe} />
           <LinkButton url={link.url} label="Open" confirm={link.flagged_unsafe} />
         </span>
       </li>

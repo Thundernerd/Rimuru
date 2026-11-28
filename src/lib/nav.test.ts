@@ -90,4 +90,14 @@ describe("navigation history", () => {
     nav.go({ kind: "game", topic: topic(2) }, 0);
     expect(nav.underlying()).toMatchObject({ kind: "search", query: "slot" });
   });
+
+  it("treats the downloads view like the other plain views", () => {
+    nav.go({ kind: "downloads" }, 0);
+    nav.go({ kind: "downloads" }, 5);
+    expect(nav.current()).toEqual({ kind: "downloads" });
+    expect(nav.canGoBack()).toBe(true);
+    nav.back(0);
+    expect(nav.current()).toEqual({ kind: "home" });
+    expect(nav.canGoBack()).toBe(false);
+  });
 });
