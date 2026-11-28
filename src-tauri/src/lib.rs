@@ -20,9 +20,6 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(client::ForumClient::new().expect("failed to build HTTP client"))
         .manage(steam::SteamClient::new().expect("failed to build Steam client"))
-        .manage(commands::download::DownloadClient(
-            download::client().expect("failed to build download client"),
-        ))
         .manage(commands::download::JdClient(
             jdownloader::client().expect("failed to build JDownloader client"),
         ))

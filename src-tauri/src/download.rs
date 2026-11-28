@@ -108,7 +108,9 @@ impl Default for Hosts {
 }
 
 /// The HTTP client for file hosts. It is separate from the forum's so the forum's cookies never
-/// reach a file host.
+/// reach a file host. It keeps the cookies a host sets across redirects (datanodes only answers its
+/// download page when the cookie from its first redirect comes along), so build one per download:
+/// cookies must not outlast it.
 pub fn client() -> reqwest::Result<reqwest::Client> {
     client_builder().build()
 }
@@ -117,6 +119,7 @@ fn client_builder() -> reqwest::ClientBuilder {
     reqwest::Client::builder()
         .user_agent(crate::forum_window::USER_AGENT)
         .connect_timeout(CONNECT_TIMEOUT)
+        .cookie_store(true)
 }
 
 /// A link resolved to the file it points to.
@@ -737,6 +740,48 @@ mod tests {
             &test_client(),
             &Hosts::default(),
             &format!("{base}/file/abc"),
+            dir.path(),
+            |_| {},
+        )
+        .await
+        .unwrap_err();
+        assert!(matches!(err, DownloadError::Unsupported(_)), "{err:?}");
+        assert!(entries(dir.path()).is_empty());
+    }
+
+    #[tokio::test]
+    async fn a_cookie_set_by_a_redirect_follows_it() {
+        let base = serve(|req, _| match req.path.as_str() {
+            "/abc/Game.zip" => response(
+                "302 Found",
+                &[
+                    ("Location", "/download"),
+                    ("Set-Cookie", "file_code=abc; path=/"),
+                ],
+                b"",
+            ),
+            "/download"
+                if req
+                    .header("cookie")
+                    .is_some_and(|c| c.contains("file_code=abc")) =>
+            {
+                response(
+                    "200 OK",
+                    &[("Content-Type", "text/html")],
+                    b"<html>step 1</html>",
+                )
+            }
+            _ => response(
+                "404 Not Found",
+                &[("Content-Type", "text/html")],
+                b"<html>no</html>",
+            ),
+        });
+        let dir = tempfile::tempdir().unwrap();
+        let err = download(
+            &test_client(),
+            &Hosts::default(),
+            &format!("{base}/abc/Game.zip"),
             dir.path(),
             |_| {},
         )
