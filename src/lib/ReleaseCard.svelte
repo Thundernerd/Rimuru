@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DownloadButton from "./DownloadButton.svelte";
   import LinkButton from "./LinkButton.svelte";
   import { extractDownload, extraction } from "./extract.svelte";
   import { isOwned, toggleOwned } from "./owned.svelte";
@@ -53,12 +54,15 @@
   {#if featured}
     <div class="downloads">
       {#each release.links as link (link.url)}
-        <LinkButton
-          url={link.url}
-          label={(link.flagged_unsafe ? "⚠ " : "") + (link.label !== link.host ? `${link.label} · ${link.host}` : link.host)}
-          confirm={link.flagged_unsafe}
-          primary={!link.flagged_unsafe}
-        />
+        <span class="link">
+          <LinkButton
+            url={link.url}
+            label={(link.flagged_unsafe ? "⚠ " : "") + (link.label !== link.host ? `${link.label} · ${link.host}` : link.host)}
+            confirm={link.flagged_unsafe}
+            primary={!link.flagged_unsafe}
+          />
+          <DownloadButton url={link.url} confirm={link.flagged_unsafe} />
+        </span>
       {/each}
       <button
         type="button"
@@ -79,7 +83,10 @@
         <span class="host">{link.host}</span>
         {#if link.label !== link.host}<span class="label">{link.label}</span>{/if}
         {#if link.flagged_unsafe}<span class="unsafe">⚠ flagged unsafe by the forum</span>{/if}
-        <LinkButton url={link.url} label="Open" confirm={link.flagged_unsafe} />
+        <span class="actions">
+          <DownloadButton url={link.url} confirm={link.flagged_unsafe} />
+          <LinkButton url={link.url} label="Open" confirm={link.flagged_unsafe} />
+        </span>
       </li>
     {/each}
   </ul>
@@ -137,6 +144,11 @@
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 14px;
+  }
+  .link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
   .note {
     margin: 10px 0 0;
@@ -197,7 +209,9 @@
     color: var(--warn);
     font-size: 12px;
   }
-  li :global(button) {
+  .actions {
+    display: inline-flex;
+    gap: 4px;
     margin-left: auto;
   }
   details {

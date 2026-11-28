@@ -1,6 +1,7 @@
 mod cache;
 mod client;
 mod commands;
+mod download;
 mod error;
 mod extract;
 mod forum_window;
@@ -18,6 +19,10 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(client::ForumClient::new().expect("failed to build HTTP client"))
         .manage(steam::SteamClient::new().expect("failed to build Steam client"))
+        .manage(commands::download::DownloadClient(
+            download::client().expect("failed to build download client"),
+        ))
+        .manage(commands::download::Downloads::default())
         .setup(|app| {
             let data_dir = app.path().app_data_dir()?;
             migrate_data(&data_dir);
@@ -75,6 +80,8 @@ pub fn run() {
             commands::settings::sign_out,
             commands::forum::save_snapshot,
             commands::extract::extract_archive,
+            commands::download::download_file,
+            commands::download::cancel_download,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,11 +1,9 @@
 import { open } from "@tauri-apps/plugin-dialog";
 
 import { api, errorMessage } from "./api";
+import { ARCHIVE_EXTENSIONS } from "./archives";
 import { settings, updateSettings } from "./settings.svelte";
 import { setStatus } from "./status.svelte";
-
-/** The archives Rimuru extracts. Installers and disc images (exe, iso, bin) are left alone. */
-export const ARCHIVE_EXTENSIONS = ["zip", "rar", "7z", "tar", "gz", "tgz"];
 
 export const extraction = $state({ running: false });
 
@@ -22,16 +20,18 @@ export async function chooseExtractDir(): Promise<boolean> {
 }
 
 /**
- * Asks for a downloaded archive and extracts it into the folder set in Settings, asking for
- * that folder first when none is set. Returns a message saying how it went, or null when the
+ * Extracts a downloaded archive, `path` or else one the user picks, into the folder set in
+ * Settings, asking for that folder first when none is set. Returns a message saying how it went, or null when the
  * user cancelled.
  */
-export async function extractDownload(): Promise<string | null> {
+export async function extractDownload(path?: string): Promise<string | null> {
   if (!settings.value.extract_dir && !(await chooseExtractDir())) return null;
-  const file = await open({
-    title: "Extract a downloaded archive",
-    filters: [{ name: "Archives", extensions: ARCHIVE_EXTENSIONS }],
-  });
+  const file =
+    path ??
+    (await open({
+      title: "Extract a downloaded archive",
+      filters: [{ name: "Archives", extensions: ARCHIVE_EXTENSIONS }],
+    }));
   if (typeof file !== "string") return null;
   extraction.running = true;
   let message: string;
